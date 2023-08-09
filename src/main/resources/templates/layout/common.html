@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>레이아웃 타이틀</title>
+    <!-- 공통 -->
+    <th:block th:fragment="metas">
+        <meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    </th:block>
+
+    <!-- 공통 -->
+    <th:block th:fragment="styles">
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/bootstrap.min.css}">
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/core.css}">
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/remix/remixicon.css}">
+        <link rel="shortcut icon" th:href="@{/images/favicon.ico}">
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="script">
+    <script src="/js/jquery.min.js?v=2307101"></script>
+    <script src="/js/jquery.md5.js?v=2307101"></script>
+    <script src="/js/bootstrap.bundle.js?v=2307101"></script>
+    <script src="/js/axios.min.js?v=2307101"></script>
+    <script src="/js/core.js?v=2307101"></script>
+    <script src="/js/config.js?v=2307101"></script>
+    <script src="/js/server.config.js?v=2307101"></script>
+    <script src="/js/xlsx.full.min.js?v=2307101"></script>
+    <script src="/js/FileSaver.min.js?v=2307101"></script>
+    <script src="/js/chart.min.js?v=2307101"></script>
+</th:block>
+</body>
+</html>

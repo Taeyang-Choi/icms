@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>팀스케줄</title>
+    <style>
+        #page-title:before {
+            content: url("/images/before/schedule.svg");
+            margin-right: 10px;
+            vertical-align: middle
+        }
+
+        /* 탭 */
+        .tab {
+            display: none
+        }
+
+        .tab.active {
+            display: block
+        }
+
+        .list-item .box {
+            text-align: center
+        }
+
+        .box[data-shift="조"] {
+            color: #FF7500;
+            text-align: center
+        }
+
+        .box[data-shift="주"] {
+            color: #5BCE2B;
+            text-align: center
+        }
+
+        .box[data-shift="야"] {
+            color: #3939BC;
+            text-align: center
+        }
+
+        .box[data-shift="비"] {
+            color: #FF2B2B;
+            text-align: center
+        }
+
+        .tab-name {
+            color: #2D3033;
+            font-weight: bold;
+            margin: 14px 0;
+        }
+
+        #btnTabTeam, #btnTabPattern, #btnTabSchedule {
+            border: 1px solid #34435A;
+            box-shadow: 0 2px 5px -3px
+        }
+
+        #btnTabTeam:visited, #btnTabPattern:visited, #btnTabSchedule:visited {
+            background-color: #34435A;
+            color: white;
+        }
+
+        #team-member-table thead {
+            background-color: #34435A;
+        }
+
+        .team-list-item button {
+            background-color: #F0F4FA;
+            border: 1px solid #323268;
+            color: #323268
+        }
+
+        .pattern-list-item button {
+            background-color: #F0F4FA;
+            border: 1px solid #323268;
+            color: #323268
+        }
+
+        input[type="month"] {
+            position: relative;
+        }
+
+        input[type="month"]::-webkit-clear-button,
+        input[type="month"]::-webkit-inner-spin-button {
+            display: none;
+        }
+
+        input[type="month"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: transparent;
+            color: transparent;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        #inputMonth {
+            text-align: center;
+            color: white;
+            background-color: #6F84A5;
+            border-radius: 5px;
+        }
+
+        #inputMonth:visited {
+            color: white;
+            background-color: #6F84A5
+        }
+
+        #inputMonth:active {
+            color: white;
+            background-color: #6F84A5
+        }
+
+        .date-header .member-team, .date-header .member-name, .date-header .purpose {
+            width: 77px;
+            height: 34px;
+            border-color: black;
+            text-align: center;
+            background-color: #6F84A5;
+            line-height: 34px;
+            color: white
+        }
+
+        .date-header .box {
+            flex: 1 0 0;
+            text-align: center;
+            background-color: #6F84A5;
+            line-height: 34px;
+            color: white;
+            border-bottom: 1px solid #c1c1c1;
+            border-right: 1px solid #c1c1c1
+        }
+
+        .member-team, .member-name, .purpose {
+            border-right: 1px solid #C1C1C1 !important;
+            border-bottom: 1px solid #C1C1C1 !important;
+            font-size: 14px
+        }
+
+        .list-item .member-team, .list-item .member-name, .list-item .purpose {
+            width: 77px;
+            height: 34px;
+            background-color: white;
+            line-height: 30px;
+            text-align: center
+        }
+
+        .list-item .box {
+            flex: 1 0 0;
+            line-height: 33px;
+            border-bottom: 1px solid #c1c1c1;
+            border-right: 1px solid #c1c1c1
+        }
+
+        /* 근무 패턴 */
+        .shift-box {
+            flex: 0 0 auto;
+            width: 20%;
+            height: 32px;
+            line-height: 32px;
+            border: 1px solid #E0E0E0;
+            text-align: center;
+        }
+
+        .shift-box:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* 테이블 */
+        #settingSection table thead {
+            border-bottom: 1px solid #dee2e6
+        }
+
+        #settingSection thead th {
+            background-color: #6F84A5
+        }
+    </style>
+</head>
+<body data-page-scope="schedule/main">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="d-flex" style="justify-content:space-between;">
+            <div class="d-flex align-items-center gap-3">
+                <p id="page-title">월간 팀 스케줄 현황</p>
+                <input id="inputMonth" class="form-control" type="month" min="2013-01" style="width:140px;">
+            </div>
+            <div class="d-flex" style="margin-bottom:40px;">
+                <div style="border-right:1px solid #C1C1C1;padding-right:40px;">
+                    <div>
+                        <p class="fw-bold fs-18">근무현황</p>
+                    </div>
+                    <div class="d-flex" style="margin-top:22px;">
+                        <div class="d-flex" style="height: 26px;">
+                            <div style="width:20px;height:20px;border-radius:5px;background-color:#FF7500;margin:3px 0;"></div>
+                            <div style="margin-left:6px;color:#FF7500">조</div>
+                        </div>
+                        <div class="d-flex" style="height: 26px;margin-left:22px;">
+                            <div style="width:20px;height:20px;border-radius:5px;background-color:#5BCE2B;margin:3px 0;"></div>
+                            <div style="margin-left:6px;color:#5BCE2B">주</div>
+                        </div>
+                        <div class="d-flex" style="height: 26px;margin-left:22px;">
+                            <div style="width:20px;height:20px;border-radius:5px;background-color:#3939BC;margin:3px 0;"></div>
+                            <div style="margin-left:6px;color:#3939BC">야</div>
+                        </div>
+                        <div class="d-flex" style="height: 26px;margin-left:22px;">
+                            <div style="width:20px;height:20px;border-radius:5px;background-color:#FF2B2B;margin:3px 0;"></div>
+                            <div style="margin-left:6px;color:#FF2B2B">비</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-left:40px;">
+                    <p id="textMonth" class="fs-24" style="font-weight:bold;text-align:right">09월</p>
+                    <div style="margin-top:12px;">
+                        <a id="aWeekly" class="fs-14 fw-bolder" href="weekly"
+                           style="color:#171752;margin-right:15px;">주간 단위로 보기 -></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="border-top:1px solid #c1c1c1;border-left:1px solid #c1c1c1">
+            <div class="date-header fs-14" style="display:flex;">
+                <div class="member-team"><p>근무팀</p></div>
+                <div class="member-name"><p>근무자</p></div>
+                <div class="purpose"><p>목적별</p></div>
+            </div>
+            <div id="mainList"></div>
+        </div>
+
+        <div class="d-flex" style="justify-content:center;margin-top:65px;">
+            <div class="d-flex fs-14" style="justify-content: center;width:402px;">
+                <button id="btnTabTeam" class="btn" href="#"
+                        style="width:110px;height:48px;text-align:center;line-height:34px;margin:0 18px;">팀 설정
+                </button>
+                <button id="btnTabPattern" class="btn" href="#"
+                        style="width:110px;height:48px;text-align:center;line-height:34px;margin:0 18px;">패턴 설정
+                </button>
+                <button id="btnTabSchedule" class="btn d-none" href="#"
+                        style="width:110px;height:48px;text-align:center;line-height:34px;margin:0 18px;">월별 근무팀
+                </button>
+            </div>
+        </div>
+        <div class="" style="position:relative;bottom:40px;float:right">
+            <button id="exportExcel" class="btn btn-primary" style="width:76px;height:34px;">엑셀</button>
+        </div>
+    </div>
+</div>
+
+<div id="settingSection">
+    <div class="container border-top mt-3">
+        <!-- 팀 설정 -->
+        <div id="teamSection" class="tab active">
+            <p class="tab-name">팀설정</p>
+            <table id="tableTeamMember" class="table">
+                <thead>
+                <tr>
+                    <th>팀명</th>
+                    <th>팀원</th>
+                    <th>설정</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- 팀 패턴 -->
+        <div id="patternSection" class="tab">
+            <p class="tab-name">근무패턴</p>
+            <table id="tablePattern" class="table">
+                <thead>
+                <tr>
+                    <th>근무팀</th>
+                    <th>패턴유형</th>
+                    <th>근무패턴</th>
+                    <th>설정</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="d-flex justify-content-end mt-3 gap-3">
+                <button id="btnPreviewSchedule" class="btn btn-primary">미리보기</button>
+                <button id="btnUpdateSchedule" class="btn btn-primary">스케줄 반영</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer" style="margin-top:65px;"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/xlsx.full.min.js"></script>
+<script src="/js/FileSaver.min.js"></script>
+<script src="/js/module/schedule.js"></script>
+<script>
+    function init(params) {
+        let year = request.getParameter('year', dateFormat(new Date(), "yyyy"));
+        let month = request.getParameter('month', dateFormat(new Date(), "MM"));
+
+        $('#inputMonth').val(year + "-" + month);
+        $('#inputMonth').on('change', function (e) {
+            let val = $(this).val();
+            Page.move(location.pathname + "?year=" + val.split('-')[0] + "&month=" + val.split('-')[1]);
+        });
+
+        // 버튼 영역
+        $('#btnTabTeam').on('click', function (e) {
+            showTab('team');
+        });
+        $('#btnTabPattern').on('click', function (e) {
+            showTab('pattern');
+        });
+        $('#btnTabSchedule').on('click', function (e) {
+            showTab('schedule');
+        });
+
+        TeamManager.init(params);
+        TeamMemberManager.init(year, month);
+        ShiftManagerIn.init(params);
+        SchedulePatternManager.init(params);
+        ExcelManager.init();
+    }
+
+    function showTab(loc) {
+        $('#settingSection .tab').removeClass('active');
+        $(`#settingSection #${loc}Section`).addClass('active');
+    }
+
+    let TeamManager = {
+        data: {},
+        initialized: false,
+        init: function (params) {
+            this.initialized = true;
+            this.data = CodeManager.team;
+            this.renderList(params);
+        },
+        renderList: (params) => {
+            let teamList = CodeManager.team;
+            for (let i = 0; i < teamList.length; i++) {
+                let item = teamList[i];
+
+                // 팀 설정에 팀 추가
+                $('#tableTeamMember').append(`<tr class="team-list-item team-${item.c}" data-team="${item.c}">
+                <td>${item.n}</td>
+                <td class="team-member-list"></td>
+                <td><button class="btn">팀 설정</button></td>
+            </tr>`);
+            }
+        }
+    }
+
+    let TeamMemberManager = {
+        data: {},
+        init: function (year, month) {
+            AJAX.get('/schedule/agents', '', function (list) {
+                let teamCodes = [];
+                for (const team of CodeManager.team) {
+                    teamCodes.push(team.c);
+                }
+
+                for (const member of list) {
+                    if (!isValid(member.team)) member.team = 'NOTEAM';
+
+                    if (!teamCodes.includes(member.team)) {
+                        member.team = 'NOTEAM'
+                    }
+                }
+
+                list = list.sort((a, b) => {
+                    return a.team < b.team ? -1 : a.team > b.team ? 1 : 0
+                });
+
+                TeamMemberManager.data = list;
+                TeamMemberManager.renderList(list);
+                TeamScheduleManager.init(year, month);
+            });
+        },
+        renderList: function (teamName) {
+            // 팀 설정 섹션의 '설정' 버튼 클릭시
+            $('#tableTeamMember .team-list-item button').on('click', function (e) {
+                let teamCode = $(this).parent().parent().data('team');
+                TeamMemberManager.openNewWindow(teamCode);
+            });
+
+            // 팀 설정 섹션에 팀원 배치
+            for (let i = 0; i < this.data.length; i++) {
+                let user = this.data[i];
+                $(`#teamSection .team-${user.team} .team-member-list`).append(user.name + " / ");
+            }
+        },
+        openNewWindow(teamCode) {
+            // 기본 추가
+            let str = `<div class="d-flex" style="min-height:400px">
+            <div id="tree-view-team" class="col-6">
+                <div class="tree-view">
+                    <div>
+                        <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#onuw-NOTEAM" aria-expanded="false" aria-controls="onuw-NOTEAM">미등록</button>
+                        <ul class="collapse" id="onuw-NOTEAM"></ul>
+                    </div>
+                </div>
+            </div>
+            <div id="team-member-ondrop" class="col-6" style="min-height:600px;z-index: 100">
+                <div id="team-member-list">
+                    <table id="team-member-table" class="table" border-spacing="0">
+                        <thead>
+                            <tr>
+                                <th scope="col">부서</th>
+                                <th scope="col">근로자명</th>
+                                <th scope="col">삭제</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+
+            PopupModalManager.init('사용자 추가', str, '등록', '닫기');
+
+            // 팀 추가
+            for (const team of TeamManager.data) {
+                // 트리뷰 추가
+                $('#tree-view-team .tree-view').append(`<div>
+                <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#onuw-${team.n}" aria-expanded="false" aria-controls="onuw-${team.n}">${team.n}</button>
+                <ul class="collapse" id="onuw-${team.n}"></ul>
+            </div>`);
+            }
+
+            // 트리뷰 팀에 팀원 추가
+            for (const user of TeamMemberManager.data) {
+                let userTeamCode = get(user.team, '미등록');
+                let teamName = CodeManager.get('team', teamCode, '삭제된 팀');
+
+                // 트리뷰 추가
+                $(`#onuw-${userTeamCode}`).append(`<li class="list-item-user" draggable="true" data-user="${user.id}">${user.name}</li>`);
+
+                if (teamCode == userTeamCode) {
+                    addUserToTable(user.id);
+                }
+            }
+
+            // 테이블에 유저 추가
+            function addUserToTable(id) {
+                //console.log(id);
+                let user = TeamMemberManager.data.find(user => user.id == id);
+                let teamName = CodeManager.get('team', user.team, '삭제된 팀');
+                if ($('#team-member-table .user-' + user.id).length > 0) return;
+
+                // 테이블에 추가
+                $('#team-member-table').append(`
+            <tr class="user-${user.id}" data-user="${id}">
+                <td>${teamName}</td>
+                <td>${user.name}</td>
+                <td><button class="btn btn-outline-danger btn-sm btn-delete">삭제</button></td>
+            </tr>`);
+
+                $('#team-member-table .user-' + user.id + ' .btn-delete').on('click', {id: id}, function (e) {
+                    $(this).parent().parent().remove();
+                });
+            }
+
+            // 드래그 앤 드롭 설정
+            $('#team-member-ondrop').off().on({
+                'dragover': function (e) {
+                    e.preventDefault();
+                },
+                'drop': function (e) {
+                    e.preventDefault();
+                    let memberId = e.originalEvent.dataTransfer.getData('user');
+                    addUserToTable(memberId);
+                }
+            });
+            $(`.list-item-user`).off().on({
+                'dragstart': function (e) {
+                    e.originalEvent.dataTransfer.setData('user', $(e.currentTarget).data('user'));
+                    $(this).addClass('dragging');
+                },
+                'dragend': function (e) {
+                    $(this).removeClass('dragging');
+                }
+            });
+
+            // 등록 버튼
+            $('#popup-ok').off().on('click', function () {
+                let array = [];
+
+                $('#team-member-table>tr').each(function (index, item) {
+                    let id = $(item).data('user');
+                    array.push(id);
+                });
+
+                //console.log("team : " + teamCode);
+                console.log("array : " + array.join(","));
+
+                AJAX.put('/schedule/teams/' + teamCode, null, array, function (data) {
+                    Dialog.alert(data.message, function () {
+                        Page.reload();
+                    });
+                });
+            });
+        }
+    }
+
+    let ShiftManagerIn = {
+        data: {},
+        init: function (params) {
+            $('#btn-new-shift').on('click', function () {
+                ShiftManagerIn.openNewShiftWindow(params);
+            });
+            AJAX.get('/schedule/shifts', '', function (list) {
+                ShiftManagerIn.data = list;
+                ShiftManagerIn.renderList(list);
+            });
+        },
+        renderList: function (list) {
+            for (let i = 0; i < list.length; i++) {
+                let item = list[i];
+                item.hours = this.getWorkingHour(item);
+            }
+        },
+        openNewShiftWindow(params) {
+            let form = `<form id="form-new-shift">
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">근무시간명</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="name">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">근무시간코드</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="shift_code">
+                    </div>
+                </div>
+                <p class="mt-3 fw-bold">근무 시간</p>
+                <div class="input-group mt-1">
+                    <input class="form-control" name="work_start" type="time" value="06:00">
+                    <span class="input-group-text">부터</span>
+                    <input class="form-control" name="work_end" type="time" value="14:00">
+                    <span class="input-group-text">까지</span>
+                </div>
+                <p class="mt-3 fw-bold">휴게 시간</p>
+                <div class="input-group mt-1">
+                    <input class="form-control" name="rest_start" type="time" value="06:00">
+                    <span class="input-group-text">부터</span>
+                    <input class="form-control" name="rest_end" type="time" value="14:00">
+                    <span class="input-group-text">까지</span>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="cb-no-rest">
+                    <label class="form-check-label" for="cb-no-rest">휴게시간 없음</label>
+                </div>
+                <p class="mt-3 fw-bold">기간 설정</p>
+                <div class="input-group mt-1">
+                    <input class="form-control" name="start_date" type="date" value="${dateFormat(new Date(), 'yyyy-MM-dd')}">
+                    <span class="input-group-text">부터</span>
+                    <input class="form-control" name="end_date" type="date" value="2999-12-31">
+                    <span class="input-group-text">까지</span>
+                </div>
+            <form>`;
+
+            PopupModalManager.init('근무시간 설정', form, '저장', '취소');
+
+            // 휴게시간 없음 버튼 설정
+            $('#cb-no-rest').on('click', function (e) {
+                let val = $(this).prop('checked');
+            });
+
+            // 등록 선택
+            $('#popup-ok').off().on('click', function () {
+                let data = Utils.formToObject('#form-new-shift');
+                if (data == null) {
+                    $('#btn-new-team').trigger('click');
+                    return;
+                }
+
+                if ($('#cb-no-rest').prop('checked')) {
+                    delete data.rest_start;
+                    delete data.rest_end;
+                }
+
+                AJAX.post("/schedule/shifts", null, data, function (data) {
+                    Dialog.alert(data.message, function () {
+                        Page.reload();
+                    });
+                });
+            });
+        },
+        getWorkingHour: function (shift) {
+            let start = parseInt(shift.workStart.substring(0, 2));
+            let end = parseInt(shift.workEnd.substring(0, 2));
+            let result = end - start;
+            return (result >= 0) ? result : 24 + result;
+        }
+    }
+
+    let SchedulePatternManager = {
+        data: {},
+        init: function (params) {
+            AJAX.get('/schedule/patterns', '', function (list) {
+                SchedulePatternManager.data = list;
+                SchedulePatternManager.renderList(list);
+            });
+        },
+        renderList: function (list) {
+            for (let i = 0; i < list.length; i++) {
+                let item = list[i];
+                //console.log(`${item.id}, ${item.name}, ${item.list}`);
+                let listHtml = `<tr class="pattern-list-item" data-team="${item.team}">
+                <td>${item.team}</td>
+                <td>${item.name}</td>
+                <td>${item.list.replaceAll(',', ' - ')}</td>
+                <td><button class="btn">패턴 설정</button></td>
+            </tr>`;
+                $('#tablePattern tbody').append(listHtml);
+            }
+
+            // 팀 설정 섹션의 '설정' 버튼 클릭시
+            $('#tablePattern .pattern-list-item button').on('click', function (e) {
+                let teamCode = $(this).parent().parent().data('team');
+                SchedulePatternManager.openNewWindow(teamCode);
+            });
+            $('#btnUpdateSchedule').on('click', function () {
+                //TeamScheduleManager.updateTeamSchedule();
+                TeamScheduleManager.openRangeWindow();
+            });
+        },
+        get: function (teamCode) {
+            for (item of this.data) {
+                if (item.team == teamCode) return item;
+            }
+        },
+        openNewWindow: function (teamCode) {
+            let old = this.get(teamCode);
+            console.log(old);
+
+            let form = `<form id="formNewPattern">
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">근무패턴명</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control-plaintext" value="${old.name}">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">근무시간추가</label>
+                <div class="col-sm-8">
+                    <div class="input-group mb-3">
+                        <select id="select-shift-list" class="form-select"></select>
+                        <button class="btn btn-outline-secondary" type="button" id="btn-shift-add">추가</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pattern-list-section" class="mb-3 d-flex flex-wrap gap-1">
+            </div>
+            <input type="hidden" name="id" value="${old.id}">
+        </form>`;
+
+            PopupModalManager.init('근무패턴 설정', form, '추가', '취소');
+
+            // 옵션 추가
+            for (let i = 0; i < ShiftManagerIn.data.length; i++) {
+                let item = ShiftManagerIn.data[i];
+                $('#select-shift-list').append(`<option value="${item.shiftCode}" data-name="${item.name}">${item.name}(${item.shiftCode})</option>`);
+            }
+
+            //TODO 옵션 추가하는 메서드 따로 빼기
+            let oldList = old.list.split(',');
+            for (let i = 0; i < oldList.length; i++) {
+                let code = oldList[i];
+                let item = ShiftManagerIn.data.find(s => s.shiftCode === code);
+                $('#pattern-list-section').append(`<div class="shift-box" data-shift-code="${item.shiftCode}">${item.name}</div>`);
+            }
+
+            $('#btn-shift-add').on('click', function (e) {
+                let code = $("#select-shift-list").val();
+                let item = ShiftManagerIn.data.find(s => s.shiftCode === code);
+
+                if ($('.shift-box').length >= 8) {
+                    return;
+                }
+
+                $('#pattern-list-section').append(`<div class="shift-box" data-shift-code="${item.shiftCode}">${item.name}</div>`);
+            });
+
+            // 박스 클릭시 삭제
+            $(".shift-box").on('click', function (e) {
+                $(this).remove();
+            });
+
+            // 등록 선택
+            $('#popup-ok').off().on('click', old, function (e) {
+                let formData = new FormData(document.getElementById('formNewPattern'));
+                let vData = Utils.formToObject(formData);
+                if (vData == null) {
+                    return;
+                }
+
+                let list = jQuery('.shift-box').map(function () {
+                    return jQuery(this).data('shiftCode');
+                }).get();
+
+                formData.append('list', list.join(','));
+
+                AJAX.post("/schedule/patterns", formData, function (data) {
+                    Dialog.alert(data.message, function () {
+                        Page.reload();
+                    });
+                });
+            });
+        }
+    }
+
+    let TeamScheduleManager = {
+        lastData: null,
+        data: [],
+        cache: [],
+        previewData: [],
+        seq: 0,
+        initialized: false,
+        init: function (year, month) {
+            TeamScheduleManager.year = year;
+            TeamScheduleManager.month = month;
+            $('#textMonth').text(month + "월");
+            $('#aWeekly').attr('href', 'weekly?year=' + year + '&month=' + month);
+
+            let _c = new Date(year, month, 0);
+            pagectx.lastDate = _c.getDate();
+
+            // 2.for 문으로 A를 1~31 까지 한번 돌리고
+            for (let i = 1; i <= pagectx.lastDate; i++) {
+                $('.date-header').append('<div class="box date-' + i + '"><p>' + i + '</p></div>');
+            }
+
+            let dateCode = year + month;
+            AJAX.get('/teams/schedules/' + dateCode, '', function (list) {
+                TeamScheduleManager.data = list;
+                TeamScheduleManager.renderTable(list);
+            });
+
+            $('#btnPreviewSchedule').on('click', () => {
+                TeamScheduleManager.previewSchedule();
+            })
+        },
+        print: function () {
+            console.log(this.data);
+            console.log(this.cache);
+        },
+        getNextShift: function () {
+            if (this.seq == ShiftManagerIn.data.length) this.seq = 0;
+            return ShiftManagerIn.data[this.seq++];
+        },
+        getShiftPatternByTeam: function (team) {
+            try {
+                let shiftPattern = SchedulePatternManager.data.find(e => e.team == team).list.split(',');
+
+                return shiftPattern;
+            } catch (e) {
+                return null;
+            }
+        },
+        getShiftByShiftCode: function (shiftCode) {
+            return ShiftManagerIn.data.find(e => e.shiftCode = shiftCode);
+        },
+        getNextTeam: function (date, shift) {
+            let temp = this.cache.sort(function (a, b) {
+                return a.acc - b.acc;
+            });
+
+            let targetTeam = temp[0];
+
+            for (const team of this.cache) {
+                let teamShiftPattern = TeamScheduleManager.getShiftPatternByTeam(team.team);
+                if (!isValid(teamShiftPattern)) continue;
+                let nextTeamShiftCode = teamShiftPattern[team.step];
+
+                // 3. 다음 시프트와 일치하는 팀 찾음
+                if (nextTeamShiftCode == shift.shiftCode) {
+                    if (team.flag == 1) continue;
+                    targetTeam = team;
+                    break;
+                }
+            }
+
+            this.processNextTeam(targetTeam, shift);
+            return targetTeam;
+        },
+        processNextTeam: function (targetTeam, shift) {
+            // 4. 해당 팀 상태 처리
+            targetTeam.flag = 1;
+            targetTeam.step++;
+            if (targetTeam.step == 8) targetTeam.step = 0;
+
+            // 5. 해당 팀 계산
+
+            targetTeam.acc += shift.hours;
+            if (shift.shiftCode === '야') {
+                targetTeam.night += shift.hours;
+            }
+        },
+        renderTable: function () {
+            if (!this.initialized) {
+                // 1. 초기 리스트
+                for (const member of TeamMemberManager.data) {
+                    let monitor = get(member.monitor, '없음');
+                    $('#mainList').append(`<div class="list-item d-flex team-${member.team}" data-name="${member.name}" data-team="${member.team}" data-monitor="${monitor}">
+                    <div class="member-team">${member.team}팀</div>
+                    <div class="member-name">${member.name}</div>
+                    <div class="purpose">${CodeManager.get('monitoring', monitor, '없음')}</div>
+                </div>`);
+
+                    for (let i = 0; i < pagectx.lastDate; i++) {
+                        $('.list-item').last().append(`<div class="box date-${i + 1}"></div>`);
+                    }
+                }
+            }
+            this.initialized = true;
+
+            // 2. 팀 별 스케줄 표시
+            for (const item of this.data) {
+                let i = parseInt(item.date.substr(6));
+                $(`.list-item.team-${item.team} .date-${i}`).text(`${item.shift}`);
+                $(`.list-item.team-${item.team} .date-${i}`).attr('data-shift', item.shift);
+            }
+
+            // 3. 미리보기(새 패턴) 데이터 불러오기
+            for (const item of this.previewData) {
+                $(`.list-item.team-${item.team} .date-${item.date}`).text(`${item.shift}`);
+                $(`.list-item.team-${item.team} .date-${item.date}`).attr('data-shift', item.shift);
+            }
+
+            // 4. 휴가 정보, 대근 정보 가져 오기
+            LeaveManager.fetchByMonth(pagectx.year, pagectx.month, this.handleLeaves);
+        },
+        handleLeaves: function (list) {
+            for (const leave of list) {
+                if (leave.status == 0) continue;
+                let startDate = new Date(leave.startDate).getDate();
+
+                // 신청자
+                $(`.list-item[data-name=${leave.drafterName}] .date-${startDate}`).html('휴').attr('data-shift', '휴');
+                $(`.list-item[data-name=${leave.alternativeName}] .date-${startDate}`).html('대').attr('data-shift', '대');
+            }
+        },
+        previewSchedule: function (option) {
+            option = $.extend({force: false}, option);
+            let force = option.force;
+            let year = TeamScheduleManager.year;
+            let month = TeamScheduleManager.month;
+            let lastDate = new Date(parseInt(year), parseInt(month), 0).getDate();
+            let curDate = new Date().getDate();
+
+            // 미래는 무조건 강제
+            if (new Date() < new Date(`${year}-${month}-01`)) force = true;
+
+            // 1. 누적 근무 시간 초기화, 2. 팀별 step 초기화
+            this.cache = [];
+            for (const team of TeamManager.data) {
+                this.cache.push({team: team.c, acc: 0, step: 0, flag: 0, night: 0});
+            }
+
+            // 2. 메인 시퀀스 초기화
+            this.seq = 0;
+
+            // 한달 루프
+            this.previewData = [];
+            for (let i = (force) ? 1 : curDate + 1; i < lastDate + 1; i++) {
+                // 1. 캐시 초기화
+                for (const team of TeamScheduleManager.cache) {
+                    team.flag = 0;
+                }
+
+                // 2. 시프트 루프
+                for (const shift of ShiftManagerIn.data) {
+                    // 3. 팀별 루프
+                    let team = TeamScheduleManager.getNextTeam(i, shift);
+
+                    //console.log(`${i}일 현재 시프트 코드 : ${shift.shiftCode} 팀 : ${team.team}`);
+                    let dateCode = year + month + (i + '').padStart(2, '0');
+                    this.previewData.push({team: team.team, date: i, dateCode: dateCode, shift: shift.shiftCode});
+                }
+            }
+
+            this.renderTable();
+        },
+        updateTeamSchedule: function () {
+            AJAX.post('/teams/schedules', null, this.previewData, function (data) {
+                Dialog.alert(data.message, function () {
+                    Page.reload();
+                });
+            });
+        },
+        openRangeWindow: function () {
+            let yearMonth = this.year + "-" + this.month;
+            let form = `<form id="formTeamSchedule" return="false">
+            <p class="fw-bold">기간 설정</p>
+            <div class="input-group mt-3">
+                <input name="startDate" class="form-control" type="date" value="${this.year}-01-01">
+                <span class="input-group-text">부터</span>
+                <input name="endDate" class="form-control" type="date" value="${this.year}-12-31">
+                <span class="input-group-text">까지</span>
+            </div>
+            <div class="mt-3 row">
+                <label class="col-sm-4 col-form-label">근무패턴ID</label>
+                <div class="col-sm-8">
+                    <select class="form-select" name="pattern"></select>
+                </div>
+            </div>
+            <div class="mt-3 row">
+                <label class="col-sm-4 col-form-label">적용팀명</label>
+                <div class="col-sm-8">
+                    <select class="form-select" name="team"></select>
+                </div>
+            </div>
+        <form>`;
+
+            PopupModalManager.init('팀 스케줄 등록', form, '저장', '취소');
+
+            // 플랜 추가
+            for (const pattern of SchedulePatternManager.data) {
+                $('#formTeamSchedule select[name=pattern]').append(`<option value="${pattern.id}" data-name="${pattern.name}">${pattern.name}</option>`);
+            }
+
+            // 팀 추가
+            for (const team of TeamManager.data) {
+                $('#formTeamSchedule select[name=team]').append(`<option value="${team.c}" data-name="${team.n}">${team.n}</option>`);
+            }
+
+            // 등록 선택
+            $('#popup-ok').off().on('click', function () {
+                let formData = new FormData(document.getElementById('formTeamSchedule'));
+                let vData = Utils.formToObject(formData);
+
+                if (vData == null) {
+                    return;
+                }
+
+                formData.set('startDate', vData.startDate + 'T00:00:00');
+                formData.set('endDate', vData.endDate + 'T00:00:00');
+
+                AJAX.post("/v2/schedules", formData, function (data) {
+                    Dialog.alert(data.message, function () {
+                        Page.reload();
+                    });
+                });
+            });
+        }
+    }
+
+    let ExcelManager = {
+        year: null,
+        month: null,
+        data: null,
+        init: function () {
+            $('#exportExcel').on('click', function () {
+                ExcelManager.download();
+            })
+        },
+        download: function () {
+            let wb = XLSX.utils.book_new();
+            wb.SheetNames.push(TeamScheduleManager.year + "년 " + TeamScheduleManager.month + "월");
+
+            let data = [];
+            let $li = $('.list-item');
+
+            let temp = ['연번', '팀별', '목적별', '성명'];
+            for (let d = 1; d <= pagectx.lastDate; d++) {
+                temp.push(d.toString());
+            }
+            temp.push('비고');
+            data.push(temp);
+
+            for (let i = 0; i < $li.length; i++) {
+                let temp = [];
+                temp.push(i + 1);
+                temp.push($li.eq(i).attr('data-team'));
+                temp.push($li.eq(i).children('.purpose').text());
+                temp.push($li.eq(i).attr('data-name'));
+
+                for (let d = 1; d <= pagectx.lastDate; d++) {
+                    temp.push($li.eq(i).children('.date-' + d).attr('data-shift'));
+                }
+
+                data.push(temp);
+            }
+
+            let ws = XLSX.utils.aoa_to_sheet(data);
+
+            wb.Sheets[TeamScheduleManager.year + "년 " + TeamScheduleManager.month + "월"] = ws;
+
+            let wbOut = XLSX.write(wb, {bookType: 'xlsx', type: 'binary'});
+
+            function s2ab(s) {
+                var buf = new ArrayBuffer(s.length);
+                var view = new Uint8Array(buf);
+                for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+
+            }
+
+            saveAs(new Blob([s2ab(wbOut)], {type: "application/octet-stream"}), TeamScheduleManager.year + "년 " + TeamScheduleManager.month + "월 예상 근무표.xlsx");
+        }
+    }
+
+</script>
+</body>
+</html>

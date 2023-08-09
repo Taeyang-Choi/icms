@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>팀 스케줄 관리</title>
+<style>
+#page-title:before{content:url("/images/before/schedule.svg");margin-right:10px;vertical-align:middle}
+.sub-title:before{content:"";display:inline-block;width:4px;height:16px;background-color:#010123;border-radius:5px;margin-right:8px;vertical-align:middle;}
+.checkCenter{display:flex;justify-content:center;gap:11px;}
+
+/* 버튼 */
+.btn.btn-normal{border:1px solid black;padding:4px 20px;box-shadow: 0 2px 5px -3px;background-color:#F0F4FA}
+button.btn:hover{background-color: #d9dde3 !important}
+.ui-timepicker-standard a{font-size:12px}
+</style>
+</head>
+<body data-page-scope="schedulemanage/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">팀 스케줄 관리</p>
+
+                    <!-- 검색창 -->
+                    <div id="tool-section" class="d-none">
+                        <div class="d-flex justify-content-between" style="background-color:white;border:1px solid #ced4da">
+                            <div class="d-flex gap-5" style="padding:10px;margin-left:20px">
+                                <p class="my-auto fw-bold" style="color:#3F3F8F">&#149 부서</p>
+                                <input type="text" style="border:1px solid #ced4da">
+                            </div>
+                            <div class="d-flex gap-5" style="padding:10px">
+                                <p class="my-auto fw-bold" style="color:#3F3F8F">&#149 근무그룹</p>
+                                <input type="text" style="border:1px solid #ced4da">
+                            </div>
+                            <div class="d-flex gap-5" style="padding:10px">
+                                <p class="my-auto fw-bold" style="color:#3F3F8F">&#149 사용여부</p>
+                                <label class="d-flex gap-2" style="align-self:center"><input type="radio" name="using" value="전체" style="border:1px solid #ced4da">전체</label>
+                                <label class="d-flex gap-2" style="align-self:center"><input type="radio" name="using" value="사용" style="border:1px solid #ced4da">사용</label>
+                                <label class="d-flex gap-2" style="align-self:center"><input type="radio" name="using" value="미사용" style="border:1px solid #ced4da">미사용</label>
+                            </div>
+                            <div class="d-flex gap-1" style="padding:10px">
+                                <button class="btn btn-normal fs-14">초기화</button>
+                                <button class="btn btn-normal fs-14">조회</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 근무그룹목록 버튼들 -->
+                    <div class="d-flex justify-content-between" style="margin-top:30px">
+                        <p class="fw-bold sub-title" style="color:#010123">근무그룹목록</p>
+                        <div class="d-flex" style="gap:5px">
+                            <button class="btn btn-normal fs-14 d-none">근무그룹상세일정</button>
+                            <button id="btnNewPattern" class="btn btn-normal fs-14">신규</button>
+                            <button class="btn btn-normal fs-14 d-none">저장</button>
+                            <button class="btn btn-normal fs-14 d-none">목록</button>
+                        </div>
+                    </div>
+
+                    <!-- 근무그룹목록 테이블 -->
+                    <table id="patternTable" class="table fs-12" style="margin-top:16px">
+                        <thead>
+                            <tr>
+                                <th class="pos-rel checkCenter" scope="col" style="border-right-width: 0px"><div><input id="cb-check-all" type="checkbox" class="form-check-input"></div></th>
+                                <th scope="col">No.</th>
+                                <th scope="col">근무그룹명</th>
+                                <th scope="col">시작일자</th>
+                                <th scope="col">종료일자</th>
+                                <th scope="col">근무패턴</th>
+                                <th scope="col">근무인정시간</th>
+                                <th scope="col">반복일수</th>
+                                <th scope="col">근무일정</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <!-- 미리보기 등 버튼... -->
+                    <div class="mt-3 d-flex justify-content-end gap-3">
+                        <button class="btn btn-normal" style="" onclick="SchedulePatternImpl.openUploadWindow()">서버에 업로드</button>
+                        <a href="preview?mode=preview" target="_blank" class="btn btn-normal" style="">미리보기</a>
+                    </div>
+
+                    <p class="fw-bold sub-title" style="color:#010123;margin-top:80px">근무일정</p>
+
+                    <!-- 근무일정 테이블 -->
+                    <table id="detailTable" class="table fs-12" style="margin-top:16px">
+                        <thead>
+                        <tr>
+                            <th scope="col">일자</th>
+                            <th scope="col">시간</th>
+                            <th scope="col">출근시분</th>
+                            <th scope="col">퇴근시분</th>
+                            <th scope="col">휴게시간 시작시분</th>
+                            <th scope="col">휴게시간 종료시분</th>
+                            <th scope="col">총근무시간(분)</th>
+                            <th scope="col">공제시간(분)</th>
+                            <th scope="col">근무인정시간(분)</th>
+                            <th scope="col">야간근무시간</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="mt-3 d-flex justify-content-end">
+                        <button id="btnUpdatePattern" class="btn btn-normal" style="display:none;">적용</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/module/schedule.js"></script>
+<script src="/js/module/leave.js"></script>
+<script>
+function init(params) {
+    pagectx.year = dateFormat(new Date(), 'yyyy');
+    // 1. fetch from server
+    ShiftManager.fetchAll(() => {
+        PatternManager.fetchAll({}, (list) =>  {
+            SchedulePatternImpl.init(params, list);
+        });
+    });
+}
+
+let SchedulePatternImpl = {
+    init: (params, list) => {
+        SchedulePatternImpl.setButtons(params);
+
+        for(const item of PatternManager.list) {
+            SchedulePatternImpl.drawPattern(item);
+        }
+    },
+    setButtons: () => {
+        // 신규 패턴 버튼
+        $(`#btnNewPattern`).on('click', () => {
+            let currentYear = dateFormat('yyyy');
+            let form = `<form id="popupFormPattern" return="false">
+                <p class="fw-bold">기간 설정</p>
+                <div class="input-group mt-3">
+                    <input name="startDate" class="form-control" type="date" value="${currentYear}-01-01">
+                    <span class="input-group-text">부터</span>
+                    <input name="endDate" class="form-control" type="date" value="${currentYear}-12-31">
+                    <span class="input-group-text">까지</span>
+                </div>
+                <div class="mt-3 row">
+                    <label class="col-sm-4 col-form-label">패턴 이름</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" name="name" value="${currentYear} 패턴">
+                    </div>
+                </div>
+                <div class="mt-3 row">
+                    <label class="col-sm-4 col-form-label">반복일수</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" name="size" value="8">
+                    </div>
+                </div>
+                <div class="mt-3 row">
+                    <label class="col-sm-4 col-form-label">근무팀</label>
+                    <div class="col-sm-8">
+                        <select class="form-select" name="team"></select>
+                    </div>
+                </div>
+            <form>`;
+
+            PopupModalManager.init('근무 패턴 신규 생성', form, '저장', '취소');
+
+            // 팀 추가
+            for(const team of CodeManager.team) {
+                $('#popupFormPattern select[name=team]').append(`<option value="${team.c}" data-name="${team.n}">${team.n}</option>`);
+            }
+
+            // 등록 선택
+            $('#popup-ok').off().on('click', function () {
+                let formData = new FormData(document.getElementById('popupFormPattern'));
+                let vData = Utils.formToObject(formData);
+
+                let defaultPattern = [];
+                for(let i = 0; i < vData.size; i++) {
+                    defaultPattern.push('비');
+                }
+
+                formData.set('list', defaultPattern.join(','));
+
+                // 날짜를 8자리로 압축
+                formData.set('startDate', vData.startDate.replaceAll('-','').substr(0,8));
+                formData.set('endDate', vData.endDate.replaceAll('-','').substr(0,8));
+
+                if(vData == null) {
+                    return;
+                }
+
+                AJAX.post("/schedules/patterns",  formData, function (data) {
+                    Dialog.alert(data.message, function () {
+                        Page.reload();
+                    });
+                });
+            });
+        });
+    },
+    drawPattern: (item) => {
+        $(`#patternTable`).append(`
+            <tr id="pattern${item.id}">
+                <td><div><input class="checkCenter mx-auto form-check-input" type="checkbox"></div></td>
+                <td>${item.id}</td>
+                <td>${item.team}</td>
+                <td>${item.startDate.insert(4,'-').insert(7,'-')}</td>
+                <td>${item.endDate.insert(4,'-').insert(7,'-')}</td>
+                <td>${item.list}</td>
+                <td>${item.getWeekWorkTime()}</td>
+                <td>${item.size}</td>
+                <td><div role="button" class="btn-detail fw-bold">[상세보기]</div></td>
+            </tr>`);
+
+        $(`#pattern${item.id} .btn-detail`).last().on('click', {id:item.id}, (e) => {
+            SchedulePatternImpl.drawDetails(e.data.id);
+        });
+    },
+    drawDetails: (id) => {
+        let item = PatternManager.findById(id);
+        pagectx.selectedPattern = item;
+
+        $('#detailTable tbody').html('');
+        for(let i = 0; i < item.shiftList.length; i++) {
+            SchedulePatternImpl.drawShift(i+1, item.shiftList[i]);
+        }
+
+        // 패턴 수정 버튼 클릭시
+        $('#btnUpdatePattern').show();
+        $('#btnUpdatePattern').on('click', function(e) {
+            let p = pagectx.selectedPattern;
+
+            let formData = new FormData();
+            let list = [];
+
+            for(let i = 0; i < p.size; i++) {
+                list.push($(`#shift${i+1} select`).val());
+            }
+
+            formData.set('list', list.join(','));
+            AJAX.put(`/schedules/patterns/${p.id}/list`, formData, function(res) {
+                Dialog.alert(res.message, function() {
+                    Page.reload();
+                });
+            });
+        });
+    },
+    drawShift: (index, item) => {
+        //console.log(item);
+        $('#detailTable tbody').append(`
+            <tr id="shift${index}" data-shift="${item.shiftCode}">
+                <td>${index}</td>
+                <td><select class="form-select" name="shift"></select></td>
+                <td class="workStart">0</td>
+                <td class="workEnd">0</td>
+                <td class="restStart">0</td>
+                <td class="restEnd">0</td>
+                <td class="totalTime">0</td>
+                <td class="restTime">0</td>
+                <td class="workTime">0</td>
+                <td class="nightTime">0</td>
+            </tr>`);
+
+        // 시프트 추가
+        for(const shift of ShiftManager.data) {
+            $(`#detailTable tbody tr select`).last().append(`<option value="${shift.shiftCode}" ${(item == shift)?'selected':''}>${shift.name}</option>`);
+        }
+
+        // 시간 변경 시
+        $(`#shift${index} select`).off().on('change', {index: index}, (e) => {
+            $(`#shift${e.data.index}`).attr('data-shift', $(`#shift${e.data.index} select`).val());
+            SchedulePatternImpl._drawDetail(e.data.index);
+        });
+
+        // 최초 호출
+        $(`#shift${index} select`).trigger('change');
+    },
+    _drawDetail: (index) => {
+        let shiftCode = $(`#shift${index}`).attr('data-shift');
+        let shift = ShiftManager.findByCode(shiftCode);
+
+        $(`#shift${index} .workStart`).text(`${shift.workStart}`);
+        $(`#shift${index} .workEnd`).text(`${shift.workEnd}`);
+        $(`#shift${index} .restStart`).text(`${shift.restStart}`);
+        $(`#shift${index} .restEnd`).text(`${shift.restEnd}`);
+
+        $(`#shift${index} .totalTime`).text(`${shift.getTotalTime() * 60}`);
+        $(`#shift${index} .restTime`).text(`${shift.getRestTime() * 60}`);
+        $(`#shift${index} .workTime`).text(`${shift.getWorkTime() * 60}`);
+        $(`#shift${index} .nightTime`).text(`0`);
+    },
+    openUploadWindow: function () {
+        let form = `<form id="formUploadSchedule" return="false">
+            <p class="fw-bold">기간 설정</p>
+            <div class="input-group mt-3">
+                <input name="startDate" class="form-control" type="date" value="${pagectx.year}-01-01">
+                <span class="input-group-text">부터</span>
+                <input name="endDate" class="form-control" type="date" value="${pagectx.year}-12-31">
+                <span class="input-group-text">까지</span>
+            </div>
+        <form>`;
+
+        PopupModalManager.init('팀 스케줄 등록', form, '저장', '취소');
+
+            // 등록 선택
+        $('#popup-ok').off().on('click', function () {
+            let formData = new FormData(document.getElementById('formUploadSchedule'));
+            let vData = Utils.formToObject(formData);
+
+            if (vData == null) {
+                return;
+            }
+
+            formData.set('startDate', vData.startDate + 'T00:00:00');
+            formData.set('endDate', vData.endDate + 'T00:00:00');
+
+            AJAX2.post("/api/v2/schedules/all", formData).then(function (data) {
+                Dialog.alert(data.message, function () {
+                    Page.reload();
+                });
+            });
+        });
+    }
+}
+
+</script>
+</body>
+</html>

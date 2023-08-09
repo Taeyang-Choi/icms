@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>팀 스케줄 관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/schedule.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="schedulemanage/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <p id="page-title">팀 스케줄 관리</p>
+            <div class="wrap border-top">
+                <p>근무시간 설정</p>
+
+                <form id="form-work-time" method="post" onsubmit="return false;">
+                    <div class="d-flex flex-wrap fs-14">
+                        <div class="col-12 d-flex">
+                            <div class="label">근무시간명</div>
+                            <div class="content workName">
+                                <input type="text">
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">근무시간ID</div>
+                            <div class="content workId">
+                                <input type="text">
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">근무시간</div>
+                            <div class="content workTime">
+                                <input type="time" step="300"> 부터 <input type="time" step="300"> 까지
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">휴게시간</div>
+                            <div class="content d-flex">
+                                <div class="breakTime" id="breakTime">
+                                    <input type="time" step="300"> 부터 <input type="time" step="300"> 까지
+                                </div>
+                                <div class="d-flex gap-2" style="margin-left:20px">
+                                    <input type="checkbox" class="form-check-input">
+                                    <p class="fw-bold">휴게시간 없음</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="buttons d-flex justify-content-between">
+                        <a href="list" class="btn btn-sm btn-primary">목록</a>
+                        <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+}
+
+</script>
+</body>
+</html>

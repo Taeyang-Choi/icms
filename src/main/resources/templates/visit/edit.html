@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>방문자대장 관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
+        #gnb .nav{display:none}
+        #ntc .fs-14{display:none!important}
+
+        .col-6{width:49.7%;margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="visit/list" data-option='{"auth":false}'>
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div style="box-shadow: 0px 3px 15px -4px #c4c4c4;margin-top:27px;">
+                <p id="page-title" style="padding-left:30px;padding-right:30px;background-color:white">방문자대장 관리</p>
+
+                <div class="wrap" style="padding:0 30px 50px;background-color:white">
+                    <p>통합관제센터 방문자 퇴실</p>
+
+                    <form id="formVisit" method="post" onsubmit="return false;">
+                        <div class="d-flex flex-wrap">
+                            <div class="d-flex flex-wrap justify-content-between">
+                                <div class="col-6 d-flex">
+                                    <div class="label">방문일자</div>
+                                    <div class="content"><input class="form-control" name="entDate1" type="date" readonly></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">입실시간</div>
+                                    <div class="content"><input class="form-control" name="entDate2" type="time" readonly></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">퇴실일자</div>
+                                    <div class="content"><input class="form-control" name="outDate1" type="date"></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">퇴실시간</div>
+                                    <div class="content"><input class="form-control" name="outDate2" type="time"></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">소속</div>
+                                    <div class="content"><input class="form-control" name="companyName" type="text" readonly></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">성명</div>
+                                    <div class="content"><input class="form-control" name="username" type="text" readonly></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">연락처</div>
+                                    <div class="content"><input class="form-control" name="hpNo" type="text" readonly></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">담당자명</div>
+                                    <div class="content"><input class="form-control" name="submitUser" type="text" readonly></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">용무</div>
+                                    <div class="content"><input class="form-control " name="body" type="text" readonly></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="buttons d-flex justify-content-between">
+                            <a href="list" class="btn btn-sm btn-warning">목록</a>
+                            <button type="submit" class="btn btn-sm btn-primary">수정하기</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    AJAX.get(`/visits/${request.getParameter('id')}`, '', function(item) {
+        params.item = item;
+        createForm(params);
+    });
+
+    function createForm(params) {
+        $("#ntc").append(`<div class="fs-16" style="margin:0 auto;text-align:center;padding:20px 0;width:50%;background-color:white;margin-top:40px;">방문자 정보를 남겨주시길 바랍니다.</div>`);
+
+        $('#formVisit').append(`<input type="hidden" name="id" value="${params.item.id}">`);
+
+        for(let pair of Object.entries(params.item)){
+            $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 수정 가능하게 변경
+        if(params.hasOwnProperty('usrobj') && params.usrobj.grade >= 1) {
+            $(`#formVisit input`).prop('readonly', false);
+        }
+
+        // 입실 날짜
+        $('input[type="date"]').eq(0).val(params.item.entDate.split('T')[0]);
+        // 입실 시각
+        $('input[type="time"]').eq(0).val(params.item.entDate.split('T')[1]);
+
+        if(isValid(params.item.outDate)) {
+            // 퇴실 날짜
+            $('input[type="date"]').eq(1).val(params.item.outDate.split('T')[0]);
+            // 퇴실 시각
+            $('input[type="time"]').eq(1).val(params.item.outDate.split('T')[1]);
+        }
+
+        pagectx = params;
+    }
+
+    $('#formVisit').on('submit', function() {
+        let formData = new FormData(document.getElementById('formVisit'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        if(isValid(vData["entDate2"])) {
+            vData["entDate2"] = (vData["entDate2"].length == 5) ? vData["entDate2"] + ':00' : vData["entDate2"];
+            formData.append('entDate', vData["entDate1"] + " " + vData["entDate2"]);
+        }
+
+        if(isValid(vData["outDate2"])) {
+            vData["outDate2"] = (vData["outDate2"].length == 5) ? vData["outDate2"] + ':00' : vData["outDate2"];
+            formData.append('outDate', vData["outDate1"] + " " + vData["outDate2"]);
+        }
+
+
+        console.log(vData)
+
+        AJAX.put(`/visits/${vData.id}`, formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

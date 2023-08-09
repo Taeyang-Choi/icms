@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>댓글 수정</title>
+    <style>
+        #page-title:before{content:url("/images/before/board.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="board/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">댓글 수정</p>
+
+                    <div class="preface border-top">
+                        <p class="OFgeuCmO">통합관제센터 댓글 수정하기</p>
+
+                        <form id="form-comment" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-12">
+                                <div class="col-12 d-flex">
+                                    <div class="label">작성자</div>
+                                    <div class="content"><input class="form-control required" name="name" style="border:1px solid #ced4da" type="text" readonly></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">내용</div>
+                                    <div class="content">
+                                        <textarea name="msg_text" class="form-control required" style="min-height:250px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a id="btn-list" onclick="Page.back()" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary" onclick="editComment()">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+    let idx = request.getParameter('idx');
+function init(params) {
+    AJAX.get(`/comment/${idx}`,'',(item)=>{
+        renderComment(item);
+    })
+}
+
+function renderComment(item){
+    console.log(item);
+    $('#form-comment input[name=name]')[0].value = item.name;
+    $('#form-comment textarea[name=msg_text]')[0].value = item.msg_text;
+}
+
+function editComment(){
+    let formData = new FormData(document.getElementById('form-comment'));
+    let vData = Utils.formToObject(formData);
+    console.log(vData);
+
+    AJAX.post(`/comment/edit?idx=${idx}`, formData, (res)=>{
+        Dialog.alert(res.message,Page.back);
+    });
+}
+
+</script>
+</body>
+</html>

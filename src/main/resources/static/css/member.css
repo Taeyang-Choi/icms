@@ -1,0 +1,29 @@
+/* 카드형 */
+.card{border-radius:0!important}
+.card-member{background-color:white;border-radius:0;margin:10px 0;}
+.card-member .card-body{padding:24px 0 0 0;border-radius:5px;}
+.card-member .member-hours{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1px;}
+.card-member .member-hour{color:white;padding:8px 0;text-align:center;width:49.8%;background-color:#6F84A5;}
+.card-member .member-picture{border-radius:70px;background: url('/images/profile.png');background-size:cover;}
+
+/* 리스트형 */
+.team-list-item{padding:20px;background-color:white;margin-bottom:20px;}
+.card-member.list-type .card-body{width:540px;display:flex;background-color:white;justify-content:space-between;padding:12px 20px;gap:28px}
+.card-member.list-type .member-picture{order:1;align-self:center;width:50px;height:50px;}
+.card-member.list-type .member-text{order:2;text-align:center;align-self:center;font-size:12px}
+.card-member.list-type .member-hours{order:3;gap:10px}
+.card-member.list-type .member-hours .member-hour{width:45%;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background-color:white;color:black;border-left:1px solid #EFEFEF }
+.team-list{display:flex;justify-content:space-between;flex-wrap:wrap}
+.team-list-name{text-align:center;}
+
+/*공통*/
+/*.card-member .member-hour:nth-child(1){background-color:#010123;width:50%;}*/
+/*.card-member .member-hour:nth-child(2){background-color:#3F3F8F;width:50%;}*/
+/*.card-member .member-hour:nth-child(3){background-color:#FFBB00;width:50%;}*/
+/*.card-member .member-hour:nth-child(4){background-color:#6F8EFF;width:50%;}*/
+
+/* 조주야비 */
+.date-item .조{background-color:#FF7500!important;width:17px;height:17px;border-radius:5px;margin-right: 3px;color:white;text-align:center}
+.date-item .주{background-color:#5BCE2B!important;width:17px;height:17px;border-radius:5px;margin-right: 3px;color:white;text-align:center}
+.date-item .야{background-color:#3939BC!important;width:17px;height:17px;border-radius:5px;margin-right: 3px;color:white;text-align:center}
+.date-item .비{background-color:#FF2B2B!important;width:17px;height:17px;border-radius:5px;margin-right: 3px;color:white;text-align:center}

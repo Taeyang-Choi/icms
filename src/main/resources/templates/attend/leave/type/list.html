@@ -1,0 +1,99 @@
+    <!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>휴가종류</title>
+    <style>
+        #page-title:before{content:url("/images/before/leave.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="attend/leave/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">휴가종류</p>
+                    <table id="main-table" class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">코드</th>
+                            <th scope="col">형식</th>
+                            <th scope="col">휴가명</th>
+                            <th scope="col">연차반영</th>
+                            <th scope="col">사용여부</th>
+                            <th scope="col">등록일</th>
+                            <th scope="col">관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons col-12 d-flex align-self-center justify-content-between gap-1" >
+                        <a class="btn btn-sm btn-warning" href="../list" role="button">목록</a>
+                        <a class="btn btn-sm btn-primary" href="write" role="button">등록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+    <th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+
+    AJAX.get("/leave/types", '', function(list) {
+        renderTable(list);
+    });
+
+
+    function renderTable(list) {
+        // 정렬
+        list.sort((a, b) => {return a.id - b.id });
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            console.log(item);
+            let str = `<tr>
+                <td>${item.id}</td>
+                <td>${item.type}</td>
+                <td>${item.name}</td>
+                <td>${StringUtils.boolToString(item.annual)}</td>
+                <td>${StringUtils.boolToString(item.active)}</td>
+                <td>${item.createdAt.replaceAll('T',' ')}</td>
+                <td>
+                    <a href="edit?id=${item.id}" class="blue">수정</a>
+                    <a href="#" class="red" style="margin-left:0.5rem;">삭제</a>
+                </td>
+            </tr>`
+
+            $('#main-table tbody').append(str);
+
+            // 삭제 버튼
+            $('tr .red').last().on('click', {id:item.id}, function(e) {
+                Dialog.confirm('정말 삭제하시겠습니까?', function (id) {
+                    AJAX.remove('/leave/types/' + id, null, function (data) {
+                        Dialog.alert(data.message, function() {
+                            location.reload();
+                        });
+                    });
+                }, function () {
+                }, e.data.id);
+            });
+        }
+    }
+}
+</script>
+</body>
+</html>

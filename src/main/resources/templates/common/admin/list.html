@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="common/admin/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">관리자관리</p>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">이름</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">권한</th>
+                            <th scope="col">연락처</th>
+                            <th scope="col">등록일</th>
+                            <th scope="col">관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons col-12 d-flex align-self-center justify-content-end gap-1" >
+                        <a class="btn btn-sm btn-primary" href="write" role="button">등록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    console.log(params);
+
+
+    setTable(params, 0);
+
+    function setTable(params, page) {
+        AJAX.get("/members", '', function(list) {
+
+            // 정렬
+            list.sort((a, b) => {return a.id - b.id;});
+
+            for(let i = 0; i < list.length; i++) {
+                let item = list[i];
+                console.log(item);
+                let str = `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.userid}</td>
+                    <td>${CodeManager.get('admin', item.grade)}</td>
+                    <td>${item.hp}</td>
+                    <td>${dateFormat(new Date(item.createdAt), 'yyyy-MM-dd hh:mm:ss')}</td>
+                    <td>
+                        <a href="#" class="black">수정</a>
+                        <a href="#" class="orange" style="margin-left:0.5rem;color:#7676F1">삭제</a>
+                    </td>
+                </tr>`
+
+                $('tbody').append(str);
+
+                // 수정
+                $('tr .black').last().on('click', {id:item.id}, function(e) {
+                    Page.go('/common/admin/edit', {id: e.data.id});
+                });
+
+                if(SSO.getMember().grade > 1) {
+                    $('tr .orange').remove();
+                }
+
+                // 삭제 버튼
+                $('tr .orange').last().on('click', {item:item}, function(e) {
+                    Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
+                        AJAX.remove(`/members/${item.id}`, null, function (data) {
+                            Dialog.alert(data.message, () => Page.reload());
+                        });
+                    }, function () {
+                    }, e.data.item);
+                });
+            }
+        });
+    }
+}
+</script>
+</body>
+</html>

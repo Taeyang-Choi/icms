@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>근무현황</title>
+<style>
+.card-header{background:linear-gradient(105deg, rgba(39,93,234,1) 0%, rgba(115,150,241,1) 78%, rgba(255,255,255,1) 100%);color:white;align-items:center}
+
+#card-add-user .btn-team{line-height:40px;border-top:1px solid #E1E1E1;text-align:center;cursor:pointer;}
+#card-add-user .btn-team.active{background-color:#F0F6FF;}
+
+/* 사용자 추가 */
+.tree-view li {list-style-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>')}
+.list-item-user {cursor:move}
+.list-item-user.dragging {opacity:0.9}
+
+/* 근무 시간 */
+.card-content{background-color:#F6F6F6;border:1px solid #E1E1E1;font-size:12px;padding:8px 16px;}
+
+/* 근무 패턴 */
+.shift-box{flex:0 0 auto;width:20%;height:32px;line-height:32px;border:1px solid #E0E0E0;text-align:center;}
+.shift-box:hover{background-color:#dc3545;color:white;}
+</style>
+</head>
+<body data-page-scope="schedule/main">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container-fluid d-flex flex-wrap gap-3">
+            <div id="panel-1" class="d-flex gap-3" style="flex:418px 836 0">
+                <!-- 좌측 패널 -->
+                <div style="flex:358px 458 0">
+                    <!-- 월별 예정 시간 -->
+                    <div id="calc-section" class="card">
+                        <div class="card-header"><p>각 팀별(재난요원) 월별 예정시간</p></div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end">
+                            </div>
+                            <table class="table table-bordered fs-12">
+                                <thead class="table-light">
+                                <tr>
+                                    <th scope="col">팀명</th>
+                                    <th scope="col">근무일수</th>
+                                    <th scope="col">휴일근무</th>
+                                    <th scope="col">초과근무</th>
+                                    <th scope="col">야근근무</th>
+                                </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 근무 시간 설정 -->
+                    <div id="shift-section" class="card mt-3">
+                        <div class="card-header d-flex justify-content-between">
+                            <p>근무시간설정</p>
+                            <button id="btn-new-shift" class="btn btn-primary btn-sm">추가</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- 근무 패턴 -->
+                    <div id="pattern-section" class="card mt-3">
+                        <div class="card-header d-flex justify-content-between">
+                            <p>근무패턴설정</p>
+                            <button id="btn-new-pattern" class="btn btn-primary btn-sm">추가</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- 근무 스케줄 설정 -->
+                    <div id="plan-section" class="card mt-3">
+                        <div class="card-header d-flex justify-content-between">
+                            <p>근무스케줄 설정</p>
+                            <button id="btn-new-plan" class="btn btn-primary btn-sm">추가</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 중앙 패널 -->
+                <div style="flex:179px 358 0">
+                    <div id="card-work-jo" class="card">
+                        <div class="card-header">
+                            <p>팀별 근무현황(재난요원)</p>
+                        </div>
+                        <div class="card-body pt-2">
+                            <div class="d-flex justify-content-end pb-2">
+                                <button id="btn-new-team" class="btn btn-primary btn-sm">추가</button>
+                            </div>
+                            <ul id="list-work-jo" class="list-group text-center"></ul>
+                        </div>
+                    </div>
+
+                    <div id="card-add-user" class="card mt-3">
+                        <div class="card-header"><p>사용자 추가</p></div>
+                        <div class="card-body pt-2">
+                            <div class="d-flex justify-content-end pb-2">
+                                <button id="btn-add-user" class="btn btn-primary btn-sm">추가</button>
+                            </div>
+                            <div class="d-flex border" style="min-height:240px;">
+                                <div class="col-3">
+                                    <div class="text-center" style="line-height:40px;background:#F6F6F6;">팀명</div>
+                                </div>
+                                <div class="col-9" style="border-left:1px solid #dee2e6;">
+                                    <div class="text-center" style="line-height:40px;background:#F6F6F6;">사용자</div>
+                                    <div class="list p-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 우측 패널 -->
+            <div id="panel-3" style="flex:352px 704 0">
+                <div id="team-schedule-section" class="card">
+                    <div class="card-header"><p>팀 스케줄</p></div>
+                    <div class="card-body pt-2">
+                        <div class="d-flex justify-content-end gap-2 mb-2">
+                            <input id="monthTeamSchedule" class="form-control" type="month" style="width:140px;">
+                            <button id="btnEditTeamSchedule" class="btn btn-outline-primary">수정</button>
+                            <button id="btnSaveTeamSchedule" class="btn btn-primary">저장</button>
+                        </div>
+                        <table id="table-team-schedule" class="table" border-spacing="0">
+                            <thead>
+                            <tr>
+                                <th scope="col">일자</th>
+                                <th scope="col">조간</th>
+                                <th scope="col">주간</th>
+                                <th scope="col">야간</th>
+                                <th scope="col">비번</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    TeamManager.init(params);
+    TeamMemberManager.init(params);
+    ShiftManager.init(params);
+    SchedulePatternManager.init(params);
+    SchedulePlanManager.init(params);
+    MonthlyShiftManager.init(params);
+}
+
+let MonthlyShiftManager = {
+    initialized: false,
+    init: (params) => {
+
+    },
+    renderList: (params) => {
+
+    }
+}
+
+let TeamManager = {
+    data: {},
+    initialized: false,
+    init: function(params) {
+        this.initialized = true;
+        this.data = CodeManager.team;
+        this.renderList(params);
+        $('#btn-new-team').on('click', function() {TeamManager.openWindow()});
+    },
+    renderList: (params) => {
+        let teamList = CodeManager.team;
+        for(let i = 0; i < teamList.length; i++) {
+            let item = teamList[i];
+            // 팀별 근무 현황에 추가
+            $('#list-work-jo').append(`<button class="list-group-item list-group-item-action">${item.n}</button>`)
+
+            // 사용자 추가 부분
+            $('#card-add-user .col-3').append(`<div class="btn-team" data-team="${item.c}">${item.n}</div>`);
+
+            // 사용자 추가 패널의 팀 클릭 시
+            $('#card-add-user .btn-team').last().on('click', function(e) {
+                $('.btn-team.active').removeClass('active');
+                $(this).addClass('active');
+                TeamMemberManager.renderList($(this).data('team'));
+                pagectx.selectedTeam = TeamManager.data.find(ele => ele.c == $(this).data('team'));
+            });
+        }
+    },
+    openWindow() {
+        // 팀 추가
+        let form = `<form id="formNewTeam" return="false;">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control essential" name="code">
+                <label for="floatingInput" aria-label="code">팀명</label>
+            </div>
+            <div class="form-floating">
+                <input type="number" class="form-control essential" name="seq">
+                <label for="floatingPassword" aria-label="seq">순서</label>
+            </div>
+        </form>`;
+
+        PopupModalManager.init('팀 설정', form, '등록', '취소');
+
+        $('#popup-ok').off().on('click', function() {
+            let formData = new FormData(document.getElementById('formNewTeam'));
+            let vData = Utils.formToObject(formData);
+            if (vData == null) {
+                TeamManager.openWindow();
+                return;
+            }
+
+            formData.append('active', '1');
+            formData.append('kindCode', 'team');
+            formData.append('name', vData.code);
+
+            AJAX.post("/sel-codes", formData, function(data) {
+                Dialog.alert(data.message, function() {
+                    Page.reload();
+                });
+            });
+        });
+    }
+}
+
+let TeamMemberManager = {
+    data: {},
+    selectedTeam: null,
+    init: function(){
+        AJAX.get('/schedule/agents','', function(list) {
+            TeamMemberManager.data = list;
+            $('#btn-add-user').on('click', () => {TeamMemberManager.openNewWindow();});
+        });
+    },
+    renderList: function(teamName) {
+        $('#card-add-user .list').html('');
+        for(let i = 0; i < this.data.length; i++) {
+            let user = this.data[i];
+
+            if(user.team == teamName) {
+                $('#card-add-user .list').append(`<div>
+                    <label>${user.name}</label>
+                </div>`);
+            }
+        }
+    },
+    openNewWindow() {
+        if(!isValid(pagectx.selectedTeam)) {
+            Dialog.alert("편집할 팀을 선택해주세요.");
+            return;
+        }
+
+        let team = pagectx.selectedTeam;
+        // 기본 추가
+        let str = `<div class="d-flex" style="min-height:400px">
+            <div id="tree-view-team" class="col-6">
+                <div class="tree-view">
+                    <div>
+                        <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#onuw-NOTEAM" aria-expanded="false" aria-controls="onuw-NOTEAM">미등록</button>
+                        <ul class="collapse" id="onuw-NOTEAM"></ul>
+                    </div>
+                </div>
+            </div>
+            <div id="team-member-ondrop" class="col-6" style="min-height:600px;z-index: 100">
+                <div id="team-member-list">
+                    <table id="team-member-table" class="table" border-spacing="0">
+                        <thead>
+                            <tr>
+                                <th scope="col">부서</th>
+                                <th scope="col">근로자명</th>
+                                <th scope="col">삭제</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+
+        PopupModalManager.init('사용자 추가', str, '등록', '닫기');
+
+        // 팀 추가
+        for(const team of TeamManager.data) {
+            // 트리뷰 추가
+            $('#tree-view-team .tree-view').append(`<div>
+                <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#onuw-${team.n}" aria-expanded="false" aria-controls="onuw-${team.n}">${team.n}</button>
+                <ul class="collapse" id="onuw-${team.n}"></ul>
+            </div>`);
+        }
+
+        // 트리뷰 팀에 팀원 추가
+        for(const user of TeamMemberManager.data) {
+
+            let teamCode = get(user.team, '미등록');
+            let teamName = CodeManager.get('team', teamCode, '삭제된 팀');
+
+            // 트리뷰 추가
+            $(`#onuw-${teamCode}`).append(`<li class="list-item-user" draggable="true" data-user="${user.id}">${user.name}</li>`);
+
+            if (team.c == teamCode) {
+                addUserToTable(user.id);
+            }
+        }
+
+        // 테이블에 유저 추가
+        function addUserToTable(id) {
+            console.log(id);
+            let user = TeamMemberManager.data.find(user => user.id == id);
+            let teamName = CodeManager.get('team', user.team, '삭제된 팀');
+            if($('#team-member-table .user-' + user.id).length > 0) return;
+
+            // 테이블에 추가
+            $('#team-member-table').append(`
+            <tr class="user-${user.id}" data-user="${id}">
+                <td>${teamName}</td>
+                <td>${user.name}</td>
+                <td><button class="btn btn-outline-danger btn-sm btn-delete">삭제</button></td>
+            </tr>`);
+
+            $('#team-member-table .user-' + user.id + ' .btn-delete').on('click', {id:id}, function(e) {
+                $(this).parent().parent().remove();
+            });
+        }
+
+        // 드래그 앤 드롭 설정
+        $('#team-member-ondrop').off().on({
+            'dragover': function(e) {
+                e.preventDefault();
+            },
+            'drop': function(e) {
+                e.preventDefault();
+                let memberId = e.originalEvent.dataTransfer.getData('user');
+                addUserToTable(memberId);
+            }
+        });
+        $(`.list-item-user`).off().on({
+            'dragstart': function(e) {
+                e.originalEvent.dataTransfer.setData('user', $(e.currentTarget).data('user'));
+                $(this).addClass('dragging');
+            },
+            'dragend': function(e) {
+                $(this).removeClass('dragging');
+            }
+        });
+
+        // 등록 버튼
+        $('#popup-ok').off().on('click', function() {
+            let array = [];
+
+            $('#team-member-table>tr').each(function(index, item) {
+                let id = $(item).data('user');
+                array.push(id);
+            });
+
+            console.log("team : " + team.c);
+            console.log("array : " + array.join(","));
+
+            AJAX.put('/schedule/teams/' + team.c, null, array, function(data) {
+                Dialog.alert(data.message, function() {
+                    Page.reload();
+                });
+            });
+        });
+    }
+}
+
+let ShiftManager = {
+    data: {},
+    init: function(params) {
+        $('#btn-new-shift').on('click', function() {
+            ShiftManager.openNewShiftWindow(params);
+        });
+        AJAX.get('/schedule/shifts', '', function(list) {
+            ShiftManager.data = list;
+            ShiftManager.renderList(list);
+        });
+    },
+    renderList: function(list) {
+        for(var i = 0; i < list.length; i++) {
+            let item = list[i];
+            item.hours = this.getWorkingHour(item);
+            let listHtml = `<div>
+            ${item.name}(${item.shiftCode}) : ${item.workStart}~${item.workEnd} / ${((item.restEnd != null)? item.restStart+'~'+item.restEnd:'휴게 없음')}
+            </div>`;
+            $('#shift-section .card-content').append(listHtml);
+        }
+    },
+    openNewShiftWindow(params) {
+        let form = `<form id="form-new-shift">
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">근무시간명</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="name">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">근무시간코드</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="shift_code">
+                    </div>
+                </div>
+                <p class="mt-3 fw-bold">근무 시간</p>
+                <div class="input-group mt-1">
+                    <input class="form-control" name="work_start" type="time" value="06:00">
+                    <span class="input-group-text">부터</span>
+                    <input class="form-control" name="work_end" type="time" value="14:00">
+                    <span class="input-group-text">까지</span>
+                </div>
+                <p class="mt-3 fw-bold">휴게 시간</p>
+                <div class="input-group mt-1">
+                    <input class="form-control" name="rest_start" type="time" value="06:00">
+                    <span class="input-group-text">부터</span>
+                    <input class="form-control" name="rest_end" type="time" value="14:00">
+                    <span class="input-group-text">까지</span>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="cb-no-rest">
+                    <label class="form-check-label" for="cb-no-rest">휴게시간 없음</label>
+                </div>
+                <p class="mt-3 fw-bold">기간 설정</p>
+                <div class="input-group mt-1">
+                    <input class="form-control" name="start_date" type="date" value="${dateFormat(new Date(),'yyyy-MM-dd')}">
+                    <span class="input-group-text">부터</span>
+                    <input class="form-control" name="end_date" type="date" value="2999-12-31">
+                    <span class="input-group-text">까지</span>
+                </div>
+            <form>`;
+
+        PopupModalManager.init('근무시간 설정', form, '저장', '취소');
+
+        // 휴게시간 없음 버튼 설정
+        $('#cb-no-rest').on('click', function(e) {
+            let val = $(this).prop('checked');
+        });
+
+        // 등록 선택
+        $('#popup-ok').off().on('click', function() {
+            let data = Utils.formToObject('#form-new-shift');
+            if (data == null) {
+                $('#btn-new-team').trigger('click');
+                return;
+            }
+
+            if($('#cb-no-rest').prop('checked')) {
+                delete data.rest_start;
+                delete data.rest_end;
+            }
+
+            AJAX.post("/schedule/shifts", null, data, function(data) {
+                Dialog.alert(data.message, function() {
+                    Page.reload();
+                });
+            });
+        });
+    },
+    getWorkingHour: function(shift) {
+        let start = parseInt(shift.workStart.substring(0, 2));
+        let end = parseInt(shift.workEnd.substring(0, 2));
+        let result = end - start;
+        return (result >= 0) ? result : 24+result;
+    }
+
+}
+
+let SchedulePatternManager = {
+    data:{},
+    init: function(params) {
+        $('#btn-new-pattern').on('click', function() {
+            SchedulePatternManager.openNewPatternWindow(params);
+        });
+        AJAX.get('/schedule/patterns', '', function(list) {
+            SchedulePatternManager.data = list;
+            SchedulePatternManager.renderList(list);
+        });
+    },
+    renderList: function(list) {
+        for(var i = 0; i < list.length; i++) {
+            let item = list[i];
+            let listHtml = `<div class="row">
+                <div class="col-3">${item.name}</div>
+                <div class="col-9">${item.list.replaceAll(',',' - ')}</div>
+            </div>`;
+            $('#pattern-section .card-content').append(listHtml);
+        }
+    },
+    openNewPatternWindow: function(params) {
+        let form = `<form id="form-new-pattern">
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">근무패턴명</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" name="name">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">근무시간추가</label>
+                <div class="col-sm-8">
+                    <div class="input-group mb-3">
+                        <select id="select-shift-list" class="form-select"></select>
+                        <button class="btn btn-outline-secondary" type="button" id="btn-shift-add">추가</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pattern-list-section" class="mb-3 d-flex flex-wrap gap-1">
+            </div>
+        </form>`;
+
+        PopupModalManager.init('근무패턴 설정', form, '추가', '취소');
+
+        // 옵션 추가
+        for(let i = 0; i < ShiftManager.data.length; i++) {
+            let item = ShiftManager.data[i];
+            $('#select-shift-list').append(`<option value="${item.shiftCode}" data-name="${item.name}">${item.name}(${item.shiftCode})</option>`);
+        }
+
+        $('#btn-shift-add').on('click', function(e) {
+            let code = $("#select-shift-list").val();
+            let item = ShiftManager.data.find(s => s.shiftCode === code);
+
+            if($('.shift-box').length >= 8) {
+                return;
+            }
+
+            $('#pattern-list-section').append(`<div class="shift-box" data-shift-code="${item.shiftCode}">${item.name}</div>`);
+        });
+
+        // 박스 클릭시 삭제
+        $(".shift-box").on('click', function(e) {
+            $(this).remove();
+        });
+
+        // 등록 선택
+        $('#popup-ok').off().on('click', function() {
+            let data = Utils.formToObject('#form-new-pattern');
+            if (data == null) {
+                $('#btn-new-team').trigger('click');
+                return;
+            }
+
+            let list = jQuery('.shift-box').map(function() {
+                return jQuery(this).data('shiftCode');
+            }).get();
+            data.list = list.join(',');
+
+            AJAX.post("/schedule/patterns", null, data, function(data) {
+                Dialog.alert(data.message, function() {
+                    Page.reload();
+                });
+            });
+        });
+    }
+}
+
+let SchedulePlanManager = {
+    data: {},
+    init: function (params) {
+        $('#btn-new-plan').on('click', function () {
+            SchedulePlanManager.openNewPlanWindow(params);
+        });
+        AJAX.get('/schedule/plans', '', function (list) {
+            SchedulePlanManager.data = list;
+            SchedulePlanManager.renderList(list);
+            TeamScheduleManager.init(params);
+        });
+    },
+    renderList: function (list) {
+        for (var i = 0; i < list.length; i++) {
+            let item = list[i];
+            let listHtml = `<div class="row">
+                <div class="col-3">${item.name}</div>
+                <div class="col-9">${item.list.replaceAll(',', ' - ') + ((item.looping)?'(반복)':'')}</div>
+            </div>`;
+            $('#plan-section .card-content').append(listHtml);
+        }
+    },
+    openNewPlanWindow: function (params) {
+        let form = `<form id="form-new-plan">
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">근무스케줄명</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" name="name">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">근무패턴추가</label>
+                <div class="col-sm-8">
+                    <div class="input-group mb-3">
+                        <select id="select-pattern-list" class="form-select"></select>
+                        <button class="btn btn-outline-secondary" type="button" id="btn-pattern-add">추가</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="cb-plan-loop">
+                <label class="form-check-label" for="cb-plan-loop">패턴 반복</label>
+            </div>
+
+            <div id="plan-list-section" class="mb-3 d-flex flex-wrap gap-1">
+            </div>
+        </form>`;
+
+        PopupModalManager.init('근무스케줄 설정', form, '추가', '취소');
+
+        // 옵션 추가
+        for (let i = 0; i < SchedulePatternManager.data.length; i++) {
+            let item = SchedulePatternManager.data[i];
+            $('#select-pattern-list').append(`<option value="${item.id}" data-name="${item.id}">${item.name}</option>`);
+        }
+
+        $('#btn-pattern-add').on('click', function (e) {
+            let id = $("#select-pattern-list").val();
+            let item = SchedulePatternManager.data.find(s => s.id == id);
+
+            if ($('#plan-list-section .shift-box').length >= 8) {
+                return;
+            }
+
+            $('#plan-list-section').append(`<div class="shift-box" data-pattern-name="${item.name}">${item.name}</div>`);
+
+            // 박스 클릭시 삭제
+            $(".shift-box").last().on('click', function (e) {
+                $(this).remove();
+            });
+        });
+
+        // 등록 선택
+        $('#popup-ok').off().on('click', function () {
+            let data = Utils.formToObject('#form-new-plan');
+            if (data == null) {
+                $('#btn-new-team').trigger('click');
+                return;
+            }
+
+            let list = jQuery('.shift-box').map(function () {
+                return jQuery(this).data('pattern-name');
+            }).get();
+            data.list = list.join(',');
+
+            data.looping = $('#cb-plan-loop').prop('checked');
+
+            AJAX.post("/schedule/plans", null, data, function (data) {
+                Dialog.alert(data.message, function () {
+                    Page.reload();
+                });
+            });
+        });
+    }
+}
+
+let TeamScheduleManager = {
+    year: null,
+    month: null,
+    lastDate: null,
+    initialized: false,
+    data: [],
+    seq: 0,
+    cache: [],
+    init: function(params) {
+        /** @link SchedulePlanManager.init 에서 호출. */
+        let defDate = dateFormat('yyyy-MM');
+        $('#monthTeamSchedule').val(defDate);
+
+        if(!this.initialized) {
+            this.renderList(defDate.split('-')[0], defDate.split('-')[1]);
+
+            $('#monthTeamSchedule').on('change', function (e) {
+                let temp = $(this).val();
+                TeamScheduleManager.renderList(temp.split('-')[0], temp.split('-')[1]);
+            });
+
+            // 수정 버튼 클릭시
+            $('#btnEditTeamSchedule').on('click', (e) => TeamScheduleManager.openNewWindow());
+        }
+    },
+    renderList: function(year, month) {
+        this.year = year;
+        this.month = month;
+
+        // 1. 누적 근무 시간 초기화, 2. 팀별 step 초기화
+        this.data = [];
+        this.cache = [];
+        for(const team of TeamManager.data) {
+            this.cache.push({team:team.c, acc:0, step:0, flag: 0, night:0});
+        }
+
+        // 2. 메인 시퀀스 초기화
+        this.seq = 0;
+
+        // 3. 예정시간 + 스케줄 초기화
+        $('#calc-section tbody').html('');
+        $('#table-team-schedule tbody').html('');
+
+        AJAX.get('/teams/schedules/' + year + month, '' , function(data) {
+            data.data = JSON.parse(data.data);
+            TeamScheduleManager.data = data;
+            TeamScheduleManager.lastDate = new Date(parseInt(year), parseInt(month), 0).getDate();
+
+            // 한달 루프
+            for(let i = 1; i < TeamScheduleManager.lastDate + 1; i++) {
+                let tr = `<tr id="schedule-${i}">
+                    <td>${year}-${month}-${i.toString().padStart(2, "0")}</td>`;
+
+                // 1. 캐시 초기화
+                for(team of TeamScheduleManager.cache) {
+                    team.flag = 0;
+                }
+
+                // 2. 시프트 루프
+                for(const shift of ShiftManager.data) {
+                    //console.log(`${i} 현재 시프트 코드 : ${shift.shiftCode}`);
+
+                    // 3. 팀별 루프
+                    let team = TeamScheduleManager.getNextTeam(i, shift);
+                    console.log(team);
+                }
+
+                tr += `</tr>`;
+                $('#table-team-schedule tbody').append(tr);
+            }
+
+            TeamScheduleManager.renderResult();
+        });
+    },
+    openNewWindow: function() {
+        let yearMonth = this.year+"-"+this.month;
+        let form = `<form id="formTeamSchedule" return="false">
+            <p class="fw-bold">기간 설정</p>
+            <div class="input-group mt-3">
+                <input name="startDate" class="form-control" type="date" value="${yearMonth}-01">
+                <span class="input-group-text">부터</span>
+                <input name="endDate" class="form-control" type="date" value="${yearMonth}-${TeamScheduleManager.lastDate}" disabled>
+                <span class="input-group-text">까지</span>
+                <input type="hidden" name="code" value="${this.year+this.month}">
+            </div>
+            <div class="mt-3 row">
+                <label class="col-sm-4 col-form-label">근무스케줄ID</label>
+                <div class="col-sm-8">
+                    <select class="form-select" name="plan"></select>
+                </div>
+            </div>
+            <div class="mt-3 row">
+                <label class="col-sm-4 col-form-label">적용팀명</label>
+                <div class="col-sm-8">
+                    <select class="form-select" name="team"></select>
+                </div>
+            </div>
+        <form>`;
+
+        PopupModalManager.init('팀 스케줄 등록', form, '저장', '취소');
+
+        // 플랜 추가
+        for(const plan of SchedulePlanManager.data) {
+            $('#formTeamSchedule select[name=plan]').append(`<option value="${plan.id}" data-name="${plan.name}">${plan.name}</option>`);
+        }
+
+        // 팀 추가
+        for(const team of TeamManager.data) {
+            $('#formTeamSchedule select[name=team]').append(`<option value="${team.c}" data-name="${team.n}">${team.n}</option>`);
+        }
+
+        // 등록 선택
+        $('#popup-ok').off().on('click', function () {
+            let inputDatas = new FormData(document.getElementById('formTeamSchedule'));
+            let vData = Utils.formToObject(inputDatas);
+
+            let formData = new FormData();
+            let data = TeamScheduleManager.insertSchedule({start: parseInt(vData.startDate.substring(8)),
+                end: TeamScheduleManager.lastDate, team:vData.team, plan:vData.plan});
+
+            if(data == null) {
+                Dialog.alert("중복된 팀 스케줄입니다.");
+                return;
+            }
+            formData.append('id', vData.code);
+            formData.append('data', JSON.stringify(data));
+
+            AJAX.post("/teams/schedules",  formData, function (data) {
+                Dialog.alert(data.message, function () {
+                    Page.reload();
+                });
+            });
+        });
+    },
+    insertSchedule: function(o) {
+        let searchResult = this.data.data.find(e => e.start == o.start && e.team == o.team);
+
+        if (isValid(searchResult)) {
+            return null
+        }
+        else {
+            this.data.data.push(o);
+            return this.data.data;
+        }
+    },
+    getNextShift: function() {
+        if(this.seq == ShiftManager.data.length) this.seq = 0;
+        return ShiftManager.data[this.seq++];
+    },
+    getShiftPatternByTeam: function(team) {
+        try {
+            let planCode = this.data.data.find(e => e.team == team).plan;
+            let patternName = SchedulePlanManager.data.find(e => e.id == planCode).list;
+            let shiftPattern = SchedulePatternManager.data.find(e => e.name == patternName).list.split(',');
+
+            return shiftPattern;
+        }
+        catch (e) {
+            return null;
+        }
+    },
+    getShiftByshiftCode: function(shiftCode) {
+        return ShiftManager.data.find(e => e.shiftCode = shiftCode);
+    },
+    getNextTeam: function(date, shift){
+        let temp = this.cache.sort(function(a, b)  {
+            return a.acc - b.acc;
+        });
+
+        let targetTeam = temp[0];
+
+        for(team of this.cache) {
+            let teamShiftPattern = TeamScheduleManager.getShiftPatternByTeam(team.team);
+            if(!isValid(teamShiftPattern)) continue;
+            let nextTeamShiftCode = teamShiftPattern[team.step];
+
+            // 3. 다음 시프트와 일치하는 팀 찾음
+            if(nextTeamShiftCode == shift.shiftCode) {
+                if(team.flag == 1) continue;
+                targetTeam = team;
+                break;
+            }
+        }
+
+        // 4. 해당 팀 상태 처리
+        targetTeam.flag = 1;
+        targetTeam.step++;
+        if(targetTeam.step == 8) targetTeam.step = 0;
+
+        // 5. 해당 팀 계산
+        targetTeam.acc += shift.hours;
+        if(shift.shiftCode === '야') {
+            targetTeam.night += shift.hours;
+        }
+        return targetTeam;
+    },
+    renderResult: function() {
+        this.cache.sort((a, b) => a.team.localeCompare(b.team));
+
+        for(team of this.cache) {
+            $('#calc-section tbody').append(`<tr>
+                <td>${team.team}</td>
+                <td>${team.acc}시간</td>
+                <td>8시간</td>
+                <td>0시간</td>
+                <td>${team.night}시간</td>
+            </tr>`);
+        }
+    }
+}
+
+</script>
+</body>
+</html>

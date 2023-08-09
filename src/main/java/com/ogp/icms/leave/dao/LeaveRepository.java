@@ -1,0 +1,8 @@
+package com.ogp.icms.leave.dao;
+
+import com.ogp.icms.leave.domain.Leave;
+import com.ogp.icms.leave.domain.LeaveType;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface LeaveRepository extends JpaRepository<Leave, Long>  {
+}

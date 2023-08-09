@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<link rel="stylesheet" href="/js/bootstrap-table/excel-bootstrap-table-filter-style.css">
+<head>
+<meta charset="UTF-8">
+<title>대시보드</title>
+<style>
+.container{max-width:1840px!important}
+.manage-member div, .ntc-table{
+        -ms-overflow-style: none;
+    }
+.manage-member div::-webkit-scrollbar, .ntc-table::-webkit-scrollbar{
+        display:none;
+    }
+.manage-day-work div, .ntc-table{
+    -ms-overflow-style: none;
+}
+.manage-day-work div::-webkit-scrollbar, .ntc-table::-webkit-scrollbar{
+    display:none;
+}
+.notice .title{font-weight:bold;}
+
+#header-login div:first-child{display:none}
+
+#tableMember thead th, #day_work thead th{border:none!important;color:#989898;font-weight:normal}
+#tableMember thead, #day_work thead{border-bottom:1px solid #1F3251;background-color:transparent}
+#tableMember tbody td, #day_work tbody td{border:none!important}
+#tableMember tbody tr, #day_work tbody tr{border-bottom:1px solid #1F3251}
+
+.member-work .management:hover .contents>img{display:none}
+.member-work .management:hover .contents>p{display:none}
+.member-work .management:hover .contents>div{display:block!important}
+
+.manage-member .title:before{content:url("/images/dashboard/worker.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+.manage-cctv .title:before{content:url("/images/dashboard/statics.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+.manage-error .title:before{content:url("/images/dashboard/error.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+.manage-visit .title:before{content:url("/images/dashboard/visit.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+.manage-ntc>.title:before{content:url("/images/dashboard/ntc.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+.manage-link .title:before{content:url("/images/dashboard/ntc.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+.manage-day-work .title:before{content:url("/images/dashboard/day_work.svg");margin-right:10px;vertical-align:middle;line-height:23px}
+
+.member-work .management:hover{margin:-1px 0}
+.member-work .management.조:hover{border:1px solid #FF7500}
+.member-work .management.주:hover{border:1px solid #5BCE2B}
+.member-work .management.야:hover{border:1px solid #3939BC}
+.member-work .management.비:hover{border:1px solid #FF2B2B}
+
+.조{color:#FF7500}
+.주{color:#5BCE2B}
+.야{color:#3939BC}
+.비{color:#FF2B2B}
+
+.table>:not(caption)>*>*{padding:8px 15px}
+#ntc{display:none}
+#gnb{display:none}
+/*.header{text-align:center;color:white;padding: 33px 0}*/
+#header nav{position:relative}
+#header nav div{background-color:transparent!important;}
+#header-login{color:black!important}
+#header-login div a{color:black!important}
+#table, #table td{border:1px solid black;border-collapse : collapse;}
+#table td{padding:5px 30px;font-weight:bolder;}
+tbody td{border:1px solid #EFEFEF!important;}
+.management{background-color:white;width:max-content;border-radius:5px;}
+.using-cctv .management{display:flex;justify-content:center;align-items:center}
+.manage-member, .manage-day-work, .manage-error, .manage-ntc, .manage-visit, .manage-link{padding: 30px 40px;display:flex;flex-direction:column;height:100%}
+.manage-cctv{display:flex;flex-direction:column}
+.title{float:left;width:max-content;}
+.manage-member .contents{font-weight:bold;border:1px solid #5E6A75;border-radius:5px;padding:15px 23px;text-align:center;width:24%}
+.manage-cctv .contents{font-weight:bold;border-radius:5px;text-align:center;}
+.manage-cctv .contents img{padding-bottom:10px}
+.manage-error .contents{flex:1 0 0;font-weight:bold;border:1px solid #5E6A75;border-radius:5px;padding:12px;text-align:center;}
+
+.manage-ntc .contents.head div{width:60px;margin:10px 0;}
+.manage-ntc .contents.body div{width:60px;margin:4px 0;align-self:center;}
+
+.manage-link .contents.head div{width:175px;margin:10px 0;}
+.manage-link .contents.body div{width:175px;margin:4px 0;}
+
+.profile{background-image:url('/images/profile.png');width:30px;height:30px;background-size:cover;border-radius:100%;}
+.doughnut{border:1px solid;width:191px;height:186px;text-align:center;line-height:11;}
+.line{border:1px solid black;width:600px;height:300px;text-align:center;line-height:18;margin-top:31px;}
+
+.manage-ntc table th{text-align:left;border:none!important}
+.manage-ntc table td{text-align:left;border:none!important}
+
+</style>
+</head>
+<body class="dark-mode" style="background-color:#0D1927">
+<div id="header" style="background-color:#122037"></div>
+
+<div class="header" style="display:block">
+    <div class="container d-flex justify-content-between align-items-center" style="padding:10px">
+        <div>
+            <img src="/images/dashboard/dashboard_title.png">
+        </div>
+        <div style="color:white;padding:0 16px;" class="d-flex gap-5">
+            <div class="fs-30" style="font-family:NanumGothic">스마트뷰(View)</div>
+        </div>
+        <div style="color:#FFBB00;">
+<!--            <img id="darkmode_btn" class="dashboard-dark" src="images/dark-mode.svg" role="button">-->
+            <a href="board/list?n=notice">
+                <div style="padding:13px 25px;border:1px solid #DADADA;background-color:#122037;border-radius:5px">
+                    메인페이지 이동
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="main" class="d-flex justify-content-center w-100">
+    <div class="container d-flex flex-wrap justify-content-between" style="gap:35px">
+        <!--공지사항-->
+        <div class="d-flex" style="flex-direction:column;gap:20px;flex:1 1 500px">
+            <div class="d-flex member-work justify-content-between" style="gap:32px"></div>
+            <div class="management w-100">
+                <div class="manage-ntc">
+                    <div class="fw-bold fs-20 title" style="padding:4px">공지사항</div>
+                    <div class="ntc-table" style="display:flex;flex-direction:column;height:280px;overflow:scroll;margin:auto 0">
+                        <table id="notice" class="table" style="margin-top:19px">
+                            <thead class="fs-12" style="background-color:transparent">
+                            <tr><th style="color:#989898">제목</th><th style="width:35%;color:#989898">작성일</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--지도-->
+        <div class="d-flex" style="flex-direction:column;gap:20px;flex:1 1 600px;">
+            <div id="map" style="width:100%;height:100%;"></div>
+            <div id="map-statistics"></div>
+        </div>
+
+        <!--자산관리-->
+        <div class="d-flex" style="gap:20px;flex-direction:column;flex:1 1 400px;">
+            <div class="d-flex using-cctv" style="gap:30px;justify-content:space-between">
+                <div class="management" style="width:33%;height:134px">
+                    <div class="manage-cctv">
+                        <div class="cctv-state-all justify-content-center"></div>
+                    </div>
+                </div>
+                <div class="management" style="width:33%;height:134px">
+                    <div class="manage-cctv">
+                        <div class="cctv-state-using justify-content-center"></div>
+                    </div>
+                </div>
+                <div class="management" style="width:33%;height:134px">
+                    <div class="manage-cctv" style="align-items:center;cursor:pointer">
+                        <div class="using fs-30 fw-bold">23%</div>
+                        <p class="fs-18" style="color:#939393">사용률</p>
+                    </div>
+                </div>
+            </div>
+            <div class="management" style="height:100%;width:100%;padding:30px 40px">
+                <div class="manage-cctv" style="padding-bottom:15px">
+                    <div class="fw-bold fs-20 title">자산관리</div>
+                </div>
+                <div class="manage-cctv justify-content-center mx-auto" style="padding:0">
+                    <div style="display:flex;justify-content:center;">
+                        <div class="d-flex justify-content-center" style="margin-top:10px;gap:10px">
+                            <div style="width:211px;height:211px">
+                                <canvas id="doughnut-chart"></canvas>
+                            </div>
+                            <div id="canvas-write" style="align-self:center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--방문자현황관리-->
+        <div class="management" style="flex:0 1 400px">
+            <div class="manage-visit">
+                <div style="display:flex;justify-content:space-between;">
+                    <div class="fw-bold fs-20 title" style="padding:4px;">방문자현황</div>
+                    <div style="display:flex;align-items:center">
+                        <div style="margin:0 2px;width:8px;height:8px;border-radius:100%;background-color:red"></div>
+                        <div class="fs-12" style="margin:0 6px;color:#CBCBCB">월 방문객수</div>
+                    </div>
+                </div>
+                <div style="margin:auto 0">
+                    <canvas id="line-chart" width="100%" height="200" style="max-width:408px"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!--장애관리-->
+        <div class="management" style="flex:1 1 600px;">
+            <div class="manage-error">
+                <div class="fw-bold fs-20 title" style="padding:4px;">장애관리</div>
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex" style="width:90%;height:302px">
+                        <canvas width="400" height="302" id="bar" style="margin-top:20px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--일일근무일지-->
+        <div class="management" style="flex:1 1 300px">
+            <div class="manage-day-work">
+                <div class="fw-bold fs-20 title" style="padding:4px">일일 근무일지</div>
+                <div class="work-table" style="display:flex;flex-direction:column;height:280px;overflow:scroll;margin:auto 0">
+                    <table id="day_work" class="table" style="margin-top:19px;background-color:#122037">
+                        <thead class="fs-12" style="background-color:transparent">
+                        <tr><th style="color:#989898">근무자</th><th style="color:#989898">모니터링</th><th style="color:#989898">제목</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!--근무자관리-->
+        <div class="d-flex" style="gap:20px;flex:1 1 900px">
+            <div class="management" style="width:100%">
+                <div class="manage-member">
+                    <div class="fw-bold fs-20 title" style="padding:4px;">근무자관리</div>
+                    <div style="display:flex;justify-content:space-around;margin-top:30px;height:231px;overflow:scroll">
+                        <table id="tableMember" class="table">
+                            <thead><tr><th>근무자명</th><th>근무팀</th><th>월별근무시간</th><th>출근시간</th><th>퇴근시간</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--업무별 바로가기-->
+        <div class="management" style="flex:1 1 900px">
+            <div class="manage-link">
+                <div class="fw-bold fs-20 title" style="padding:4px;">업무별 바로가기</div>
+                <div class="d-flex justify-content-between" style="margin-top:60px">
+                    <div class="link-monitor" style="width:19%">
+                        <a href="/monitor/list">
+                            <div class="management d-flex justify-content-center align-items-center w-100" style="padding:25px 0;height:134px;background-color:#1C2C47">
+                                <div class="contents">
+                                    <img src="/images/dashboard/monitor_white.svg">
+                                </div>
+                            </div>
+                        </a>
+                        <div class="fs-20 fw-bold mt-4 text-center">모니터링현황</div>
+                    </div>
+                    <div class="link-monitor" style="width:19%">
+                        <a href="/schedule/main">
+                            <div class="management d-flex justify-content-center align-items-center w-100" style="padding:25px 0;height:134px;background-color:#1C2C47">
+                                <div class="contents">
+                                    <img src="/images/dashboard/schedule_white.svg">
+                                </div>
+                            </div>
+                        </a>
+                        <div class="fs-20 fw-bold mt-4 text-center">팀스케줄</div>
+                    </div>
+                    <div class="link-monitor" style="width:19%">
+                        <a href="/dailyreport/list">
+                            <div class="management d-flex justify-content-center align-items-center w-100" style="padding:25px 0;height:134px;background-color:#1C2C47">
+                                <div class="contents">
+                                    <img src="/images/dashboard/day_work_white.svg">
+                                </div>
+                            </div>
+                        </a>
+                        <div class="fs-20 fw-bold mt-4 text-center">근무일지</div>
+                    </div>
+                    <div class="link-monitor" style="width:19%">
+                        <a href="/attend/member/list">
+                            <div class="management d-flex justify-content-center align-items-center w-100" style="padding:25px 0;height:134px;background-color:#1C2C47">
+                                <div class="contents">
+                                    <img src="/images/dashboard/attendance_white.svg">
+                                </div>
+                            </div>
+                        </a>
+                        <div class="fs-20 fw-bold mt-4 text-center">근태관리</div>
+                    </div>
+                    <div class="link-monitor" style="width:19%">
+                        <a href="/common/admin/list">
+                            <div class="management d-flex justify-content-center align-items-center w-100" style="padding:25px 0;height:134px;background-color:#1C2C47">
+                                <div class="contents">
+                                    <img src="/images/dashboard/common_white.svg">
+                                </div>
+                            </div>
+                        </a>
+                        <div class="fs-20 fw-bold mt-4 text-center">공통관리</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/bootstrap-table/excel-bootstrap-table-filter-bundle.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=97d7494e46d2ee1462301f24e6fd7333"></script>
+<script src="/js/chart.min.js"></script>
+<script src="/js/module/map.js"></script>
+<script>
+
+async function init(params) {
+    pagectx.date = dateFormat(new Date(), 'yyyy-MM');
+    pagectx.today = dateFormat(new Date(), 'yyyy-MM-dd');
+
+    // 근무자 관리
+    for (const shift of CodeManager.workgubun) {
+        let jo = 'jo';
+        switch (shift.n) {
+            case '주간':
+                jo = 'ju';
+                break;
+            case '야간':
+                jo = 'ya';
+                break;
+            case '비번':
+                jo = 'bi';
+                break;
+        }
+        $('.member-work').append(`<div class="management" style="text-align:center;padding:25px 0;width:24%;height:134px"><div class="contents con-${shift.c}">
+            <img src="images/dashboard/${jo}.svg">
+            <p class="count fs-30">0</p>
+            <div hidden class="fs-40 ${shift.c}" style="line-height:76px">${shift.n}</div>
+        </div></div>
+        `);
+    }
+
+    for (const shift of CodeManager.workgubun) {
+        $(`.con-${shift.c}`).parent().addClass(`${shift.c}`);
+    }
+
+    //감독대상관리 데이터
+    let lateDay = [5.224, 5.132, 3.323, 6.231]
+    let lateTime = [14, 23, 32, 10]
+
+    MemberManager.init();
+    LicenseManager.init();
+    ErrorManager.init();
+    ReportManager.init();
+    VisitManager.init();
+    DayWorkManager.init();
+    // AttManager.init();
+
+    setTable(params);
+    Page.setPaging({});
+    SearchManager.setSearch({callBack: renderTable, src: '/board/notice', table: '#notice'});
+
+    function setTable(params) {
+        AJAX.get('/board/notice', location.search.substr(1), function (list) {
+            renderTable(list);
+        });
+    }
+
+    //공지사항 불러오기
+    function renderTable(page) {
+        let list = page.content;
+        Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
+        console.log(page);
+
+        $('#main-table tbody *').remove();
+
+        if (list.length == 0) {
+            $('tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        // 공지는 상단에 정렬
+        list.sort(function (a, b) {
+            return b.noticeYn - a.noticeYn;
+        });
+
+        for (let i = 0; i < list.length; i++) {
+            let item = list[i];
+
+            let notice = (item.noticeYn == 1) && (item.noticeEdate.replaceAll('-', '') >= dateFormat(new Date(), 'yyyyMMdd'));
+            let str = `<tr class="${(notice) ? 'notice' : ''}">
+                    <td class="title text-left text-truncate" style="max-width:250px"><a href="/board/detail?n=${request.getParameter('n', 'notice')}&no=${item.id}">${item.title}</a></td>
+                    <td style="color:#CBCBCB">${item.createdAt.split('T')[0]}</td>
+                </tr>`
+
+            $('#notice tbody').append(str);
+        }
+    }
+
+    // 카카오 지도
+    MapUtils.renderMaps();
+    pagectx.dirtyCameras = await AJAX2.get('/api/daily-reports/events/errors').then(function (data) {
+        return data;
+    });
+    AJAX2.get('/api/assets').then(renderAsset);
+
+    for(let i = 0; i < pagectx.dirtyCameras.length; i++) {
+        let mo = pagectx.dirtyCameras[i];
+
+    }
+}
+
+pagectx.markers = [];
+function renderAsset(list) {
+    for(const item of list) {
+        item.jsonobj = JSON.parse(item.jsonobj);
+    }
+    pagectx.assets = list;
+
+    for(const item of list) {
+        MapUtils.addMarker(item);
+    }
+}
+
+
+//근무자관리
+let MemberManager = {
+    init: function() {
+        AJAX.get('/schedule/agents','', function(list) {
+            MemberManager.data = list;
+            ScheduleManager.init();
+            MemberManager.renderTable(list)
+        });
+    },
+    renderTable: function(list){
+        for(const member of list){
+
+            $('#tableMember tbody').append(`<tr id="member${member.userid}" class="team-${member.team}" role="button">
+                <td class="d-flex gap-2"><div class="profile"></div><div style="align-self:center">${member.name}</div></td>
+                <td>${member.team}</td>
+                <td class="acc">0시간</td>
+                <td class="start">9시 30분 20초</td>
+                <td class="end">9시 30분 20초</td>
+            </tr>`)
+        }
+    }
+}
+
+let DayWorkManager = {
+    init: function() {
+        AJAX.get('/daily-reports','', function(list) {
+            DayWorkManager.data = list;
+            DayWorkManager.renderTable(list);
+        });
+    },
+    renderTable : function(list){
+        for(const item of list.content){
+            $('#day_work tbody').append(`<tr>
+                <td>${item.username}</td>
+                <td>${CodeManager.get('monitoring', item.workMonitoring, '삭제된코드')}</td>
+                <td>근무일지(${CodeManager.get('workgubun',item.workGubun, '삭제된코드')})</td>
+            </tr>`)
+        }
+    }
+}
+
+let ScheduleManager = {
+    init: function() {
+        AJAX.get('/teams/schedules/' + pagectx.date.replaceAll('-',''), '' , function(data) {
+            ScheduleManager.data = data;
+            ScheduleManager.render(data);
+        });
+    },
+    render: function(list) {
+        const today = pagectx.today.replaceAll('-','');
+        let cache = {};
+        let holidays = [];
+        // 이번달 마지막일 구하는거 체크
+        let nextMonth = new Date(pagectx.date.split('-')[0], pagectx.date.split('-')[1], 0);
+        let lastDate = nextMonth.getDate();
+
+        for(const team of CodeManager.team) {
+            cache[team.c] = {team:team.c, acc:0, night:0, over:0, holi:0};
+        }
+
+        // 오늘 스케줄 설정 및 카운터
+        for(const member of MemberManager.data) {
+            let todaySchedule = ScheduleManager.findByTeamAndDate(member.team, dateFormat(new Date(), 'yyyyMMdd'));
+
+            $(`#member${member.userid} .start`).text();
+            $(`#member${member.userid} .start`).text();
+            let count = Number($(`.contents.con-${todaySchedule.shift} .count`).text());
+            $(`.contents.con-${todaySchedule.shift} .count`).text(++count);
+        }
+
+        // 계산
+        for(let i = 1; i <= lastDate; i++){
+            let date = i.toString().padStart(2,"0");
+            let day = new Date(`${pagectx.year}-${pagectx.month}-${date}`).getDay();
+            if(day == 0 || day == 6) holidays.push(i);
+        }
+
+        // 2. 팀 별 스케줄 표시
+        for(const schedule of list) {
+            let i = parseInt(schedule.date.substr(6));
+            // 시간 계산
+            let targetTeam = cache[schedule.team];
+            if(schedule.shift != '비') {
+                targetTeam.acc += 8;
+            }
+            if(schedule.shift == '야') {
+                targetTeam.night += 8;
+            }
+            if(holidays.includes(i)) {
+                targetTeam.holi += 8;
+            }
+        }
+
+        for(const c of Object.keys(cache)) {
+            $(`.team-${cache[c].team} .acc`).text(`${cache[c].acc} 시간`);
+            $(`.team-${cache[c].team} .holi`).text(`${cache[c].holi} 시간`);
+        }
+    },
+    findByTeam: function(team) {
+        return this.data.find(e => e.team == team);
+    },
+    findByTeamAndDate: function(team, date) {
+        return this.data.find(e => e.team == team && e.date == date);
+    }
+}
+
+//장애관리 그래프
+let ErrorManager = {
+    init: function() {
+        ErrorManager.cache = {};
+        for(const code of CodeManager.barrier_level) {
+            ErrorManager.cache[code.c] = 0;
+        }
+
+        AJAX.get('/cctv-errors/statistics/whole','', function(data) {
+            for(const item of data) {
+                let d = JSON.parse(item.data);
+
+                for(const l of Object.keys(d)) {
+                    if(!ErrorManager.cache.hasOwnProperty(l)) continue;
+                    ErrorManager.cache[l] += d[l];
+                }
+            }
+
+            let chartName = [];
+            let chartData = [];
+
+            for(const code of CodeManager.barrier_level) {
+                chartName.push(code.n);
+                chartData.push(ErrorManager.cache[code.c]);
+            }
+
+            console.log(chartName)
+            console.log(chartData)
+            ErrorManager.renderChart(chartName, chartData);
+        });
+    },
+    renderChart:function(name, data){
+        console.log(data);
+        //막대 그래프
+        let maxData = Math.max.apply(null,data);
+        const ctx = document.getElementById('bar').getContext('2d');
+        const bar = new Chart(ctx, {
+            type: 'horizontalBar',
+            data: {
+                labels: name,
+                datasets: [{
+                    label: '이상',
+                    data: data,
+                    backgroundColor: ['rgba(247, 178, 120, 255)',
+                        'rgba(91, 206, 43, 255)',
+                        'rgba(87, 191, 255, 255)',
+                        'rgba(117, 131, 255, 255)',
+                        'rgba(227, 93, 255, 255)',
+                        'rgba(255, 121, 121, 255)',
+                        'rgba(121, 234, 156, 255)'],
+                },
+                    {
+                        label: '이상없음',
+                        data: data,
+                        backgroundColor: ['#FFEBDA','#E6F9DE','#E2F4FF','#E2E5FF','#FAE2FF','#FFE2E2','#CEE8D6'],
+                    }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio :false,
+                legend:{
+                    display:false
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                    yAxes: [{
+                        categoryPercentage: 0.4,
+                        // barPercentage: 0.4,
+                        stacked: true,
+                        gridLines:{
+                            display:false,
+                            lineWidth:0.01,
+                        }
+                    }],
+                    xAxes: [{
+                        stacked: true,
+                        display:false,
+                        gridLines:{
+                            display:false,
+                            lineWidth:0.01,
+                        },
+                        ticks: {
+                            min: 0,
+                            max: Math.max.apply(null, data),
+                            fontSize : 12,
+                        }
+                    }],
+                }
+            },
+        });
+        //데이터 표출
+        $(`.manage-error>.d-flex`).append(`<div id="2adz9s" class="fs-12 d-flex flex-column justify-content-between" style="margin-top:37px;text-align:right"> </div>`);
+        for (const datum of data) {
+            $(`#2adz9s`).append(`<div>${datum}</div>`);
+        }
+    }
+}
+
+//자산관리
+let LicenseManager = {
+    init: function() {
+        AJAX.get("/cctv/licenses/count", "", function(data) {
+            LicenseManager.renderChart(data);
+        });
+    },
+    renderChart:function(using){
+        let all = 1600;
+
+        $("#canvas-write").append(`<div class="d-flex justify-content-between"><div style="color:#FFB400">사용</div><div class="fw-bold" style="margin-left:20px;">${Math.round((using/all)*100)}%</div></div>
+            <div class="d-flex justify-content-between"><div style="color:#CECECE">미사용</div><div class="fw-bold" style="margin-left:20px;">${Math.round(((all-using)/all)*100)}%</div></div>`)
+
+        $('.using').text(`${Math.round((using/all)*100)}%`);
+
+        //자산관리 테이블
+        $('.cctv-state-all').append(`<div class="contents"><img src="images/dashboard/all.svg"><p class="fs-26 all">${all}</p></div>`);
+        $('.cctv-state-using').append(`<div class="contents"><img src="images/dashboard/using.svg"><p class="fs-26 using">${using}</p></div>`);
+
+        //도넛 그래프
+        new Chart(document.getElementById("doughnut-chart"), {
+            type: 'doughnut',
+            data: {
+                labels: ["사용중","미사용"],
+                datasets: [
+                    {
+                        label: "Population (millions)",
+                        backgroundColor: ["#FFB400"],
+                        data: [using,all-using],
+                    },
+                ],
+                radius:30,
+            },
+            options: {
+                legend: {
+                    display:false,
+                },
+                elements: {
+                    center: {
+                        text: Math.round((using/all)*100)+'%',
+                        color:'red',
+                        sidePadding: 15 //Default 20 (as a percentage)
+                    },
+                },
+                cutoutPercentage:70,
+                borderRadius: 30,
+            },
+        });
+        //도넛그래프 안에 퍼센트 표시
+        Chart.plugins.register({
+            beforeDraw: function (chart) {
+                if (chart.config.options.elements.center) {
+                    //Get ctx from string
+                    var ctx = chart.chart.ctx;
+
+                    //Get options from the center object in options
+                    var centerConfig = chart.config.options.elements.center;
+                    var fontSize = centerConfig.fontSize || '50';
+                    var fontStyle = centerConfig.fontStyle || 'Arial';
+                    var txt = centerConfig.text;
+                    var color = centerConfig.color || '#000';
+                    var sidePadding = centerConfig.sidePadding || 20;
+                    var sidePaddingCalculated = (sidePadding/100) * (chart.innerRadius * 2)
+                    //Start with a base font of 30px
+                    ctx.font = fontSize + "px " + fontStyle;
+
+                    //Get the width of the string and also the width of the element minus 10 to give it 5px side padding
+                    var stringWidth = ctx.measureText(txt).width;
+                    var elementWidth = (chart.innerRadius * 2) - sidePaddingCalculated;
+
+                    // Find out how much the font can grow in width.
+                    var widthRatio = elementWidth / stringWidth;
+                    var newFontSize = Math.floor(30 * widthRatio);
+                    var elementHeight = (chart.innerRadius * 0.7);
+
+                    // Pick a new font size so it will not be larger than the height of label.
+                    var fontSizeToUse = Math.min(newFontSize, elementHeight);
+
+                    //Set font settings to draw it correctly.
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
+                    var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
+
+                    ctx.font = fontSizeToUse+"px " + fontStyle;
+                    ctx.fillStyle = color;
+
+                    //Draw text in center
+                    ctx.fillText(txt, centerX, centerY);
+                }
+            }
+        });
+    }
+}
+
+//방문자현황관리
+let VisitManager = {
+    init: function() {
+        AJAX2.get('/api/visits/statistics').then(this.renderChart);
+    },
+    renderChart:function(data){
+        let labels = [];
+        let datas = [];
+
+        // 최근 10개 항목 평가
+        for(let i = 1; i < 11; i++ ) {
+            let s = data[data.length - i];
+            labels.push(`${s.year}년 ${s.month}월`);
+            datas.push(s.count);
+        }
+
+        //방문자현황 라인그래프
+        const ctx = document.getElementById('line-chart').getContext('2d');
+        let gradientFill = ctx.createLinearGradient(0, 300, 0, 0);
+        gradientFill.addColorStop(0, "rgba(255, 255, 255,0.7)");
+        gradientFill.addColorStop(1, "rgba(255, 0, 0,0.7)");
+        let bar = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: datas,
+                    label: "월 방문객수",
+                    borderColor: "red",
+                    fill: 'start',
+                    backgroundColor: gradientFill
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                title: {
+                    display: true,
+                },
+                legend:{
+                    display:false,
+                },
+                scales:{
+                    xAxes: [{
+                        gridLines:{
+                            lineWidth:0.01,
+                        },
+                    }],
+                    yAxes: [{
+                        gridLines:{
+                            lineWidth:0.01,
+                        },
+                    }]
+                }
+            }
+        });
+    },
+    renderTable:function(data){
+        //근무자결재 데이터
+        let state = ['결재중','미결재','미결재','결재완료']
+
+        for(const report of data) {
+            $(`#reportTable tbody`).append(`<tr>
+                <td>${report.username}</td>
+                <td>${state[report.status]}</td>
+            </tr>`);
+        }
+    }
+}
+
+// //근태관리 그래프
+// let AttManager = {
+//     init: function() {
+//         AttManager.renderChart();
+//     },
+//     renderChart:function(){
+//
+//         const ctx2 = document.getElementById('att-chart').getContext('2d');
+//         const bar = new Chart(ctx2, {
+//             type: 'bar',
+//             data: {
+//                 labels: ['근무시간','야간근무'],
+//                 datasets: [{
+//                     label: '근태관리',
+//                     data: [10,20],
+//                     backgroundColor: ['red','green'],
+//                     border:1,
+//                     borderRadius: 5,
+//                 }]
+//             },
+//             options: {
+//                 responsive: true,
+//                 maintainAspectRatio :false,
+//                 legend:{
+//                     display:false
+//                 },
+//                 scales: {
+//                     y: {
+//                         beginAtZero: true
+//                     },
+//                     yAxes: [{
+//                         gridLines:{
+//                             lineWidth:0.01,
+//                         },
+//                         ticks: {
+//                             min: 0,
+//                             fontSize : 12,
+//                         }
+//                     }],
+//                     xAxes: [{
+//                         barPercentage: 0.4,
+//                         gridLines:{
+//                             lineWidth:0.01,
+//                         },
+//                     }],
+//                 }
+//             },
+//         });
+//     }
+// }
+
+//결재관리
+let ReportManager = {
+    init: function() {
+        AJAX.get(`/daily-reports/date/${pagectx.today.replaceAll('-','')}`, '', function(data){
+            ReportManager.renderTable(data);
+        });
+    },
+    renderTable:function(data){
+        //근무자결재 데이터
+        let state = ['결재중','미결재','미결재','결재완료']
+
+        for(const report of data) {
+            $(`#reportTable tbody`).append(`<tr>
+                <td>${report.username}</td>
+                <td>${state[report.status]}</td>
+            </tr>`);
+        }
+    }
+}
+</script>
+</body>
+</html>

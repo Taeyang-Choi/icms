@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>근무일지관리</title>
+</head>
+<body>
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <p id="page-title">근무일지관리</p>
+
+            <div class="wrap border-top">
+                <p>통합관제센터 모니터링 근무일지</p>
+
+                <form id="form-code" method="post" onsubmit="return false;">
+                    <div class="d-flex flex-wrap">
+                        <div class="col-6 d-flex">
+                            <div class="label">근무구분</div>
+                            <div id="input-work-type" class="content">
+                                <input class="form-control" name="work_gubun" type="text" readonly>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">근무자</div>
+                            <div class="content">
+                                <input class="form-control" name="userid" type="text" readonly>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">근무일</div>
+                            <div class="content">
+                                <span id="work-date" class="form-control"></span>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">근무시간</div>
+                            <div class="content">
+                                <span id="work-time" class="form-control"></span>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">모니터링 PC</div>
+                            <div class="content">
+                                <input class="form-control" name="work_monitoring" type="text" readonly>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">등록일자</div>
+                            <div class="content">
+                                <input class="form-control" name="reg_date" type="text" readonly>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">결재자</div>
+                            <div class="content">
+                                <input class="form-control" name="confirm_userid" type="text" readonly>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">결재시간</div>
+                            <div class="content">
+                                <input class="form-control" name="confirm_date" type="text" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+            <div id="monitoring" style="margin-top:46px;">
+                <div>시간대별 모니터링 내역</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">시간</th>
+                            <th scope="col">구분</th>
+                            <th scope="col">CCTV</th>
+                            <th scope="col">조치</th>
+                            <th scope="col">내용</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5">등록된 자료가 없습니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- 버튼 -->
+            <div class="buttons d-flex justify-content-between">
+                <div class="d-flex justify-content-start gap-1">
+                    <a href="list" class="btn btn-sm btn-primary">목록</a>
+                    <button id="btn-submit" class="btn btn-sm btn-primary">제출하기</button>
+                </div>
+
+                <div class="d-flex justify-content-end gap-1">
+                    <button id="btn-add-event" type="submit" class="btn btn-sm btn-primary">모니터링 등록</button>
+                    <button id="btn-edit" class="btn btn-sm btn-primary">일지수정</button>
+                    <button id="btn-delete" class="btn btn-sm btn-primary">일지삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    createForm(params);
+
+    function createForm(params) {
+        pagectx = params;
+        let item = params.item;
+        console.log(params.item);
+
+        // 값 불러오기
+        let itemValues = ['work_gubun', 'team', 'work_monitoring'];
+        let codeValues = ['workgubun', 'team', 'monitoring'];
+        for(let pair of Object.entries(params.item)){
+            let index = itemValues.indexOf(pair[0]);
+            if(index > -1) {
+                console.log(index + ',' + codeValues[index])
+                $(`input[name=${pair[0]}]`).val(CodeManager.get(codeValues[index], pair[1], '삭제된 코드'));
+            }
+            else {
+                $(`input[name=${pair[0]}]`).val(pair[1]);
+            }
+        }
+
+        // 근무일 근무시간 설정
+        $('#work-date').text(item.work_date_from + ' ~ ' + item.work_date_to);
+        $('#work-time').text(item.work_time_from + ' ~ ' + item.work_time_to);
+
+        // 모니터링 내역 가져오기
+        AJAX.get("/dailyreport/event/" + item.id, '', function(list) {
+            if(list.length > 0)$('#monitoring tbody').html('');
+
+            for(let i = 0; i < list.length; i++) {
+                let item = list[i];
+                console.log(item);
+                let str = `
+                <tr>
+                    <td class="d-flex gap-2 justify-content-center"><p>${item.work_dtime_from2}</p><p role="button" class="text-secondary">[수정]</p></td>
+                    <td>${CodeManager.get('work_dgubun', item.work_dgubun, '일반')}</td>
+                    <td>${item.work_cctv}</td>
+                    <td>미조치</td>
+                    <td>${item.work_content}</td>
+                </tr>`
+
+                $('tbody').append(str);
+
+                // 모니터링 수정
+                $('tr .text-secondary').last().on('click', {item:item}, function(e) {
+                    Page.go('/dailyreport/event/edit', {item: e.data.item});
+                });
+            }
+        });
+
+        // 일지 제출하기
+        $('#btn-submit').on('click', {item:item}, function(e) {
+            let data = {};
+            data.submit_date = dateFormat(new Date(), 'yyyy-MM-dd hh:mm');
+            data.submit_userid = params.usrobj.userid;
+            data.submit_username = params.usrobj.name;
+
+            let formData = new FormData();
+            formData.append("data", JSON.stringify(data));
+
+            console.log(data);
+            AJAX.post('/dailyreport/submit/' + item.id, formData, function (data) {
+                Dialog.alert(data.message, function() {
+                    Page.back();
+                });
+            });
+        });
+
+        // 모니터링 등록
+        $('#btn-add-event').on('click', {item:item}, function(e) {
+            Page.go('/dailyreport/event/write', {item: e.data.item});
+        });
+
+        // 일지 수정
+        $('#btn-edit').on('click', {item:item}, function(e) {
+            Page.go('/dailyreport/edit', {item: e.data.item});
+        });
+
+        // 일지 삭제
+        $('#btn-delete').on('click', {item:item}, function(e) {
+            Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
+                let formData = new FormData();
+                AJAX.remove('/dailyreport/' + item.id, formData, function (data) {
+                    Dialog.alert(data.message, function() {
+                        Page.back();
+                    });
+                });
+            }, function () {
+            }, e.data.item);
+        });
+    }
+
+    $('#form-code').on('submit', function() {
+        let rawFormData = new FormData($('form')[0]);
+        let formData = new FormData();
+        let data = {};
+
+        for(let pair of rawFormData.entries()){
+            if($(`input[name=${pair[0]}]`).attr('readonly') === 'readonly') continue;
+
+            if(!isValid(pair[1])) {
+                $(`input[name=${pair[0]}]`).trigger('focus');
+                alert("해당 값을 입력해 주세요.");
+                return;
+            }
+            data[pair[0]] = pair[1];
+        }
+
+        // filtering
+        data["out_date"] = data["out_date"] + " " + data["out_date2"] + ":00";
+        delete data["out_date2"];
+
+        // extends
+        data = $.extend(pagectx.item, data);
+
+        formData.append("data", JSON.stringify(data));
+        AJAX.post("/visit/vout", formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

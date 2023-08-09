@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>자산관리 | 카메라별 장애관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/error.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="cctv/error/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">카메라별 장애관리</p>
+                    <div class="preface border-top">
+                            <p class="OFgeuCmO">카메라별 장애관리</p>
+
+                            <form id="form-code" method="post" onsubmit="return false;">
+                                <div class="d-flex flex-wrap">
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">인덱스</div>
+                                        <div id="input-work-type" class="col-10 content">
+                                            <input class="form-control" name="cctv_index" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">위치</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="location" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 d-flex">
+                                        <div class="col-2 label">주소</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="juso" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">카메라구분</div>
+                                        <div class="col-10 content">
+                                            <input name="camera_category" class="form-control" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">고정,회전</div>
+                                        <div class="col-10 content">
+                                            <input name="movement" class="form-control" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">야간식별</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="nightvision" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">형태</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="shage" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">설치년도</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="installymd" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">제조사</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="manufacturer" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">모델명</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="model" type="text" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex">
+                                        <div class="col-2 label">화소수</div>
+                                        <div class="col-10 content">
+                                            <input class="form-control" name="pixel" type="text" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                    </div>
+
+                    <table id="main-table" class="table" style="margin-top:50px">
+                        <thead class="text-truncate">
+                        <tr>
+                            <th scope="col">연번</th>
+                            <th scope="col">일시</th>
+                            <th scope="col">구분</th>
+                            <th scope="col">CCTV구분</th>
+                            <th scope="col">CCTV</th>
+
+                            <th scope="col">담당자</th>
+                            <th scope="col">장애레벨</th>
+                            <th scope="col">상황</th>
+                            <th scope="col">조치결과</th>
+                            <th scope="col">조치내용</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <!-- 버튼 -->
+                    <div class="buttons d-flex justify-content-between">
+                        <div class="d-flex justify-content-start gap-1">
+                            <a href="list" class="btn btn-warning">목록</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/module/reports.js"></script>
+<script>
+function init(params) {
+
+    AJAX.get(`/daily-reports/cameras/${request.getParameter('id')}/events`, '', function(list) {
+        renderTable(list);
+    });
+
+    AJAX.get("/cctv/" + request.getParameter('id'), '', function (data) {
+        for (let pair of Object.entries(data)) {
+            $(`input[name=${StringUtils.camelToSnake(pair[0])}]`).val(pair[1]);
+        }
+    });
+
+    function renderTable(list) {
+
+        $('#main-table tbody *').remove();
+        for(const item of list) {
+            let str = `
+            <tr data-id="${item.id}" role="button">
+                <td>${item.id}</td>
+                <td class="link-primary text-decoration-underline">${item.createdAt.replaceAll('T', ' ')}</td>
+                <td>${CodeManager.get('work_dgubun', item.workDgubun)}</td>
+                <td>${get(item.aa, "방범")}</td>
+                <td>${item.cctvIndex}</td>
+
+                <td>${item.userid}</td>
+                <td>${Monitoring.getBarrierLevel(item).n}</td>
+                <td>${item.workContent}</td>
+                <td>${CodeManager.get((item.workDgubun === 'D01') ? "work_jochi" : "situ_result", item.actionCode, "미조치")}</td>
+                <td style="border-right:0">${get(item.actionResult, "미조치")}</td>
+            </tr>`
+
+            $('#main-table tbody').append(str);
+        }
+    }
+}
+
+</script>
+</body>
+</html>

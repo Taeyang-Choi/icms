@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/css/member.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>팀스케줄</title>
+<style>
+#page-title:before{content:url("/images/before/schedule.svg");margin-right:10px;vertical-align:middle}
+/*.month-title{font-family:'gg';font-weight:bold;color:#010123;font-size:1.35rem;padding:27px 0 30px 0;line-height:1;}*/
+/*.month-title:before{content :"";display:inline-block;width:6px;height:15px;background-color:#010123;border-radius:5px;margin-right:8px;}*/
+
+.day-6 .day-text{color:blue!important;}
+.day-0 .day-text{color:red!important;}
+
+.shift-조{color:#FF7500;text-align:center}
+.shift-주{color:#5BCE2B;text-align:center}
+.shift-야{color:#3939BC;text-align:center}
+.shift-비{color:#FF2B2B;text-align:center}
+
+/* 데이트 헤더 */
+.date-header{text-align:center;background-color:#6F84A5;line-height:30px;color:white}
+.date-header>div:nth-child(2){border-left: 1px solid #c1c1c1}
+.date-header .col{text-align:center;background-color:#6F84A5;line-height:30px;color:white;border-right: 1px solid #c1c1c1}
+.date-header .col .day-text{background-color:#E1E1E1;color:black;border-top:1px solid #c1c1c1}
+.date-header .col>div:nth-child(1){line-height:48px;}
+.date-header .col>div:nth-child(2){line-height:38px;}
+
+/* 리스트 아이템 */
+.schedule-list{border-top:1px solid #c1c1c1;border-left:1px solid #c1c1c1}
+.list-item .member-team{background-color:white;line-height:38px;text-align:center;border-bottom:1px solid #c1c1c1;border-right:1px solid #c1c1c1;}
+.list-item .box{flex:1 0 0;line-height:38px;border-bottom:1px solid #c1c1c1;border-right:1px solid #c1c1c1;}
+
+/* 팀 리스트 */
+.team-list{flex-wrap:nowrap;overflow-x:scroll;gap:20px;}
+.team-list-item{flex-direction:column;}
+
+/* 멤버 리스트 재정의 */
+.member-hour{font-size:14px;}
+.card-member.list-type .member-picture{width:40px;height:40px;}
+
+</style>
+</head>
+<body data-page-scope="schedule/monthly">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="d-flex" style="justify-content:space-between;">
+                <p  role="button"></p>
+                <div class="d-flex" style="margin-bottom:40px;">
+                    <div>
+                        <div class="d-flex" style="margin-top:10px;">
+                            <div>
+                                <p class="fw-bold fs-18">근무현황</p>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#FF7500;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#FF7500">조</div>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#5BCE2B;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#5BCE2B">주</div>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#3939BC;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#3939BC">야</div>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#FF2B2B;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#FF2B2B">비</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="monthList" class="d-flex flex-column">
+            </div>
+        </div>
+    </div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+
+function init(params) {
+    pagectx.year = dateFormat(new Date(), "yyyy");
+    pagectx.month = dateFormat(new Date(), "MM");
+
+    TeamMemberManager.init(params);
+}
+
+let TeamMemberManager = {
+    data: {},
+    init: function() {
+        AJAX.get('/schedule/agents','', function(list) {
+            TeamMemberManager.data = list;
+            ScheduleManager.init(pagectx.year, 10);
+            ScheduleManager.init(pagectx.year, 11);
+            ScheduleManager.init(pagectx.year, 12);
+        });
+    }
+}
+
+let ScheduleManager = {
+    init: function(year, month) {
+        AJAX.get(`/teams/schedules/${year+month}`,'', function(list) {
+            ScheduleManager.renderCalendar(year, month, list);
+        });
+    },
+    renderCalendar: function(year, month, list) {
+        let target = `month-${month}`;
+
+        // 1. 테이블 원형 삽입
+        let str = `<div class="month ${target}" style="order:${month}">
+            <div id="page-title" class="month-title">${year}년 ${month}월 근무일정표</div>
+            <div class="date-header text-center" style="display:flex;">
+                <div style="line-height:86px;flex:0 0 262px;">조별/구분</div>
+            </div>
+            <div class="schedule-list"></div>
+            <div class="team-list" style="padding-top: 20px;">
+            </div>
+        </div>`;
+
+        $(`#monthList`).append(str);
+
+        // 이번달 마지막일 구하는거 체크
+        let nextMonth = new Date(year, month, 0);
+        let lastDate = nextMonth.getDate();
+
+        // 2.for 문으로 A를 1~31 까지 한번 돌리고
+        let dayKor = ['일', '월', '화', '수', '목', '금', '토'];
+        let holidays = [];
+        let cache = {};
+
+        for(const team of CodeManager.team) {
+            cache[team.c] = {team:team.c, acc:0, night:0, over:0, holi:0};
+        }
+
+        for(let i = 1; i <= lastDate; i++){
+            let date = i.toString().padStart(2,"0");
+            let day = new Date(`${pagectx.year}-${pagectx.month}-${date}`).getDay();
+            if(day == 0 || day == 6) holidays.push(i);
+
+            // 헤더
+            $(`.${target} .date-header`).append(`<div class="col day-${day}">
+                <div>${date}</div>
+                <div class="day-text">${dayKor[day]}</div>
+            </div>`);
+        }
+
+        // 1. 팀 별
+        for (const team of CodeManager.team) {
+            $(`.${target} .schedule-list`).append(`<div class="list-item d-flex team-${team.c}">
+                <div class="member-team" style="flex:0 0 262px;">${team.c}팀</div>
+            </div>`);
+
+            // 하단 팀 리스트
+            $(`.${target} .team-list`).append(`<div class="team-list-item d-flex team-${team.c}">
+                <div class="team-list-name fs-20 fw-bold">${team.c}팀</div>
+            </div>`);
+
+            // 박스 + 주말 계산
+            for (let i = 1; i <= lastDate; i++) {
+                $('.list-item').last().append(`<div class="box date-${i}"></div>`);
+
+            }
+        }
+
+        // 2. 팀 별 스케줄 표시
+        for(const schedule of list) {
+            let i = parseInt(schedule.date.substr(6));
+
+            $(`.${target} .list-item.team-${schedule.team} .date-${i}`).addClass('shift-' + schedule.shift);
+            $(`.${target} .list-item.team-${schedule.team} .date-${i}`).append(schedule.shift);
+            // 시간 계산
+            let targetTeam = cache[schedule.team];
+            if(schedule.shift != '비') {
+                targetTeam.acc += 8;
+            }
+            if(schedule.shift == '야') {
+                targetTeam.night += 8;
+            }
+            if(holidays.includes(i)) {
+                targetTeam.holi += 8;
+            }
+        }
+
+        // 2. 멤버 별
+        for(const member of TeamMemberManager.data) {
+            if(!isValid(member.team)) continue; //new
+            $(`.${target} .team-list .team-${member.team}`).append(`<div class="card-member card list-type">
+                <div class="card-body">
+                    <div class="member-picture bg-full"></div>
+                    <div class="member-text">
+                        <div class="d-flex" style="justify-content:center;">
+                            <div class="near-name"></div>
+                            <div class="member-name fw-bolder" style="margin-left:5px;">${member.name}</div>
+                        </div>
+                        <div class="member-team" style="color:#A2A2A2">${member.team}팀</div>
+                    </div>
+                    <div class="member-hours" style="gap:0">
+                        <div class="member-hour">근무일수<br>${cache[member.team].acc}시간</div>
+                        <div class="member-hour">휴일근무<br>${cache[member.team].holi}시간</div>
+                        <div class="member-hour">초과근무<br>${cache[member.team].over}시간</div>
+                        <div class="member-hour">야간근무<br>${cache[member.team].night}시간</div>
+                    </div>
+                </div>
+            </div>`);
+        }
+    }
+}
+</script>
+</body>
+</html>

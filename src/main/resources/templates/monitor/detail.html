@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>모니터링현황</title>
+    <style>
+        #page-title:before{content:url("/images/before/monitor.svg");margin-right:10px;vertical-align:middle}
+
+        .col-6{width:49.7%;margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="monitor/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p id="page-title">모니터링현황</p>
+
+                <div class="wrap border-top">
+                    <p>모니터링 상세 정보</p>
+
+                    <form id="main-form" method="post" onsubmit="return false;">
+                        <div class="d-flex flex-wrap fs-14">
+                            <div class="col-6 d-flex">
+                                <div class="label">시간</div>
+                                <div class="content" name="createdAt"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">구분</div>
+                                <div class="content" name="workDgubun"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">CCTV</div>
+                                <div class="content" name="cctvIndex"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">조치</div>
+                                <div id="radio-jochi" class="content"></div>
+                            </div>
+                            <div class="col-12 d-flex">
+                                <div class="label">내용</div>
+                                <div class="content" name="workContent"></div>
+                            </div>
+
+
+                            <!-- 1차 구분(상황, 장애) -->
+                            <div class="col-12 d-flex for-dtype for-D02" id="div-for-d01">
+                                <div class="label">상황 구분</div>
+                                <div class="content">
+                                    <div id="input-situ-type"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex d-none for-dtype for-D01" id="div-for-d02">
+                                <div class="label">장애 구분</div>
+                                <div class="content">
+                                    <div id="input-barrier-level"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex for-dtype for-D02">
+                                <div class="label">상세 상황</div>
+                                <div class="content d-flex">
+                                    <div id="input-situ-detail"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex">
+                                <div class="label">조치결과</div>
+                                <div class="content">
+                                    <textarea class="form-control" name="actionResult" style="min-height:200px;"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- 버튼 -->
+                        <div class="buttons d-flex justify-content-between">
+                            <div class="d-flex justify-content-start gap-1">
+                                <a class="btn btn-sm btn-warning" onclick="Page.back()">목록</a>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-1">
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    pagectx = params;
+
+    AJAX.get(`/daily-reports/events/` + request.getParameter('id'), '', function(item) {
+        pagectx.item = item;
+        createForm(item);
+    });
+
+    function createForm(item) {
+        let dateArray = ['createdAt', 'updatedAt', 'actionRegdate'];
+        for(let pair of Object.entries(item)){
+            // 날짜
+            if(dateArray.includes(pair[0])) pair[1] = get(pair[1], '').replaceAll('T',' ');
+            let fixed = (typeof pair[1] == 'string') ? StringUtils.brToCr(pair[1]): pair[1];
+            $(`*[name=${pair[0]}]`).text(fixed);
+        }
+
+        $('*[name=workDgubun]').text(CodeManager.get('work_dgubun', item.workDgubun, '기타'));
+
+        // 히든
+        $('form').eq(0).append(`<input type="hidden" name="actionUsername" value="${params.usrobj.name}"}>`);
+        $('form').eq(0).append(`<input type="hidden" name="actionUserid" value="${params.usrobj.userid}"}>`);
+
+        // 조치
+        let action = get(item.actionCode, CodeManager.work_jochi[0].c);
+        let resultList = (item.workDgubun === 'D01') ? CodeManager.work_jochi : CodeManager.situ_result;
+        for(let i = 0; i < resultList.length; i++) {
+            let code = resultList[i];
+            let str = `<div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="actionCode" value="${code.c}" id="radio-action-${i}" ${(code.c == action) ? 'checked' : ''}>
+                <label class="form-check-label" for="radio-action-${i}">${code.n}</label>
+            </div>`;
+            $('#radio-jochi').append(str);
+        }
+
+            // 상세 상황(221226)
+            let situ = CodeManager.situ;
+            for(let i = 0; i < situ.length; i++) {
+                let str = `<div class="form-check form-check-inline" onclick="showSituDetails('${situ[i].c}')">
+                    <input class="form-check-input" type="radio" name="dummy01" value="${situ[i].c}" id="radio-bl1-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-bl1-${i}">${situ[i].n}</label>
+                </div>`;
+            $('#input-situ-type').append(str);
+        }
+
+        // 상세 장애(221226)
+        let barrierLevels = CodeManager.barrier_level;
+        for(let i = 0; i < barrierLevels.length; i++) {
+            let code = barrierLevels[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="barrierLevel" value="${barrierLevels[i].c}" id="radio-bl2-${code.c}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-bl2-${code.c}">${barrierLevels[i].n}</label>
+                </div>`;
+            $('#input-barrier-level').append(str);
+        }
+
+        selectDType(item.workDgubun);
+        showSituDetails(situ[0].c);
+        editForm(params);
+
+        // 일지 삭제
+        $('#btn-delete').on('click', {item:item}, function(e) {
+            Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
+                let formData = new FormData();
+                AJAX.remove('/dailyreport/event/' + item.id, formData, function (data) {
+                    Dialog.alert(data.message, function() {
+                        Page.go('/monitor/list');
+                    });
+                });
+            }, function () {
+            }, e.data.item);
+        });
+
+    }
+
+    $('#main-form').on('submit', function() {
+        let formData = new FormData(document.getElementById('main-form'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        AJAX.put('/daily-reports/events/'+pagectx.item.id+'/action', formData, function(data) {
+            Dialog.alert(data.message, function() {
+                Page.go('/monitor/list');
+            });
+        });
+    });
+}
+
+function editForm(params) {
+    let item = params.item;
+    let barrierLevel = item.barrierLevel;
+    console.log(item)
+
+    // 상세 상황 선택
+    if(item.workDgubun == 'D02') {
+        $(`#radio-bl1-${barrierLevel.substr(1,1)}`).trigger('click');
+        showSituDetails(barrierLevel.substr(0,2));
+        $(`#radio-sd-${barrierLevel.substr(2,1)}`).trigger('click');
+    }
+    else { // 장애
+        $(`#radio-bl2-${barrierLevel}`).trigger('click');
+    }
+}
+
+function selectDType(type) {
+    $('.for-dtype').addClass('d-none');
+    $('.for-' + type).removeClass('d-none');
+    $('#input-situ-detail input[name=barrierLevel]').eq(0).trigger('click');
+}
+
+function showSituDetails(situCode) {
+    $('#input-situ-detail').html('');
+    let find = CodeManager.situ.find(code => code.c == situCode) ?? CodeManager.situ[0];
+    let situDetails = find.r.split(',');
+    for(let i = 0; i < situDetails.length; i++) {
+        let situDetail = situDetails[i];
+        let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="barrierLevel" value="${situCode + i}" id="radio-sd-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-sd-${i}">${situDetail}</label>
+                </div>`;
+        $('#input-situ-detail').append(str);
+    }
+}
+
+</script>
+</body>
+</html>

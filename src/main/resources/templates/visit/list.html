@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>방문자 관리대장</title>
+    <style>
+        #page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
+        #ntc .fs-14{display:none!important}
+    </style>
+</head>
+<body data-page-scope="visit/list" data-option='{"auth":false}'>
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">방문자 대장</p>
+
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <select class="form-select search-key" data-sfor="#search-value-1" style="width:120px;">
+                                <option value="company">회사</option>
+                                <option value="name">방문자</option>
+                            </select>
+                            <input id="search-value-1" class="form-control" value="" style="width:180px;">
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+
+                    <table id="mainTable" class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">출입자소속</th>
+                            <th scope="col">출입자성명</th>
+                            <th scope="col">연락처</th>
+                            <th scope="col">입실시간</th>
+                            <th scope="col">퇴실시간</th>
+                            <th scope="col">상태</th>
+                            <th scope="col">용무</th>
+                            <th scope="col">담당자</th>
+                            <th scope="col">퇴실</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons d-flex">
+                        <div class="col-2">
+                            <button id="btn-excel" class="btn btn-primary d-none" style="width:76px;height:34px;">엑셀</button>
+                        </div>
+                        <div class="col-8">
+                            <!-- 페이지 -->
+                            <nav id="pageSection" aria-label="Page navigation example">
+                            </nav>
+                        </div>
+                        <div class="col-2 d-flex align-self-center justify-content-end gap-1" >
+                            <a id="anchorLogin" class="btn btn-warning text-white" href="/" role="button">로그인</a>
+                            <a class="btn btn-sm btn-primary" href="write" role="button">등록</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="layout/common :: script"></th:block>
+<script>
+function init(params) {
+    $("#ntc").append(`<div class="fs-16" style="margin:0 auto;text-align:center;padding:20px 0;width:50%;background-color:white;margin-top:40px;">퇴실 하실 땐, 퇴실하기를 클릭해주시길 바랍니다.</div>`);
+
+    let mode = (isValid(params.usrobj)) ? true : false;
+    if(mode){
+        $('#btn-excel').removeClass('d-none');
+        $('#anchorLogin').remove();
+        ExcelManager.init();
+    }
+    let url = (mode) ? '/visits/all' : '/visits';
+
+    setTable(params);
+    Page.setPaging({});
+    SearchManager.setSearch({callBack:renderTable, src: url, table:'#mainTable'});
+
+    function setTable(params) {
+        AJAX.get(url, location.search.substr(1), function(list) {
+            renderTable(list);
+        });
+    }
+
+    function renderTable(list) {
+        $('#mainTable tbody *').remove();
+
+        if(list.length == 0) {
+            $('tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        // 공지는 상단에 정렬
+        list.sort(function(a, b)  {
+            return b.id - a.id;
+        });
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            console.log(item);
+            let str = `
+                <tr>
+                    <td>${item.companyName}</td>
+                    <td>${(SSO.isLogined()) ? `<a class="text-primary anchor-out" role="button" href="/visit/edit?id=${item.id}">${item.username}</a>`
+                        :`${item.username}`}</td>
+                    <td>${item.hpNo}</td>
+                    <td>${item.entDate.replaceAll('T', ' ')}</td>
+                    <td>${(isValid(item.outDate)) ? item.outDate.replaceAll('T',' ') : '-'}</td>
+                    <td>${(item.status == 'Y')?'방문중':'퇴실'}</td>
+                    <td>${item.body}</td>
+                    <td>${item.submitUser}</td>
+                    <td>${(isValid(item.outDate)) ? '' : `<a class="text-primary anchor-out" role="button" href="/visit/out?id=${item.id}">퇴실하기</a>`}</td>
+                </tr>`
+
+            $('#mainTable tbody').append(str);
+        }
+    }
+}
+
+let ExcelManager = {
+    init: function() {
+        $('#btn-excel').on('click', function() {
+            AJAX2.get('/api/visits/excel').then(ExcelManager.download);
+        })
+    },
+    download: function(list) {
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push('방문자대장');
+
+        let columns = ['연번','출입자소속','출입자성명','연락처','입실시간','퇴실시간','상태','용무','담당자'];
+        let data = [columns];
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let temp = [];
+
+            temp.push(item.id);
+            temp.push(item.companyName);
+            temp.push(item.username);
+            temp.push(item.hpNo);
+            temp.push(item.entDate.replaceAll('T', ' '));
+            temp.push((isValid(item.outDate)) ? item.outDate.replaceAll('T',' ') : '-');
+            temp.push((item.status == 'Y')?'방문중':'퇴실');
+            temp.push(item.body);
+            temp.push(item.submitUser);
+            
+            data.push(temp);
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        wb.Sheets['방문자대장'] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType:'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbOut)],{type:"application/octet-stream"}), dateFormat() + " 방문자대장.xlsx");
+    }
+}
+</script>
+</body>
+</html>

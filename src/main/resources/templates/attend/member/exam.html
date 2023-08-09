@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/css/member.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<link rel="stylesheet" href="/js/bootstrap-table/excel-bootstrap-table-filter-style.css">
+<head>
+<meta charset="UTF-8">
+<title>근무자정보</title>
+<style>
+</style>
+</head>
+<body data-page-scope="attend/member/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <p id="page-title">근무자 정보</p>
+
+        <div id="memberList"></div>
+
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/bootstrap-table/excel-bootstrap-table-filter-bundle.js"></script>
+<script>
+function init(params) {
+    let date = new Date();
+    let year = date.getFullYear();
+    let month = date.getMonth()+1;
+
+    TeamMemberManager.init(year, month);
+}
+
+let TeamMemberManager = {
+    data: {},
+    init: function(year, month){
+        AJAX.get('/schedule/agents','', function(list) {
+            TeamMemberManager.data = list;
+            TeamMemberManager.renderTable(year, month);
+        });
+    },
+    renderTable: function(year, month) {
+        ScheduleManager.init(year, month);
+    }
+}
+
+let ScheduleManager = {
+    init: function(year, month) {
+        AJAX.get(`/teams/schedules/${year}${month}`,'', function(list) {
+            ScheduleManager.renderCalendar(year, month, list);
+        });
+    },
+    renderCalendar: function(year, month, list) {
+        let data = [];
+        for(const schedule of list){
+        }
+    }
+}
+</script>
+</body>
+</html>

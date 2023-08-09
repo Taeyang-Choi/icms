@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>팀스케줄(미리보기)</title>
+<style>
+#page-title:before {
+content: url("/images/before/schedule.svg");
+margin-right: 10px;
+vertical-align: middle
+}
+#page-title:before{content:url("/images/before/schedule.svg");margin-right:10px;vertical-align:middle}
+
+#inputMonth{text-align:center;color:white;background-color:#122037;border-radius:5px;}
+#inputMonth:visited{color:white;background-color:#6F84A5}
+#inputMonth:active{color:white;background-color:#6F84A5}
+input[type="month"]::-webkit-calendar-picker-indicator{background-image:url(/images/schedule_calendar.svg);background-color:transparent;cursor:pointer}
+
+.calendar-schedule .list-item>div{border-right:none}
+</style>
+</head>
+<body data-page-scope="schedule/main">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <div class="d-flex" style="justify-content:space-between;padding:30px 0 20px">
+                    <div class="d-flex align-items-center gap-3">
+                        <p id="page-title">월간 팀 스케줄 현황</p>
+                        <input id="inputMonth" class="form-control" type="month" min="2013-01" style="width:140px;">
+                    </div>
+                    <div class="d-flex flex-column justify-content-end align-items-end">
+                        <a id="aWeekly" class="fw-bold" href="weekly" style="color:#171752;margin-right:15px;font-size:15px">주간 단위로 보기 -></a>
+                        <div class="d-flex" style="margin-top:14px;">
+                            <div class="d-flex" style="height: 26px;">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#FF7500;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#FF7500">조</div>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px;">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#5BCE2B;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#5BCE2B">주</div>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px;">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#3939BC;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#3939BC">야</div>
+                            </div>
+                            <div class="d-flex" style="height: 26px;margin-left:22px;">
+                                <div style="width:20px;height:20px;border-radius:5px;background-color:#FF2B2B;margin:3px 0;"></div>
+                                <div style="margin-left:6px;color:#FF2B2B">비</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="calendar-schedule" style="border-top:1px solid #c1c1c1">
+
+                    <!-- 헤더 -->
+                    <div class="date-header fs-14" style="display:flex;background-color:#122037">
+                        <div class="member-team calendar-label"><p>근무팀</p></div>
+                        <div class="member-name calendar-label"><p>근무자</p></div>
+                        <div class="purpose calendar-label"><p>목적별</p></div>
+                    </div>
+
+                    <!-- 메인 리스트 -->
+                    <div id="mainList"></div>
+                </div>
+
+                <div class="mt-3 d-flex justify-content-end">
+                    <button id="exportExcel" class="btn btn-warning" style="width:76px;height:34px;">엑셀</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer" style="margin-top:65px;"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/module/schedule.js"></script>
+<script>
+function init(params) {
+    pagectx.year = request.getParameter('year', dateFormat(new Date(), "yyyy"));
+    pagectx.month = request.getParameter('month', dateFormat(new Date(), "MM"));
+
+    // 1. fetch from server
+    ShiftManager.fetchAll(() => {
+        PatternManager.fetchAll({}, (list) => {
+            MemberManager.fetchAllByGrade({grade:3}, (list => {
+                TeamScheduleImpl.init(params, list);
+                ExcelManager.init();
+            }));
+        });
+    });
+
+    $('#inputMonth').val(pagectx.year + "-" + pagectx.month);
+    $('#inputMonth').on('change', function (e) {
+        let val = $(this).val();
+        Page.move(location.pathname + "?year=" + val.split('-')[0] + "&month=" + val.split('-')[1]);
+    });
+}
+
+let TeamScheduleImpl = {
+    lastData: null,
+    data: [],
+    cache: [],
+    previewData: [],
+    seq: 0,
+    initialized: false,
+    init: function (params, list) {
+        let mode = request.getParameter('mode', 'review');
+
+        // 1. 날짜 세팅
+        $('#textMonth').text(pagectx.month + "월");
+        $('#aWeekly').attr('href', 'weekly?year=' + pagectx.year + '&month=' + pagectx.month);
+
+
+        let firstDate = new Date(pagectx.year, pagectx.month-1, 1);
+        let currentDate = new Date(pagectx.year, pagectx.month, 0);
+        pagectx.lastDate = currentDate.getDate();
+
+        // 2.for 문으로 A를 1~31 까지 한번 돌리고
+        for (let i = 1; i <= pagectx.lastDate; i++) {
+            let date = DateUtil.getDateFromDate(firstDate, i-1);
+            $('.date-header').append(`<div data-day="${date.getDay()}" class="box date-${i}"><p>${i}</p></div>`);
+        }
+
+        // 3. 멤버별 for 문
+        MemberManager.list = MemberManager.list.sort((a, b) => {
+            return a.team < b.team ? -1 : a.team > b.team ? 1 : 0
+        });
+
+        for (const member of MemberManager.list) {
+            let monitor = get(member.monitor, '없음');
+            $('#mainList').append(`<div class="list-item d-flex" data-name="${member.name}" data-team="${member.team}" data-monitor="${monitor}">
+                    <div class="member-team calendar-label">${member.team}팀</div>
+                    <div class="member-name calendar-label">${member.name}</div>
+                    <div class="purpose calendar-label">${CodeManager.get('monitoring', monitor, '없음')}</div>
+                </div>`);
+
+            for (let i = 0; i < pagectx.lastDate; i++) {
+                $('.list-item').last().append(`<div class="box date-${i + 1}"></div>`);
+            }
+        }
+
+        if(mode === 'review') { // 보통 보기
+            TeamScheduleManager.fetchByMonth(pagectx.year, pagectx.month, this.reviewMode);
+        }
+        else { // 미리 보기
+            $(`#page-title`).text('월간 팀 스케줄(미리보기)');
+            TeamScheduleImpl.previewMode();
+        }
+    },
+    reviewMode: function(list) {
+        for(const obj of list) {
+            TeamScheduleImpl._drawTable(parseInt(obj.date.substr(6,2)), obj.team, ShiftManager.findByCode(obj.shift));
+        }
+        LeaveManager.fetchByMonth(pagectx.year, pagectx.month, TeamScheduleImpl.handleLeaves);
+    },
+    previewMode: function() {
+        // 4. 팀별 패턴 입력
+        for(let i = 1; i< pagectx.lastDate+1; i++) {
+            let currentIndex = DateUtil.getDateCount(pagectx.year, pagectx.month, i)
+            for(const pattern of PatternManager.list) {
+                let shift = pattern.shiftList[currentIndex%pattern.shiftList.length];
+                this._drawTable(i, pattern.team, shift);
+            }
+        }
+    },
+    _drawTable: function(date, team, shift) {
+        $(`.list-item[data-team="${team}"] .date-${date}`).html(`
+                    <div class="shift-item" data-shift="${shift.shiftCode}" style="background-color:#${shift.color}">${shift.shiftCode}</div>`);
+    },
+    handleLeaves: function (list) {
+        for (const leave of list) {
+            if (leave.status == 0) continue;
+            let startDate = new Date(leave.startDate).getDate();
+
+            if (leave.status === 0) continue;
+
+            if (leave.typeType === '교') { // 교대 근무
+                $(`.list-item[data-name=${leave.drafterName}] .date-${startDate} .shift-item`).html('교').attr('data-shift', '교');
+                $(`.list-item[data-name=${leave.alternativeName}] .date-${startDate} .shift-item`).html('교').attr('data-shift', '교');
+            }
+            else { // 휴가
+                $(`.list-item[data-name=${leave.drafterName}] .date-${startDate} .shift-item`).html('휴').attr('data-shift', '휴');
+                $(`.list-item[data-name=${leave.alternativeName}] .date-${startDate} .shift-item`).html('대').attr('data-shift', '대');
+            }
+        }
+    },
+}
+
+let ExcelManager = {
+    year: null,
+    month: null,
+    data: null,
+    init: function () {
+        $('#exportExcel').on('click', function () {
+            ExcelManager.download();
+        })
+    },
+    download: function () {
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push(pagectx.year + "년 " + pagectx.month + "월");
+
+        let data = [];
+        let $li = $('.list-item');
+
+        let temp = ['연번', '팀별', '목적별', '성명'];
+        for (let d = 1; d <= pagectx.lastDate; d++) {
+            temp.push(d.toString());
+        }
+        temp.push('비고');
+        data.push(temp);
+
+        for (let i = 0; i < $li.length; i++) {
+            let temp = [];
+            temp.push(i + 1);
+            temp.push($li.eq(i).attr('data-team'));
+            temp.push($li.eq(i).children('.purpose').text());
+            temp.push($li.eq(i).attr('data-name'));
+
+            for (let d = 1; d <= pagectx.lastDate; d++) {
+                temp.push($li.eq(i).children('.date-' + d).children('.shift-item').attr('data-shift'));
+            }
+
+            data.push(temp);
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        wb.Sheets[pagectx.year + "년 " + pagectx.month + "월"] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType: 'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            var buf = new ArrayBuffer(s.length);
+            var view = new Uint8Array(buf);
+            for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+
+        }
+
+        saveAs(new Blob([s2ab(wbOut)], {type: "application/octet-stream"}), pagectx.year + "년 " + pagectx.month + "월 예상 근무표.xlsx");
+    }
+}
+
+</script>
+</body>
+</html>

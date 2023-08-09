@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>휴가 타입 설정</title>
+    <style>
+        #page-title:before{content:url("/images/before/leave.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="attend/leave/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">휴가 타입 설정</p>
+
+                    <div class="wrap border-top">
+                        <p>휴가 타입 설정</p>
+
+                        <form id="formLeaveType" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap">
+                                <div class="col-12 d-flex">
+                                    <div class="label">휴가형식</div>
+                                    <div class="content"><input class="form-control" name="type" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">휴가명</div>
+                                    <div class="content"><input class="form-control" name="name" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">사용여부</div>
+                                    <div class="content">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="active" value="1" id="radio-active-1" checked="">
+                                            <label class="form-check-label" for="radio-active-1">사용</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="active" value="0" id="radio-active-2">
+                                            <label class="form-check-label" for="radio-active-2">사용안함</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">전일여부</div>
+                                    <div class="content">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="fullTime" value="1" id="radio-fullTime-1" checked="">
+                                            <label class="form-check-label" for="radio-fullTime-1">전일</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="fullTime" value="0" id="radio-fullTime-2">
+                                            <label class="form-check-label" for="radio-fullTime-2">부분</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">연차반영</div>
+                                    <div class="content">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="annual" value="1" id="radio-annual-1" checked="">
+                                            <label class="form-check-label" for="radio-annual-1">반영</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="annual" value="0" id="radio-annual-2">
+                                            <label class="form-check-label" for="radio-annual-2">반영안함</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a href="list" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    pagectx = params;
+    createForm(params);
+
+    function createForm(params) {
+        AJAX.get(`/leaves/types/${request.getParameter('id','0')}`, '', function(item) {
+            pagectx.item = item;
+            for(let pair of Object.entries(item)){
+                $(`.form-control[name=${pair[0]}]`).val(pair[1]);
+            }
+
+            editForm(item);
+        });
+    }
+
+    function editForm(item) {
+        for(let pair of Object.entries(item)){
+            if(!pair[1]) {
+                $(`#radio-${pair[0]}-2`).prop('checked', 'true');
+            }
+        }
+    }
+
+
+    $('#formLeaveType').on('submit', function() {
+        let formData = new FormData(document.getElementById('formLeaveType'));
+        let vData = Utils.formToObject(formData);
+
+        AJAX.put(`/leaves/types/${request.getParameter('id')}`, formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>카메라 등록수정</title>
+    <style>
+        #page-title:before{content:url("/images/before/statics.svg");margin-right:10px;vertical-align:middle}
+
+        .wrap{overflow-x:scroll}
+        .label{flex: 0 0 278px;width:auto;text-align:center;}
+        .label2{vertical-align:middle;width:104px;background-color:#FCFCFC;padding:9px 0;border:1px solid #E1E1E1;line-height:24px;font-size:14px;text-align:center;}
+        .content{width:auto;}
+        .content.d-flex span{flex:0 0 94px;}
+        .content.d-flex input{flex:0 0 calc(100% - 94px);}
+
+    </style>
+</head>
+<body data-page-scope="cctv/info/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">카메라 등록수정</p>
+
+                    <form id="form-cctv" method="post" onsubmit="return false;">
+                        <div class="wrap border-top">
+                            <p style="min-width:768px;">등록수정</p>
+                            <div style="min-width:768px;">
+                                <div class="d-flex flex-wrap">
+                                    <div style="flex:0 0 278px">
+                                        <div class="label">구분</div>
+                                        <div class="label">담당부서</div>
+                                        <div class="label">주소</div>
+                                        <div class="label">인덱스</div>
+                                        <div class="label">위치</div>
+                                        <div class="label">카메라분류</div>
+                                        <div class="label">고정,회전</div>
+                                        <div class="label">야간식별</div>
+                                        <div class="label">형태</div>
+                                        <div class="label">설치년도</div>
+                                    </div>
+                                    <div style="flex:1 1 auto">
+                                        <div class="content"><input type="text" class="form-control required" name="cctv_gubun"></div>
+                                        <div class="content"><input type="text" class="form-control" name="dept"></div>
+                                        <div class="content"><input type="text" class="form-control" name="juso"></div>
+                                        <div class="content"><input type="text" class="form-control required" name="cctv_index"></div>
+                                        <div class="content"><input type="text" class="form-control" name="location"></div>
+                                        <div class="content"><input type="text" class="form-control" name="camera_category"></div>
+                                        <div class="content"><input type="text" class="form-control" name="movement"></div>
+                                        <div class="content"><input type="text" class="form-control" name="nightvision"></div>
+                                        <div class="content"><input type="text" class="form-control" name="shage"></div>
+                                        <div class="content"><input type="text" class="form-control" name="installymd"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 영상정보발생부문 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="flex:0 0 278px">
+                                        <div class="label" style="flex:0 0 70px;">영상<br>정보<br>발생<br>부문</div>
+                                        <div class="label" style="flex:0 0 104px;">CCD<br>카메라</div>
+                                        <div>
+                                            <div class="label2">제조사</div>
+                                            <div class="label2">모델명</div>
+                                            <div class="label2">화소수</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex:1 1 auto">
+                                        <div class="content"><input type="text" class="form-control" name="manufacturer"></div>
+                                        <div class="content"><input type="text" class="form-control" name="model"></div>
+                                        <div class="content"><input type="text" class="form-control" name="pixel"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 접속 정보 부분 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="flex:0 0 278px">
+                                        <div class="label" style="flex:0 0 174px;line-height:288px;">접속 정보</div>
+                                        <div class="" style="flex:0 0 104px;">
+                                            <div class="label2">종류</div>
+                                            <div class="label2">IP</div>
+                                            <div class="label2">PORT</div>
+                                            <div class="label2">ID</div>
+                                            <div class="label2">PW</div>
+                                            <div class="label2">model</div>
+                                            <div class="label2">server type</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex:1 1 auto">
+                                        <div class="content"><input type="text" class="form-control" name="connect_type"></div>
+                                        <div class="content"><input type="text" class="form-control" name="connect_ip"></div>
+                                        <div class="content"><input type="text" class="form-control" name="connect_port"></div>
+                                        <div class="content"><input type="text" class="form-control" name="connect_id"></div>
+                                        <div class="content"><input type="text" class="form-control" name="connect_pw"></div>
+                                        <div class="content"><input type="text" class="form-control" name="connect_model"></div>
+                                        <div class="content"><input type="text" class="form-control" name="connect_server_type"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 유지보수 업체 부분 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="flex:0 0 278px">
+                                        <div class="label" style="flex:0 0 174px;line-height:112px;">유지보수 업체</div>
+                                        <div class="" style="flex:0 0 104px;">
+                                            <div class="label2">업체명</div>
+                                            <div class="label2">담당자</div>
+                                            <div class="label2">연락처</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex:1 1 auto">
+                                        <div class="content"><input type="text" class="form-control" name="sm_company"></div>
+                                        <div class="content"><input type="text" class="form-control" name="sm_person"></div>
+                                        <div class="content"><input type="text" class="form-control" name="sm_tel"></div>
+                                    </div>
+                                </div>
+
+                                <!-- PTZ -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="flex:0 0 278px">
+                                        <div class="label" style="flex:0 0 174px;line-height:68px;">PTZ</div>
+                                        <div class="">
+                                            <div class="label2">사용</div>
+                                            <div class="label2">PRESET</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex:1 1 auto">
+                                        <div class="content"><input type="text" class="form-control" name="ptz_useyn"></div>
+                                        <div class="content d-flex"><span>- 사용유무 :</span><input type="text" class="form-control" name="preset_useyn"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 고장여부 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="flex:0 0 278px">
+                                        <div class="label" style="flex:0 0 174px;line-height:156px;">고장여부</div>
+                                        <div class="">
+                                            <div class="label2" style="line-height:68px;">카메라</div>
+                                            <div class="label2">장비</div>
+                                            <div class="label2">네트워크</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex:1 1 auto">
+                                        <div class="content d-flex">
+                                            <span>- 고장:</span>
+                                            <input type="text" class="form-control" name="fall_camera">
+                                        </div>
+                                        <div class="content d-flex">
+                                            <span>- 화질상태 :</span>
+                                            <input type="text" class="form-control" name="fall_definition">
+                                        </div>
+                                        <div class="content"><input type="text" class="form-control" name="fall_equipment"></div>
+                                        <div class="content"><input type="text" class="form-control" name="fall_network"></div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex d-none">
+                                    <div class="label2" style="flex:0 0 278px;line-height:268px;">이미지 업로드</div>
+                                    <div class="content">
+                                        <!--input type="file" name="img1" class="label">
+                                        <input type="file" name="img2" class="label">
+                                        <input type="file" name="img3" class="label">
+                                        <input type="file" name="img4" class="label">
+                                        <input type="file" name="img5" class="label"-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between" style="margin-top:30px">
+                            <a class="btn btn-warning" role="button" onclick="Page.back();">목록</a>
+                            <button type="submit" class="btn btn-primary">확인</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init() {
+    $('#form-cctv').on('submit', function() {
+        let rawFormData = new FormData($('form')[0]);
+        let formData = new FormData();
+        let data = {};
+
+        for(let pair of rawFormData.entries()){
+            if(!isValid(pair[1]) && $(`input[name=${pair[0]}].required`).length != 0) {
+                Dialog.alert($(`input[name=${pair[0]}]`).parent().parent().children('div').text() + " 을(를) 입력해 주세요.", function() {
+                    $(`input[name=${pair[0]}].required`).trigger('focus');
+                });
+                return;
+            }
+            data[StringUtils.snakeToCamel(pair[0])] = pair[1];
+        }
+
+        console.log(data);
+        formData.append("data", JSON.stringify(data));
+        AJAX.post("/cctv", formData, data ,function(res) {
+            console.log(res);
+            Dialog.alert(res.message, function() {
+                Page.back();
+            });
+        });
+    });
+}
+function dummy() {
+    $i = $('input');
+    for(let i = 0 ; i < $i.length; i++) {
+        $i.eq(i).val(i);
+    }
+}
+</script>
+</body>
+</html>

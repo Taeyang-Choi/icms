@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/css/member.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>팀스케줄</title>
+<style>
+#page-title:before{content:url("/images/before/schedule.svg");margin-right:10px;vertical-align:middle}
+.date-item .조{background-color:#FF7500;width:21px;height:21px;border-radius:5px;margin-right: 3px;line-height:22px}
+.date-item .주{background-color:#5BCE2B;width:21px;height:21px;border-radius:5px;margin-right: 3px;line-height:22px}
+.date-item .야{background-color:#3939BC;width:21px;height:21px;border-radius:5px;margin-right: 3px;line-height:22px}
+.date-item .비{background-color:#FF2B2B;width:21px;height:21px;border-radius:5px;margin-right: 3px;line-height:22px}
+
+/* 달력 */
+.calendar-head>div{width:14.285%;line-height:48px;background-color:transparent;background-color:#122037;color:white}
+.calendar .date-item{width:14.285%;min-height:130px;padding:14px;}
+.calendar .date-item:nth-child(7n) {color:#0d6efd;}
+.calendar .date-item:nth-child(7n-6) {color:#dc3545;}
+.calendar .date-item.active{background-color:white;box-shadow:0 3px 6px rgba(0, 0, 0, 0.16)!important;margin-bottom:-1px}
+
+.week-item{display:none}
+.week-item.active{display:flex}
+
+.date-item{display:flex;flex-direction:column;}
+.date-item>div:nth-child(4){border-bottom:1px solid #E5E5E5}
+
+.schedule-item{text-align:center;padding:22px 0;background:white;border-top:1px solid #E5E5E5;border-left:1px solid #E5E5E5;border-right:1px solid #E5E5E5}
+.schedule-item.shift-조 div{color:#FF7500;order:1}
+.schedule-item.shift-주 div{color:#5BCE2B;order:2}
+.schedule-item.shift-야 div{color:#3939BC;order:3}
+.schedule-item.shift-비 div{color:#FF2B2B;order:4}
+.schedule-item .team-name{color:#A2A2A2;}
+
+.team-list-item{border-radius:0;display:none;}
+.team-list-item.active{display:block;box-shadow:0 3px 6px rgba(0, 0, 0, 0.16)}
+.team-list{width:max-content} 
+
+</style>
+</head>
+<body data-page-scope="schedule/main">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <div class="d-flex" style="justify-content:space-between;">
+                        <p id="page-title">주간 스케줄 보기</p>
+                        <div class="d-flex" style="margin-left:40px;">
+                            <i class="ri-arrow-left-s-line fs-32" onclick="TeamScheduleManager.prevWeek()" style="padding-top: 15px;" role="button"></i>
+
+                            <div>
+                                <p class="fs-32 month" style="font-weight:bold;text-align:right;padding-top: 15px;"></p>
+                                <a id="anchorToMonthly" class="d-block fs-14 fw-bolde text-center" href="" style="color:#171752;">월간 단위로 보기</a>
+                            </div>
+                            <i class="ri-arrow-right-s-line fs-32" onclick="TeamScheduleManager.nextWeek()" style="padding-top: 15px;" role="button"></i>
+                        </div>
+                        <div class="d-flex" style="margin:15px 0 40px;">
+                            <div>
+                                <div>
+                                    <p class="fw-bold fs-18 text-end">근무현황</p>
+                                </div>
+                                <div class="d-flex" style="margin-top:10px;">
+                                    <div class="d-flex" style="height: 26px;">
+                                        <div style="width:20px;height:20px;border-radius:5px;background-color:#FF7500;margin:3px 0;"></div>
+                                        <div style="margin-left:6px;color:#FF7500">조</div>
+                                    </div>
+                                    <div class="d-flex" style="height: 26px;margin-left:22px;">
+                                        <div style="width:20px;height:20px;border-radius:5px;background-color:#5BCE2B;margin:3px 0;"></div>
+                                        <div style="margin-left:6px;color:#5BCE2B">주</div>
+                                    </div>
+                                    <div class="d-flex" style="height: 26px;margin-left:22px;">
+                                        <div style="width:20px;height:20px;border-radius:5px;background-color:#3939BC;margin:3px 0;"></div>
+                                        <div style="margin-left:6px;color:#3939BC">야</div>
+                                    </div>
+                                    <div class="d-flex" style="height: 26px;margin-left:22px;">
+                                        <div style="width:20px;height:20px;border-radius:5px;background-color:#FF2B2B;margin:3px 0;"></div>
+                                        <div style="margin-left:6px;color:#FF2B2B">비</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mainWeek" class="mt-3">
+                        <div class="d-flex calendar-head text-center">
+                            <div>일요일</div>
+                            <div>월요일</div>
+                            <div>화요일</div>
+                            <div>수요일</div>
+                            <div>목요일</div>
+                            <div>금요일</div>
+                            <div>토요일</div>
+                        </div>
+                        <div class="calendar" style="border-bottom: 1px solid #F1F1F1;">
+                        </div>
+                    </div>
+
+                    <div id="teamList" class="team-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer" style="margin-top:65px;"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    pagectx.year = request.getParameter('year', dateFormat(new Date(), "yyyy"));
+    pagectx.month = request.getParameter('month', dateFormat(new Date(), "MM"));
+    pagectx.week = 1;
+    pagectx.maxWeek = 6;
+
+    //$(`#anchorToMonthly`).prop('href',`main?year=${pagectx.year}&month=${pagectx.month}`);
+    $(`#anchorToMonthly`).prop('href',`/schedule/preview?mode=preview`);
+
+    $('.month').html(`${pagectx.month}월 ${pagectx.week}주`);
+
+    TeamManager.init(params);
+    TeamMemberManager.init(params);
+    TeamScheduleManager.init();
+}
+
+let TeamManager = {
+    data: {},
+    initialized: false,
+    init: function(params) {
+        this.initialized = true;
+        this.data = CodeManager.team;
+        this.renderList(params);
+    },
+    renderList: (params) => {
+        let teamList = CodeManager.team;
+        for(let i = 0; i < teamList.length; i++) {
+            let item = teamList[i];
+
+            // 팀 설정에 팀 추가
+            $('#teamList').append(`<div class="team-list-item team-${item.c}">
+            </div>`);
+        }
+    }
+}
+
+let TeamMemberManager = {
+    data: {},
+    init: function() {
+        let _p = new Date(pagectx.year, pagectx.month+1,0);
+        let day = _p.getDay();
+        let date = _p.getDate();
+        // 1.calendar/list.html 에서 이번달 마지막일 구하는거 체크
+        let _c = new Date(pagectx.year, pagectx.month+1, 0);
+        pagectx.nextDate = _c.getDate();
+
+        // 2.for 문으로 A를 1~31 까지 한번 돌리고
+        for(let i = 1; i <= pagectx.lastDate; i++){
+            $('.date-header').append('<div class="box date-'+i+'">'+i +'</div>');
+        }
+
+        AJAX.get('/schedule/agents','', function(list) {
+            TeamMemberManager.data = list;
+        });
+    }
+}
+
+let TeamScheduleManager = {
+    data: [],
+    initialized: false,
+    init: function() {
+        let dateCode = pagectx.year + pagectx.month;
+        AJAX.get('/teams/schedules/' + dateCode,'', function(list) {
+            TeamScheduleManager.data = list;
+            TeamScheduleManager.renderTable(list);
+        });
+
+        $('#btnPreviewSchedule').on('click', () => {TeamScheduleManager.previewSchedule();})
+    },
+    renderCalendar: function() {
+        let _p = new Date(pagectx.year, parseInt(pagectx.month)-1, 0);
+        let _c = new Date(pagectx.year, pagectx.month, 0);
+
+        //$('#input-month').val(year+"-"+((month+1 < 10) ? '0'+(month+1) : month+1));
+
+        let prevDay = _p.getDay();
+        let nextDay = _c.getDay();
+        let nextDate = _c.getDate();
+        let count = 7;
+
+        $('.calendar').html('');
+
+        for(let i = 0; i < 6; i++) {
+            $('.calendar').append(`<div class="week-item week-${i+1} flex-wrap"></div>`);
+        }
+
+        // 저번달 공백
+        for (let i = 0; i <= prevDay; i++) {
+            if(prevDay == 6) break
+            $(`.week-${parseInt(count/7)}`).append('<div class="date-item"></div>')
+            count++;
+        }
+
+        // 이번달
+        for (let i = 1; i <= nextDate; i++) {
+            $(`.week-${parseInt(count/7)}`).append(`<div class="date-item date-${i} "></div>`);
+            count++;
+        }
+
+        for (let i = 0; i < 6 - nextDay; i++) {
+            if(nextDay == 0) break;
+            $(`.week-${parseInt(count/7)}`).append('<div class="date-item"></div>')
+            count++;
+        }
+
+        for(let i = 0; i < $('.week-item').length; i++) {
+            if($('.week-item').eq(i).children('.date-item').length == 0) {
+                $('.week-item').eq(i).remove();
+                pagectx.maxWeek--;
+            }
+        }
+    },
+    renderTable: function() {
+        if (!this.initialized) {
+            this.renderCalendar();
+        }
+        this.initialized = true;
+        this.cache = {};
+
+        for(const team of TeamManager.data) {
+            this.cache[team.c] = {team:team.c, acc:0, night:0, over:0, holi:0};
+        }
+
+        for (const schedule of this.data) {
+            let date = parseInt(schedule.date.substring(6));
+            $(`.date-${date}`).append(`<div class="schedule-item shift-${schedule.shift} ${schedule.date}-${schedule.team} team-${schedule.team} d-flex" style="justify-content:center;gap:5px">
+                <div class="d-flex" style="justify-content:center;align-items:center;">
+                    <div class="${schedule.shift}" style="color:white">${schedule.shift}</div>
+                </div>
+                <div class="team-name">${schedule.team}</div>
+            </div>`);
+
+            // 시간 계산
+            let targetTeam = this.cache[schedule.team];
+            if(schedule.shift != '비') {
+                targetTeam.acc += 8;
+            }
+            if(schedule.shift == '야') {
+                targetTeam.night += 8;
+            }
+        }
+        this.renderMemberList();
+        this.showWeek();
+
+        /* 이벤트 등록 */
+
+        for(const team of TeamManager.data) {
+            $(`.date-item .team-${team.c}`).on('click', function(e) {
+                $('.date-item').removeClass('active');
+                $(this).parent().addClass('active');
+
+                $('.team-list-item').removeClass('active');
+                $(`.team-list-item.team-${team.c}`).addClass('active');
+
+                let width = $('.calendar').width() / 7;
+                let index = $(this).parent().index();
+
+                let offset = index * width;
+                if(index > 3) {
+                    let teamListWidth = $(`.team-list-item`).eq(0).width();
+                    offset = index * width - (teamListWidth-width+40);
+                }
+                $(`#teamList`).css('transform',`translateX(${offset}px)`);
+            });
+        }
+    },
+    renderMemberList: function() {
+        for(const member of TeamMemberManager.data) {
+            if(!this.cache.hasOwnProperty(member.team)) continue;
+            $(`#teamList .team-${member.team}`).append(`<div class="card-member card list-type">
+                <div class="card-body d-flex">
+                    <div class="member-picture bg-full" style="width:40px;height:40px;"></div>
+                    <div class="member-text">
+                        <div class="d-flex" style="justify-content:center;">
+                            <div class="near-name"></div>
+                            <div class="member-name fw-bolder"style="margin-left: 5px;">${member.name}</div>
+                        </div>
+                        <div class="member-team" style="color:#A2A2A2">${member.team}팀</div>
+                    </div>
+                    <div class="member-hours">
+                        <div class="member-hour">근무일수<br>${this.cache[member.team].acc}시간</div>
+                        <div class="member-hour">휴일근무<br>${this.cache[member.team].holi}시간</div>
+                        <div class="member-hour">초과근무<br>${this.cache[member.team].over}시간</div>
+                        <div class="member-hour">야간근무<br>${this.cache[member.team].night}시간</div>
+                    </div>
+                </div>
+            </div>`);
+        }
+    },
+    showWeek: function() {
+        $(`.week-item`).removeClass('active');
+        $(`.week-${pagectx.week}`).addClass('active');
+    },
+    nextWeek: function() {
+        pagectx.week = Math.clamp(pagectx.week+1, 1, pagectx.maxWeek);
+        $('.month').html(`${pagectx.month}월 ${pagectx.week}주`);
+        this.showWeek();
+    },
+    prevWeek: function() {
+        pagectx.week = Math.clamp(pagectx.week-1, 1, pagectx.maxWeek);
+        $('.month').html(`${pagectx.month}월 ${pagectx.week}주`);
+        this.showWeek();
+    }
+}
+</script>
+</body>
+</html>

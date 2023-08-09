@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항</title>
+    <style>
+        .notice .no,.notice .title{font-weight:bold;}
+        #page-title:before{content:url("/images/before/board.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="board/list">
+    <div id="header"></div>
+
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">공지사항</p>
+
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <select class="form-select search-key" data-sfor="#search-value-1" style="width:120px;">
+                                <option value="title">제목</option>
+                                <option value="body">내용</option>
+                                <option value="username">작성자</option>
+                            </select>
+                            <input id="search-value-1" class="form-control" value="" style="width:180px;">
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+                    <table id="mainTable" class="table" border-spacing="0">
+                        <thead>
+                        <tr>
+                            <th scope="col">번호</th>
+                            <th scope="col">제목</th>
+                            <th scope="col">작성자</th>
+                            <th scope="col">작성일</th>
+                            <th scope="col">조회</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons d-flex">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <!-- 페이지 -->
+                            <nav id="pageSection" aria-label="Page navigation example">
+                            </nav>
+                        </div>
+                        <div class="col-2 d-flex align-self-center justify-content-end gap-1" >
+                            <a id="btn-write" class="btn btn-sm btn-primary" href="write" role="button">글쓰기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    $('#btn-write').attr('href','write?n='+request.getParameter('n', 'notice'));
+
+    setTable(params);
+    SearchManager.setSearch({callBack:renderTable, src: '/board/notice', table:'#mainTable'});
+
+    function setTable(params) {
+        AJAX.get('/board/notice', location.search.substr(1), function(list) {
+            renderTable(list);
+        });
+    }
+
+    function renderTable(page) {
+        let list = page.content;
+        Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
+
+        $('#mainTable tbody *').remove();
+
+        if(list.length == 0) {
+            $('#mainTable tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        // 공지는 상단에 정렬
+        list.sort(function(a, b)  {
+            return b.noticeYn - a.noticeYn;
+        });
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+
+            let notice = (item.noticeYn == 1) && (item.noticeEdate.replaceAll('-','') >= dateFormat(new Date(),'yyyyMMdd'));
+            let str = `<tr class="${(notice) ? 'notice' : ''}" data-id="${item.id}" role="button">
+                    <td class="no">${(notice) ? '공지' : item.id}</td>
+                    <td class="title text-left"><a href="detail?n=${request.getParameter('n','notice')}&no=${item.id}">${item.title}</a></td>
+                    <td>${item.username}</td>
+                    <td>${item.createdAt.split('T')[0]}</td>
+                    <td style="color:#FF0000">${item.count}</td>
+                </tr>`
+
+            $('#mainTable tbody').append(str);
+        }
+        $("#mainTable tbody tr").on('click', function(e) {
+            let id = $(this).data("id");
+            location.href = `detail?n=${request.getParameter('n','notice')}&no=${id}`;
+        });
+    }
+}
+</script>
+</body>
+</html>

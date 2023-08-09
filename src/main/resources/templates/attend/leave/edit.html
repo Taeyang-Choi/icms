@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>근무일지관리</title>
+</head>
+<body>
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <p id="page-title">근무일지관리</p>
+
+            <div class="wrap border-top">
+                <p>통합관제센터 모니터링 근무일지</p>
+
+                <form id="form-code" method="post" onsubmit="return false;">
+                    <div class="d-flex flex-wrap">
+                        <div class="col-6 d-flex">
+                            <div class="label">근무구분</div>
+                            <div id="input-work-type" class="content"></div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">근무자</div>
+                            <div class="content"><select id="select-work-group" name="team" class="form-select required"></select></div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">근무일</div>
+                            <div class="content">
+                                <div class="input-group">
+                                    <input class="form-control required" name="work_date_from" type="date">
+                                    <input class="form-control required" name="work_date_to" type="date">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex">
+                            <div class="label">근무시간</div>
+                            <div class="content">
+                                <div class="input-group">
+                                    <input class="form-control required" name="work_time_from" type="time">
+                                    <span class="input-group-text" id="basic_addon1">@</span>
+                                    <input class="form-control required" name="work_time_to" type="time">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">모니터링 PC</div>
+                            <div id="input-work-monitor" class="content"></div>
+                        </div>
+                    </div>
+
+                    <div class="buttons d-flex justify-content-between">
+                        <a href="list" class="btn btn-sm btn-primary">목록</a>
+                        <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    createForm(params);
+
+    function createForm(params) {
+        let item = params.item;
+        console.log(item);
+
+        for(let pair of Object.entries(params.item)){
+            $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 근무구분
+        for(let i = 0; i < CodeManager.workgubun.length; i++) {
+            let code = CodeManager.workgubun[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="work_gubun" value="${code.c}" id="radio-work-type-${i}" ${(code.c == item.work_gubun) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-work-type-${i}">${code.n}</label>
+                </div>`;
+            $('#input-work-type').append(str);
+        }
+
+        // 근무조
+        for(let i = 0; i < CodeManager.team.length; i++) {
+            let code = CodeManager.team[i];
+            let str = `<option ${(code.c == item.team) ? 'selected' : ''} value="${code.c}">${code.n} 조 관리자</option>`;
+            $('#select-work-group').append(str);
+        }
+
+        // 모니터링 PC
+        for(let i = 0; i < CodeManager.monitoring.length; i++) {
+            let code = CodeManager.monitoring[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="work_monitoring" value="${code.c}" id="work-monitoring-${i}" ${(code.c == item.work_monitoring) ? 'checked' : ''}>
+                    <label class="form-check-label" for="work-monitoring-${i}">${code.n}</label>
+                </div>`;
+            $('#input-work-monitor').append(str);
+        }
+
+        pagectx = params;
+    }
+
+    $('form').on('submit', function() {
+        let rawFormData = new FormData($('form')[0]);
+        let formData = new FormData();
+        let data = {};
+
+        for(let pair of rawFormData.entries()){
+            if(!isValid(pair[1]) && $(`input[name=${pair[0]}].required`).length != 0) {
+                $(`input[name=${pair[0]}].required`).trigger('focus');
+                return;
+            }
+            data[pair[0]] = pair[1];
+        }
+
+        data = $.extend(params.item, data);
+        formData.append("data", JSON.stringify(data));
+
+
+        AJAX.post("/dailyreport", formData, function(data) {
+            if(data.code == 0) {
+                let old = SessionStore.get('dailyreport/detail');
+                old.item = pagectx.item;
+                SessionStore.set('dailyreport/detail', old);
+            }
+
+            Dialog.alert(data.message, function() {
+                Page.back();
+            });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>근무일지현황</title>
+    <style>
+        #page-title:before{content:url("/images/before/dailyreport.svg");margin-right:10px;vertical-align:middle}
+
+        .col-6{width:49.7%;margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="dailyreport/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">근무일지현황</p>
+
+                    <div class="wrap border-top">
+                        <p>통합관제센터 모니터링 근무일지</p>
+
+                        <form id="form-daily-report" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-6 d-flex">
+                                    <div class="label">근무구분</div>
+                                    <div id="input-work-type" class="content"></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">근무조</div>
+                                    <div class="content"><select id="select-work-group" name="team" class="form-select required"></select></div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">근무일</div>
+                                    <div class="content">
+                                        <div class="input-group">
+                                            <input class="form-control required" name="workDateFrom" type="date">
+                                            <input class="form-control required" name="workDateTo" type="date">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label">근무시간</div>
+                                    <div class="content">
+                                        <div class="input-group">
+                                            <input class="form-control required" name="workTimeFrom" type="time">
+                                            <span class="input-group-text" id="basic_addon1">@</span>
+                                            <input class="form-control required" name="workTimeTo" type="time">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">모니터링 PC</div>
+                                    <div id="input-work-monitor" class="content"></div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a href="list" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    createForm(params);
+
+    function createForm(params) {
+        let item = params.item;
+        console.log(item);
+
+        for(let pair of Object.entries(params.item)){
+            $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 근무구분
+        for(let i = 0; i < CodeManager.workgubun.length; i++) {
+            let code = CodeManager.workgubun[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="workGubun" value="${code.c}" id="radio-work-type-${i}" ${(code.c == item.workGubun) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-work-type-${i}">${code.n}</label>
+                </div>`;
+            $('#input-work-type').append(str);
+        }
+
+        // 근무조
+        for(let i = 0; i < CodeManager.team.length; i++) {
+            let code = CodeManager.team[i];
+            let str = `<option ${(code.c == item.team) ? 'selected' : ''} value="${code.c}">${code.n} 조 관리자</option>`;
+            $('#select-work-group').append(str);
+        }
+
+        // 모니터링 PC
+        for(let i = 0; i < CodeManager.monitoring.length; i++) {
+            let code = CodeManager.monitoring[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="workMonitoring" value="${code.c}" id="work-monitoring-${i}" ${(code.c == item.workMonitoring) ? 'checked' : ''}>
+                    <label class="form-check-label" for="work-monitoring-${i}">${code.n}</label>
+                </div>`;
+            $('#input-work-monitor').append(str);
+        }
+
+        pagectx = params;
+        editForm(params);
+    }
+
+    $('#form-daily-report').on('submit', function() {
+        let formData = new FormData(document.getElementById('form-daily-report'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        vData = $.extend(pagectx.item, vData);
+
+        AJAX.put("/daily-reports/" + vData.id, formData, function(data) {
+            if(data.code == 0) {
+                let old = SessionStore.get('dailyreport/detail');
+                old.item = pagectx.item;
+                SessionStore.set('dailyreport/detail', old);
+            }
+
+            Dialog.alert(data.message, function() {
+                Page.back();
+            });
+        });
+    });
+
+    function editForm(params) {
+        let item = params.item;
+        if(item.workDateFrom.length == 8) {
+            $('input[name=workDateFrom]').val(item.workDateFrom.insert(4,'-').insert(7,'-'));
+        }
+        if(item.workDateTo.length == 8) {
+            $('input[name=workDateTo]').val(item.workDateTo.insert(4,'-').insert(7,'-'));
+        }
+    }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>코드관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="common/code/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">코드관리</p>
+                    <table id="code-table" class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">코드종류명</th>
+                            <th scope="col">코드</th>
+                            <th scope="col">포맷형식</th>
+                            <th scope="col">사용여부</th>
+                            <th scope="col">정렬순</th>
+                            <th scope="col">등록일</th>
+                            <th scope="col">수정일</th>
+                            <th scope="col">관리</th>
+                            <th scope="col">하위코드</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons col-12 d-flex align-self-center justify-content-end gap-1" >
+                        <a class="btn btn-sm btn-primary" href="write" role="button">등록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    console.log(params);
+
+    setTable(params, 0);
+
+    function setTable(params, page) {
+        AJAX.get("/kind-codes", '', function(list) {
+
+            // 정렬
+            list.sort(function(a, b)  {
+                return a.seq - b.seq;
+            });
+
+            for(let i = 0; i < list.length; i++) {
+                let item = list[i];
+                let str = `
+                <tr>
+                    <td><a class="go" href="#">${item.name}</a></td>
+                    <td>${item.code}</td>
+                    <td>${item.codeFormat}</td>
+                    <td>${item.active}</td>
+                    <td>${item.seq}</td>
+                    <td>${item.createdAt.replaceAll('T', ' ')}</td>
+                    <td>${item.updatedAt.replaceAll('T', ' ')}</td>
+                    <td>
+                        <a href="#" class="black">수정</a>
+                        <a href="#" class="orange" style="margin-left:0.5rem;color:#7676F1">삭제</a>
+                    </td>
+                    <td><a class="btn-append link-dark lh-1" role="button">[하위목록등록]</a></td>
+                </tr>`
+
+                $('#code-table tbody').append(str);
+
+                // 하위목록으로 이동
+                $('tr .go').last().on('click', {item:item}, function(e) {
+                    Page.go(`/common/code/sel/list`, {item: e.data.item});
+                });
+
+                // 수정
+                $('tr .black').last().on('click', {item:item}, function(e) {
+                    Page.go('/common/code/edit', {item: e.data.item});
+                });
+
+                // 하위 목록 추가
+                $('tr .btn-append').last().on('click', {item:item}, function(e) {
+                    Page.go('/common/code/sel/write', {item: e.data.item});
+                });
+
+                // 삭제 버튼
+                $('tr .orange').last().on('click', {id:item.id}, function(e) {
+                    Dialog.confirm('정말 삭제하시겠습니까?', function (id) {
+                        AJAX.remove('/kind-codes/' + id, null, function (data) {
+                            Dialog.alert(data.message, function() {
+                                location.reload();
+                            });
+                        });
+                    }, function () {
+                    }, e.data.id);
+                });
+            }
+        });
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>통합관제센터 관리시스템</title>
+<style>
+    .modal-signin. modal-header{color:#34435A;}
+    .modal-signin .modal-dialog{max-width: 40%;width:40%;height:100%;margin:0}
+    .modal-signin .modal-content{height:100%;border:0}
+
+</style>
+</head>
+<body class="no-side" data-option='{"auth":false}'>
+
+    <div class="modal modal-signin d-flex" tabindex="-1" role="dialog" id="modalSignin">
+        <div style="width:60%;height:100%;background-color:black">
+            <div style="background-image:url(/images/login_image.png);width:85%;height:100%;float:right;background-size:cover"></div>
+        </div>
+        <div class="modal-dialog  modal-dialog-centered d-flex flex-column justify-content-center">
+            <div class="modal-content rounded-5 justify-content-center">
+                <div class="modal-header p-5 pb-4 border-bottom-0 flex-wrap text-center">
+                    <!-- <h5 class="modal-title">Modal title</h5> -->
+                    <div class="fw-bold mb-0 col-12 fw-bold" style="border:none;font-size:50px;font-family:PlayfairDisplay">ICMS</div>
+                    <div class="fw-bold mb-0 col-12 fw-normal" style="border:none;font-size:29px">통합관제센터 관리시스템</div>
+                </div>
+
+                <div class="modal-body pt-0" style="flex:0;padding:0 180px 65px">
+                    <form id="form-login" class="" method="post" onsubmit="return false;">
+                        <div class="form-floating mb-3">
+                            <input name="id" type="text" class="form-control rounded-4" id="floatingInput" placeholder="아이디">
+                            <label for="floatingInput">아이디</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input name="pass" type="password" class="form-control rounded-4" id="floatingPassword" placeholder="비밀번호">
+                            <label for="floatingPassword">비밀번호</label>
+                        </div>
+                        <button class="w-100 btn btn-primary" type="submit" style="font-size:21px">로그인</button>
+                        <hr class="my-4">
+                        <a href="/visit/write" class="w-100 py-2 btn btn-warning" style="font-size:19px">방문자등록</a>
+                    </form>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center">
+                    <div id="logo" style="width:180px;height:60px;background-size:cover;"></div>
+                    <div style="background-image:url(/images/footer.png);width:400px;height:19px;background-size:cover;margin-top:61px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+
+$(document).ready(function() {
+    $("#logo").css('background-image',`url(/assets/${activeProfile}/logo.png)`);
+});
+
+
+function init(params) {
+    $('#form-login').on('submit', function() {
+
+        //Page.go('board/list.html?n=notice');
+    //return;
+
+    let data = Utils.formToObject('#form-login');
+    SSO.login(data.id, data.pass);
+
+});
+}
+</script>
+</body>
+</html>

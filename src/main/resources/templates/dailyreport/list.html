@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>근무일지현황</title>
+    <style>
+        .checkCenter{display:flex;justify-content:center;gap:11px;border-right-width: 0px}
+        .form-check-input{position:absolute;left:22px;}
+        #page-title:before{content:url("/images/before/dailyreport.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="dailyreport/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">근무일지현황</p>
+
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <div class="d-flex" style="align-items:center;">
+                                <div style="width:30px;height:30px;background-color:red;border-radius:3px;">
+                                    <p id="waitNum" style="text-align:center;line-height:2;color:white">0</p>
+                                </div>
+                                <p style="margin:0 50px 0 10px;">근무일지 승인 대기중입니다.</p>
+                            </div>
+                            <input name="workDateFrom" type="date" class="form-control" style="width:150px;">
+                            <input class="form-control" name="username" value="" style="width:180px;" placeholder="근무자명" autocomplete="false" aria-autocomplete="none">
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+
+                    <table id="mainTable" class="table">
+                        <thead>
+                        <tr>
+                            <th class="pos-rel checkCenter" scope="col"><div><input id="cb-check-all" type="checkbox" class="form-check-input"></div><p>체크</p></th>
+                            <th scope="col">등록일자</th>
+                            <th scope="col">제목</th>
+                            <th scope="col">모니터링PC</th>
+                            <th scope="col">상황</th>
+                            <th scope="col">장애</th>
+                            <th scope="col">근무조</th>
+                            <th scope="col">근무자</th>
+                            <th scope="col">결재</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons d-flex">
+                        <div class="col-2">
+                            <a id="wSp7Xj2z8RQc5bKv" class="btn btn-sm btn-primary" href="excel" role="button">일일근무일지</a>
+                        </div>
+                        <div class="col-8">
+                            <!-- 페이지 -->
+                            <nav id="pageSection">
+                            </nav>
+                        </div>
+                        <div class="col-2 d-flex align-self-center justify-content-end gap-1" >
+                            <button id="btn-confirm" class="btn btn-sm btn-primary">결재</button>
+                            <a class="btn btn-sm btn-primary" href="write" role="button">근무등록</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    if(activeProfile==='hd') $('#wSp7Xj2z8RQc5bKv').addClass('hide');
+
+    setTable(params, request.getParameter("page", "1"));
+    SearchManager.setSearch({callBack:renderTable, src: '/daily-reports', table:'#mainTable'});
+
+    function setTable(params, page) {
+        let member = SSO.getMember();
+        AJAX.get(`/daily-reports`,`${location.search.substr(1)}&grade=${member.grade}`, function(page) {
+            renderTable(page);
+        });
+    }
+
+    function renderTable(page) {
+        let list = page.content;
+        Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
+
+        $('#mainTable tbody *').remove();
+
+        if(list.length == 0) {
+            $('tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        let colors = ['#dc3545','#0d6efd','#ffffff'];
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let checkbox = `<input type="checkbox" class="form-check-input" value="${item.id}">`;
+
+            if(typeof item.summary === 'string') item.summary = JSON.parse(item.summary);
+            item.summary = item.summary || {D01:0, D02:0};
+            console.log(item);
+            let str = `
+                <tr role="button">
+                    <td class="pos-rel checkCenter"><div>${(params.usrobj.grade == 1 && item.status == 1) ? checkbox : ''}</div></td>
+                    <td>${get(item.createdAt.replaceAll('T',' '),"")}</td>
+                    <td class="link-primary" role="button">근무일지(${CodeManager.get('workgubun',item.workGubun, '삭제된코드')})</td>
+                    <td>${CodeManager.get('monitoring', item.workMonitoring, '삭제된코드')}</td>
+                    <td>${get(item.summary.D02,0)}</td>
+                    <td>${get(item.summary.D01,0)}</td>
+                    <td>${item.team}</td>
+                    <td>${item.username}</td>
+                    <td style="color:${colors[item.status]}">${(item.status == 2) ? get(item.confirmUsername, item.confirmUserid) : statFlag.list[item.status]}</td>
+                </tr>`
+
+            $('#mainTable tbody').append(str);
+
+            // 퇴실
+            $('tr .link-primary').last().on('click', {item:item}, function(e) {
+                Page.go('/dailyreport/'+item.id);
+            });
+        }
+
+        // 미결재 카운터
+        AJAX.get('/daily-reports/not-confirmed', '', function (data) {
+            console.log(data);
+            $('#waitNum').text(data);
+        });
+    }
+
+    // 모두 체크
+    $("#cb-check-all").on('click', function(e) {
+        let active = $(this).prop("checked")
+        $('tbody input[type=checkbox]').prop("checked", active);
+    });
+
+    // 결재하기
+    $('#btn-confirm').on('click', function() {
+        let formData = new FormData();
+        let $checkBoxes = $('tbody input:checkbox:checked');
+
+        for(let i = 0; i < $checkBoxes.length; i++) {
+            formData.append('list', $checkBoxes.eq(i).val());
+            console.log($checkBoxes.eq(i).val())
+        }
+
+        formData.append('confirmUserid', params.usrobj.userid);
+
+        AJAX.put('/daily-reports/confirm', formData, function(data) {
+            Dialog.alert(data.message, function() {
+                location.reload();
+            });
+        });
+    });
+
+    function getStatus(item) {
+        if(item.stat_flag == 2) {
+
+        }
+        else {
+
+        }
+    }
+}
+</script>
+</body>
+</html>

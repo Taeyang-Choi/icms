@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>모니터링현황</title>
+    <style>
+        td{vertical-align:middle;}
+        td:nth-child(2){width:70px;}
+        td:nth-child(5){width:90px;}
+        td:nth-child(6){width:20%;}
+        td:nth-child(7){width:90px;}
+        td:nth-child(8){width:20%;}
+        #page-title:before{content:url("/images/before/monitor.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="monitor/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">모니터링현황</p>
+
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <select class="form-select search-key" data-sfor="#search-value-1" style="width:120px;">
+                                <option value="cctvIndex">CCTV별</option>
+                                <option value="userid">작성자</option>
+                            </select>
+                            <input id="search-value-1" class="form-control" value="" style="width:120px;">
+                            <select name="workDgubun" class="form-control" style="width:160px;"><option value="" selected="">상황 구분 전체</option></select>
+                            <select name="situ" class="form-control" style="width:160px;display:none"><option value="" selected="">상황 대구분 전체</option></select>
+                            <select name="barrierLevel" class="form-control" style="width:160px;display:none"><option value="" selected="">장애레벨 전체</option></select>
+                            <select name="actionCode" class="form-control" style="width:140px"><option value="" selected="">조치결과 전체</option></select>
+                            <!--select name="cctvGubun" class="form-control" style="width:126px;"><option value="" selected="">CCTV구분 전체</option></select-->
+                            <div class="input-group w-auto">
+                                <input name="startDate" type="date" class="form-control" style="width:164px;">
+                                <span class="input-group-text">~</span>
+                                <input name="endDate" type="date" class="form-control" style="width:164px;">
+                            </div>
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+
+                    <table id="main-table" class="table">
+                        <thead class="text-truncate">
+                        <tr>
+                            <th scope="col">일시</th>
+                            <th scope="col">구분</th>
+                            <th scope="col">CCTV</th>
+
+                            <th scope="col">담당자</th>
+                            <th scope="col">장애레벨</th>
+                            <th scope="col">상황</th>
+                            <th scope="col">조치결과</th>
+                            <th scope="col">조치내용</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+
+                    <div class="buttons d-flex">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <!-- 페이지 -->
+                            <nav id="pageSection" aria-label="Page navigation example">
+                            </nav>
+                        </div>
+                        <div class="col-2 d-flex align-self-center justify-content-end gap-1" >
+                            <button id="exportExcel" class="btn btn-primary" style="width:76px;height:34px;">엑셀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/module/reports.js"></script>
+<script>
+function init(params) {
+    console.log(JSON.stringify(CodeManager.situ));
+    pagectx = params;
+    console.log(params);
+
+    setTable(params);
+    SearchManager.setSearch({callBack:renderTable, src: '/daily-reports/events', table:'#main-table'})
+    ExcelManager.init();
+
+    function setTable(params) {
+        console.log(JSON.stringify(CodeManager.situ));
+        // 구분 전체
+        $('select[name=workDgubun]').on('change', function(e) {
+            let val = $(this).val()
+            console.log(val);
+            if(val == 'D02') {
+                $('select[name=situ]').show();
+                $('select[name=barrierLevel]').hide();
+            }
+            else if(val=='D01') {
+                $('select[name=situ]').hide();
+                $('select[name=barrierLevel]').show();
+                setBarrierLevel(CodeManager.barrier_level);
+            }
+            else {
+                $('select[name=situ]').hide();
+                $('select[name=barrierLevel]').hide();
+            }
+        });
+
+        $('select[name=situ]').on('change', function(e) {
+            let val = $('select[name=situ]').val();
+            if(isValid(val)) {
+                let situ = CodeManager.situ.find(e => e.c == val);
+                let list = situ.r.split(',');
+                let arr = [];
+                for(let i = 0; i < list.length; i++) {
+                    let temp = {n:list[i], c:val+i};
+                    arr.push(temp);
+                }
+                setBarrierLevel(arr);
+            }
+        });
+
+        AJAX2.get('/api/daily-reports/events'+location.search).then(renderTable);
+
+        // 조치결과
+        for(const code of CodeManager.work_jochi) {
+            $('select[name="actionCode"]').append(`<option value="${code.c}">${code.n}</option>`);
+        }
+        for(const code of CodeManager.situ_result) {
+            $('select[name="actionCode"]').append(`<option value="${code.c}">${code.n}</option>`);
+        }
+    }
+
+    function renderTable(page) {
+        let list = page.content;
+        Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
+
+        $('#main-table tbody *').remove();
+
+        if(list.length == 0) {
+            $('#main-table tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let actionResultCode = CodeManager.getCode((item.workDgubun === 'D01') ? "work_jochi" : "situ_result", item.actionCode, "미조치");
+            console.log(actionResultCode);
+            let str = `
+                <tr data-id="${item.id}" role="button">
+                    <td class="link-primary text-decoration-underline" role="button">${item.createdAt.split('T')[0]} ${item.workDtimeFrom}</td>
+                    <td>${CodeManager.get('work_dgubun', item.workDgubun)}</td>
+                    <td>${item.cctvIndex}</td>
+                    <td>${item.userid}</td>
+                    <td>${Monitoring.getBarrierLevel(item).n}</td>
+                    <td><div class="text-truncate" style="border-right:0;white-space:pre-line;">${item.workContent}</div></td>
+                    <td style="background-color:${actionResultCode.r}">${actionResultCode.n}</td>
+                    <td><div class="text-truncate" style="border-right:0;white-space:pre-line;">${get(item.actionResult,"미조치")}</div></td>
+                </tr>`
+
+            $('#main-table tbody').append(str);
+
+        }
+        // 퇴실
+        $('#main-table tbody tr').on('click', function(e) {
+            Page.go(`/monitor/detail?id=${$(this).data('id')}`);
+        });
+    }
+    function setBarrierLevel(arr) {
+        let $select = $(`select[name=barrierLevel]`);
+        $select.html('');
+        $select.append('<option value="" selected="">장애레벨 전체</option>');
+        for(let x = 0; x < arr.length; x++) {
+            $select.append(`<option value="${arr[x].c}">${arr[x].n}</option>`);
+        }
+    }
+}
+
+let ExcelManager = {
+    year: null,
+    month: null,
+    data: null,
+    init: function() {
+        $('#exportExcel').on('click', function() {
+            AJAX.get('/daily-reports/events/excel'+location.search,'', function(list) {
+                ExcelManager.download(list);
+            });
+        })
+    },
+    download: function(list) {
+        console.log(list);
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push('목록');
+
+        let columns = ['연번','일시','구분','CCTV','담당자','장애레벨','상황','조치','조치내용'];
+        let data = [columns];
+
+        let max = Math.clamp(list.length, 0, 1000);
+        for(let i = 0; i < max; i++) {
+            let item = list[i];
+            let temp = [];
+            temp.push(item.id);
+            temp.push(item.createdAt.replaceAll('T', ' '));
+            temp.push(CodeManager.get('work_dgubun', item.workDgubun, ''));
+            //temp.push(get(item.aa, "방범"));
+            temp.push(item.cctvIndex);
+
+            temp.push(item.userid);
+            temp.push(Monitoring.getBarrierLevel(item).n);
+            temp.push(StringUtils.brToCr(item.workContent));
+
+            temp.push(CodeManager.get((item.workDgubun === 'D01') ? "work_jochi" : "situ_result", item.actionCode, "미조치"));
+            temp.push(StringUtils.brToCr(item.actionResult));
+
+            data.push(temp);
+        }
+
+        console.log(data);
+        let ws = XLSX.utils.aoa_to_sheet(data);
+        console.log(ws);
+
+        wb.Sheets['목록'] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType:'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbOut)],{type:"application/octet-stream"}), dateFormat() + " 모니터링.xlsx");
+    }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/css/member.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<link rel="stylesheet" href="/js/bootstrap-table/excel-bootstrap-table-filter-style.css">
+<head>
+<meta charset="UTF-8">
+<title>근무자정보</title>
+<style>
+.card-member .member-picture{width:113px;height:113px;}
+.black-box{background-color:black;width:18px;height:18px;border-radius:4px;margin-right:12px;}
+#page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
+
+.card-member{border:none}
+.card-member .card-body{padding:23px 30px 23px 56px;border-radius:5px;display:flex;gap:85px}
+.card-member .member-hour{color:black;text-align:center;width:100%;background-color:#6F84A5;border-radius:50px;padding:0}
+.member-hour div div{width:13px;height:13px;background-image:url(/images/member_calendar.svg);background-size:cover}
+.member-hour>div{border-radius:50px;width:31px;height:31px;padding:9px}
+.member-hour.acc div{background-color:#0091FF}
+.member-hour.holi div{background-color:#00C51B}
+.member-hour.over div{background-color:#D30202}
+.member-hour.night div{background-color:#122037}
+.member-hour.acc{background-color:#B5DEFD}
+.member-hour.holi{background-color:#B2FBBC}
+.member-hour.over{background-color:#FFA5A5}
+.member-hour.night{background-color:#A0ACC0}
+</style>
+</head>
+<body data-page-scope="attend/member/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+             <div class="white-background">
+                <p id="page-title">근무자 정보</p>
+
+                <div id="memberList" class="d-flex flex-wrap" style="margin-left:-20px;margin-right:-20px;"></div>
+
+                <div id="tool-section"></div>
+             </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="layout/common :: script"></th:block>
+<script src="/js/module/schedule.js"></script>
+<script src="/js/bootstrap-table/excel-bootstrap-table-filter-bundle.js"></script>
+<script>
+let teamSchedules = [];
+async function init(params) {
+    pagectx.year = request.getParameter('year', dateFormat(new Date(), "yyyy"));
+    pagectx.month = request.getParameter('month', dateFormat(new Date(), "MM"));
+    pagectx.day = request.getParameter('day', dateFormat(new Date(), "dd"));
+
+    // 1. fetch from server
+    ShiftManager.fetchAll(() => {
+        MemberManager.fetchAllByGrade({grade: 3}, () => {
+            LeaveManager.fetchByMonth(pagectx.year, pagectx.month, () => {
+                TeamScheduleManager.fetchByMonth(pagectx.year, pagectx.month, (list) => {
+                    StatisticsImpl.init(params, list);
+                });
+            });
+        });
+    });
+
+    // 2. today information
+    AJAX2.get('/api/teams/schedules/' + pagectx.year + pagectx.month + pagectx.day).then(function (data) {
+        for (const datum of data) {
+            teamSchedules[datum.team] = datum;
+        }
+    });
+}
+
+let StatisticsImpl = {
+    init: function(params, list) {
+        // 1. 멤버 정렬
+        MemberManager.list.sort((a, b) => {
+            return a.team < b.team ? -1 : a.team > b.team ? 1 : 0
+        });
+
+        this.renderTable(list);
+    },
+    renderTable: function(list) {
+        let count = 0;
+        // 스케줄 루프
+        for(const schedule of list) {
+            let shift = ShiftManager.findByCode(schedule.shift);
+            let team = schedule.team;
+
+            let teamMemberList = MemberManager.findAllByTeam(team);
+            for(const member of teamMemberList) {
+                shift = new Shift(shift);
+                shift.date = schedule.date;
+                StatisticsManager.append(member.id, shift);
+            }
+        }
+
+        StatisticsImpl.handleLeaves(LeaveManager.list);
+        let date = dateFormat(new Date(), 'yyyyMMdd');
+
+        // 통계 후 작성
+        for(const member of MemberManager.list) {
+            let todayShift = ShiftManager.findByCode(TeamScheduleManager.findByDate(date, member.team).shift);
+            console.log(todayShift);
+            StatisticsManager.calculate(member.id);
+            let memberInfo = StatisticsManager.findByKey(member.id);
+            let bold = (memberInfo.total != memberInfo.acc) ? 'fw-bold' : '';
+
+            $("#memberList").append(`<div class="col-12 col-md-6 col-xl-4" style="padding:20px;" role="button">
+                <div class="card-member card team-${member.team}">
+                    <div class="card-body text-center">
+                    <div style="display:flex;justify-content:center;flex-direction:column">
+                        <div class="member-picture bg-full" style="background-image:url(/pictures/${member.name})"></div>
+                        <div style="margin: auto 0;">
+                            <div class="calendar-schedule">
+                                <div class="d-flex" style="justify-content:center;align-items:center;margin-top:20px;">
+                                   <div class="shift-item" data-shift="${todayShift.shiftCode}" style="margin:0 5px;background-color:#${todayShift.color}">${todayShift.shiftCode}</div>
+                                   <div class="member-name">${member.name}</div>
+                                </div>
+                            </div>
+                            <div class="member-team" style="color:#A2A2A2">${member.team}팀</div>
+                        </div>
+                    </div>
+                        <div class="member-hours">
+                            <div class="member-hour acc fs-14 ${bold} d-flex"><div><div></div></div><p style="margin-left:13px;width:max-content;line-height:31px">근무일수 ${memberInfo.acc}시간</p></div>
+                            <div class="member-hour holi fs-14 d-flex"><div><div></div></div><p style="margin-left:13px;width:max-content;line-height:31px">휴가일수 ${memberInfo.holiday}시간</p></div>
+                            <div class="member-hour over fs-14 d-flex"><div><div></div></div><p style="margin-left:13px;width:max-content;line-height:31px">초과근무 ${memberInfo.extra}시간</p></div>
+                            <div class="member-hour night fs-14 d-flex"><div><div></div></div><p style="margin-left:13px;width:max-content;line-height:31px">야간근무 ${memberInfo.night}시간</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+
+            $('.card-member').last().on('click', member ,function(e) {
+                let member = e.data;
+                Page.go('/attend/member/detail', {member: member});
+            });
+        }
+
+        $('#main-table').excelTableFilter({
+            columnSelector: '.apply-filter',
+            sort: true,
+            search: false,
+            captions: {a_to_z: '오름차순', z_to_a: '내림차순', search: '검색', select_all: '전체선택'}
+        });
+    }, //230124교체
+    handleLeaves: function (list) {
+        for (const leave of list) {
+            if (leave.status === 0) continue;
+            let startDate = new Date(leave.startDate).getDate();
+            //console.log(leave);
+
+            // 신청자 처리
+            let drafterInfo = StatisticsManager.findByKey(leave.drafterId);
+            let shift = drafterInfo.list.find(e => e.date === leave.startDate.replaceAll('-','').substr(0,8));
+
+            if(!isValid(shift)) continue;
+            shift.workform = '06';
+
+            // 대근자 처리
+            let alterShift = new Shift(shift);
+            alterShift.workform = '02';
+            StatisticsManager.append(leave.alternativeId, alterShift);
+        }
+    },
+}
+</script>
+</body>
+</html>

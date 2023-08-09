@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>출근부</title>
+    <style>
+        #page-title:before{content:url("/images/before/calendar.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="schedule/calendar/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">출근부</p>
+
+                    <div class="wrap border-top">
+                        <p>통합관제센터 출근부등록</p>
+
+                        <form id="formSchedule" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-12 d-flex">
+                                    <div class="label">출근자</div>
+                                    <div class="content">
+                                        <select name="team" class="form-select"></select>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">출근일</div>
+                                    <div class="content">
+                                        <div id="work-date"></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">근무형태</div>
+                                    <div id="input-workform" class="content"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">근무구분</div>
+                                    <div class="content">
+                                        <select name="division" class="form-select"></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a id="btn-list" href="#" class="btn btn-sm btn-warning" onclick="Page.back();">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    createForm(params);
+
+    function createForm(params) {
+        console.log(params);
+        // 히든
+        $('#formSchedule').append(`<input type="hidden" name="userwid" value="${params.usrobj.userid}">`);
+        $('#formSchedule').append(`<input type="hidden" name="userwnm" value="${params.usrobj.name}">`);
+
+        console.log(CodeManager.get('admin', params.usrobj.grade, '모니터요원'));
+
+        $('#formSchedule').append(`<input type="hidden" name="grade" value="${CodeManager.get('admin', params.usrobj.grade, '모니터요원')}">`);
+
+        // 근무조
+        for(let i = 0; i < CodeManager.team.length; i++) {
+            let o = CodeManager.team[i];
+            let str = `<option ${(i == 0) ? 'selected' : ''} value="${o.c}">${o.n} 조 관리자</option>`;
+            $('[name=team]').append(str);
+        }
+
+        // 근무형태
+        for(let i = 0; i < CodeManager.workform.length; i++) {
+            let o = CodeManager.workform[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="workform" value="${o.c}" id="radio-division-${i}" ${(i === 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-division-${i}">${o.n}</label>
+                </div>`;
+            $('#input-workform').append(str);
+        }
+
+        // 근무조
+        for(let i = 0; i < CodeManager.workgubun.length; i++) {
+            let o = CodeManager.workgubun[i];
+            let str = `<option ${(i == 0) ? 'selected' : ''} value="${o.c}">${o.n}</option>`;
+            $('[name=division]').append(str);
+        }
+
+        // 초기 날짜
+        $('#work-date').text(dateFormat(new Date(),"yyyy-MM-dd"));
+    }
+
+    $('#formSchedule').on('submit', function(e) {
+        let formData = new FormData(document.getElementById('formSchedule'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        formData.append('datecode', $('#work-date').text().replaceAll("-","").substring(0,6));
+        console.log(vData);
+
+        AJAX.post('/schedules', formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>js excel example 03</title>
+    <style>
+        a { text-decoration: none }
+        #data-table, #data-table th, #data-table td { padding: 5px 5px; border: 1px solid black }
+    </style>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/xlsx.full.min.js"></script>
+    <script src="/js/FileSaver.min.js"></script>
+    <script>
+        var url = "/assets/file/일일업무일지.xlsx";
+
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", url, true);
+        oReq.responseType = "arraybuffer";
+
+        oReq.onload = function(e) {
+            var arraybuffer = oReq.response;
+
+            /* convert data to binary string */
+            var data = new Uint8Array(arraybuffer);
+
+            var arr = new Array();
+            for (var i = 0; i != data.length; ++i) {
+                arr[i] = String.fromCharCode(data[i]);
+            }
+
+            var bstr = arr.join("");
+
+            var cfb = XLSX.read(bstr, { type: 'binary' });
+
+            cfb.SheetNames.forEach(function(sheetName, index) {
+
+                // Obtain The Current Row As CSV
+                $("#my_file_output").html(XLSX.utils.sheet_to_html(cfb.Sheets[sheetName],{ id: "data-table", editable: true }));
+
+            });
+        }
+
+        oReq.send();
+
+        function down(){
+            var wb = XLSX.utils.table_to_book(document.getElementById('my_file_output'), {sheet:"시트명",raw:true});
+            XLSX.writeFile(wb, ('일일업무일지.xlsx'));
+        }
+    </script>
+</head>
+<body>
+<div>
+    <button id="sample_down">샘플양식 다운</button>
+    <script>
+        //샘플양식 다운
+        const sampleDown = document.getElementById('sample_down');
+
+        sampleDown.addEventListener("click", function (){
+            location.href = "../file/일일업무일지.xlsx";
+        });
+    </script>
+    <button id="excel_upload" onclick="down()">엑셀 다운로드</button>
+    <div id="my_file_output"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>자산관리 | 카메라별 장애관리</title>
+    <style>
+        .table .sum{background-color:#D3E4FF}
+
+        #page-title:before{content:url("/images/before/error.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="cctv/error/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <div class="d-flex" style="justify-content:space-between;">
+                        <p id="page-title">카메라별 장애관리</p>
+                    </div>
+
+                    <!-- 차트 섹션 -->
+                    <div class="d-flex" style="justify-content:space-between;margin-bottom:30px;overflow-x:scroll;overflow-y:visible">
+                        <div class="preface border-top" style="width:800px">
+                            <p class="OFgeuCmO" style="border-radius:5px 5px 0 0;">CCTV구분</p>
+                            <!--막대그래프-->
+                            <div class="bg-white pos-rel" style="padding:15px;border-radius:0 0 5px 5px;">
+                                <div style="height:260px;">
+                                    <canvas id="barChart" style="background-size:cover;" width="800" height="260"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white" style="border-radius:5px;width:440px;margin-left:20px;">
+                            <!--도넛그래프-->
+                            <canvas id="doughnutChart" width="440" height="340"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 검색 섹션 -->
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <select name="cctvGubun" class="form-select" style="width:170px;"><option value="" selected="">전체</option></select>
+                            <select class="form-select search-key" data-sfor="#search-value-1" style="width:120px;">
+                                <option value="index">인덱스</option>
+                                <option value="juso">주소</option>
+                                <option value="ymd">설치년도</option>
+                            </select>
+                            <input id="search-value-1" class="form-control" value="" style="width:180px;">
+                            <div class="input-group w-auto d-none">
+                                <input name="startDate" type="date" class="form-control" style="width:128px;">
+                                <span class="input-group-text">~</span>
+                                <input name="endDate" type="date" class="form-control" style="width:128px;">
+                            </div>
+
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+
+                    <table id="mainTable" class="table text-center fs-12">
+                        <thead>
+                        <tr>
+                            <th scope="col">인덱스</th>
+                            <th scope="col">CCTV구분</th>
+                            <th scope="col">주소</th>
+                            <th scope="col">설치년도</th>
+                            <th scope="col">모델명</th>
+                            <th scope="col">미조치</th>
+                            <th scope="col">조치완료</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+
+                    <div class="buttons d-flex">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <!-- 페이지 -->
+                            <nav id="pageSection" aria-label="Page navigation example">
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    setTable(params);
+    SearchManager.setSearch({callBack:renderTable, src: '/cctv-errors', table:'#mainTable'});
+
+    ChartManager.init(params);
+
+    function setTable(params) {
+
+        // 1. 장애 레벨 항목 추가
+        pagectx.cache = {};
+        for(const code of CodeManager.barrier_level) {
+            $('#mainTable thead tr').append(`<th scope="col">${code.n}</th>`);
+            pagectx.cache[code.c] = 0;
+        }
+
+        AJAX.get("/cctv-errors", location.search.substr(1), function(page) {
+            renderTable(page);
+        });
+
+
+        // 2. 전체 부분 가져오기
+        AJAX.get('/cctv-errors/statistics/all', '', function(list) {
+            // 카메라 장애 루프
+            for(const error of list) {
+                let data = JSON.parse(get(error.data, "{}"));
+                // 코드 별로 합계 구하기
+                for(const code of CodeManager.barrier_level) {
+                    let count = get(data[code.c], 0);
+                    pagectx.cache[code.c] += count;
+                }
+            }
+
+            //막대 그래프
+            ChartManager.renderChart('barChart', pagectx.cache, 'bar');
+
+            //도넛 그래프
+            ChartManager.renderChart('doughnutChart', pagectx.cache, 'doughnut');
+        });
+    }
+
+    function renderTable(page) {
+        let list = page.content;
+        Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
+
+        $('#mainTable tbody *').remove();
+
+        if(list.length == 0) {
+            $('#mainTable tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let data = JSON.parse(get(item.data, "{}"));
+            let str = `
+                    <tr id="cctvError-${item.id}">
+                        <td><a href="detail?id=${item.cctvId}">${item.cctvIndex}</a></td>
+                        <td>${item.cctvGubun}</td>
+                        <td>${item.juso}</td>
+                        <td>${get(item.ymd, "")}</td>
+                        <td>${item.model}</td>
+                        <td>${get(data.R02,0)}</td>
+                        <td>${get(data.R03,0)}</td>
+                    </tr>`;
+
+            $('tbody').append(str);
+
+            // 코드 별로 합계 구하기
+            for(const code of CodeManager.barrier_level) {
+                let count = get(data[code.c],0);
+                $('#cctvError-'+item.id).append(`<td>${count}</td>`);
+            }
+        }
+    }
+}
+
+//전체 합계 막대그래프
+let ChartManager =  {
+    init: function() {
+    },
+    renderChart: function(canvas, list, type) {
+        let keys = Object.keys(list);
+        let labels = [];
+        let values = [];
+
+        for(const c of keys) {
+            labels.push(CodeManager.get('barrier_level', c, '없음'));
+            values.push(list[c]);
+        }
+
+        if(type == 'bar') {
+            this._renderBar(canvas, labels, values);
+        }
+        else {
+            this._renderCircle(canvas, labels, values);
+        }
+    },
+    _renderBar: function(canvas, labels, values) {
+        //막대 그래프
+        const ctx = document.getElementById(canvas).getContext('2d');
+        const barChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '',
+                    data: values,
+                    backgroundColor: 'rgba(104, 104, 187, 255)',
+                    border:1,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                legend:{
+                    display:false
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    },
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            max: Math.max.apply(null, values),
+                            fontSize : 12,
+                        }
+                    }],
+                    xAxes: [{
+                        gridLines:{
+                            lineWidth:0.01,
+                        },
+                    }],
+                }
+
+            },
+        });
+    },
+    _renderCircle: function(canvas, labels, values) {
+        //도넛 그래프
+        const ctx = document.getElementById(canvas).getContext('2d');
+        const doughnutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'CCTV 구분',
+                    data: values,
+                    backgroundColor: ['rgba(255, 0, 0, 255)',
+                        'rgba(255, 165, 0, 255)',
+                        'rgba(255, 255, 0, 255)',
+                        'rgba(0, 128, 0, 255)',
+                        'rgb(0,0,255)',
+                        'rgba(3, 13, 78, 255)',
+                        'rgba(128, 0, 128, 255)'],
+                }],
+            },
+            options: {
+                legend: {
+                    position:'right'
+                },
+                cutoutPercentage:65,
+                layout: {
+                    padding: {
+                        left:20
+                    }
+                }
+            },
+        });
+    }
+}
+</script>
+</body>
+</html>

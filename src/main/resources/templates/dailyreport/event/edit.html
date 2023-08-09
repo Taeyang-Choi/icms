@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="kr">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>근무일지현황</title>
+    <style>
+        #page-title:before{content:url("/images/before/dailyreport.svg");margin-right:10px;vertical-align:middle}
+        #monitorPageSection .active .page-link{background-color:#122037;border-radius:4px}
+        #monitorPageSection a{cursor: pointer}
+
+        .col-6{width:49.7%;margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="dailyreport/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">근무일지현황</p>
+
+                    <div class="wrap border-top">
+                        <p>모니터링 정보 수정</p>
+
+                        <form id="form-event" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-12 d-flex">
+                                    <div class="label" aria-label="workDate">일자</div>
+                                    <div class="content">
+                                        <input class="form-control" name="workDate" type="date">
+                                    </div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label" aria-label="workDtimeFrom">시간</div>
+                                    <div class="content">
+                                        <input class="form-control" name="workDtimeFrom" type="time">
+                                    </div>
+                                </div>
+                                <div class="col-6 d-flex">
+                                    <div class="label" aria-label="dGubun">구분</div>
+                                    <div class="content">
+                                        <div id="input-work-dgubun"></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label" aria-label="cctvId">CCTV</div>
+                                    <div class="content d-flex gap-1">
+                                        <input class="form-control required form-control-plaintext" name="cctvIndex" type="text" style="max-width: 240px;" readonly>
+                                        <input class="form-control required" name="cctvId" type="hidden">
+                                        <button id="btn-cctv-search" class="btn btn-sm btn-warning" type="button">검색</button>
+                                    </div>
+                                </div>
+
+                                <!-- 1차 구분(상황, 장애) -->
+                                <div class="col-12 d-flex for-dtype for-D02" id="div-for-d01">
+                                    <div class="label">상황 구분</div>
+                                    <div class="content">
+                                        <div id="input-situ-type"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex d-none for-dtype for-D01" id="div-for-d02">
+                                    <div class="label">장애 구분</div>
+                                    <div class="content">
+                                        <div id="input-barrier-level"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex for-dtype for-D02">
+                                    <div class="label">상세 상황</div>
+                                    <div class="content d-flex">
+                                        <div id="input-situ-detail"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex">
+                                    <div class="label" aria-label="workContent">내용</div>
+                                    <div class="content">
+                                        <textarea name="workContent" class="form-control required" style="min-height:250px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- 버튼 -->
+                            <div class="buttons d-flex justify-content-between">
+                                <div class="d-flex justify-content-start gap-1">
+                                    <a class="btn btn-sm btn-warning" onclick="Page.back()">목록</a>
+                                    <button id="btn-delete" class="btn btn-sm btn-danger" type="button">삭제</button>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-1">
+                                    <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+    function move(page){
+        if(page < 1){
+            page=1;
+        }
+
+        let cctvGubun = $(`#search-section select[name="cctvGubun"]`).val();
+        if(!isValid(cctvGubun)) cctvGubun = '';
+        let index = $(`#search-section input[name="index"]`).val();
+
+        console.log(`page=${page}&cctvGubun=${cctvGubun}&index=${index}`);
+
+        AJAX.get('/cctvs', `page=${page}&cctvGubun=${cctvGubun}&index=${index}`, function(list) {
+            $('#table-cctv tbody *').remove();
+
+            if(list.length == 0) {
+                $('#table-cctv tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+            }
+            for(let i = 0; i < list.length; i++) {
+                let item = list[i];
+                let str = `
+                    <tr>
+                        <td>${item.cctvGubun}</td>
+                        <td class="cctv-index link-primary" data-index="${item.cctvIndex}" data-cctvid="${item.id}" role="button">${item.cctvIndex}</td>
+                    </tr>`;
+
+                $('#table-cctv tbody').append(str);
+
+                // CCTV 선택 시
+                $('.cctv-index').last().on('click', function(e) {
+                    $('[name=cctvIndex]').val($(e.currentTarget).data('index'));
+                    $('[name=cctvId]').val($(e.currentTarget).data('cctvid'));
+                    Dialog.hide();
+                });
+            }
+        });
+        setPaging();
+        function setPaging(option){
+            let _d = {totalPages:10000, totalElements: 1000};
+            option = $.extend(_d, option);
+
+            let pageNum = page;
+            pageNum = Math.clamp(pageNum, 0, option.totalPages);
+
+            let center = (pageNum < 5) ? 5 : pageNum;
+
+            // 기존 search 유지
+            let search = '';
+            let paramArr = location.search.replaceAll('?','').split('&');
+            for (let i = 0; i < paramArr.length; i++) {
+                if(!paramArr[i].startsWith('page') && paramArr[i].length > 1) search += paramArr[i] + '&';
+            }
+
+            $('#monitorPageSection').html('');
+
+            $('#monitorPageSection').append(`<ul class="pagination justify-content-center">
+            <li class="prev page-item"><a class="page-link" onclick="move(${pageNum-10})" aria-label="Previous"><span aria-hidden="true"><</span></a></li>
+        </ul>`);
+
+            console.log(center+4 >= option.totalPages);
+            console.log(center+4);
+            let max = (center+4 < option.totalPages) ? center+4 : option.totalPages;
+            for(let i = center - 4; i <= max; i++) {
+                // 페이지
+                $('#monitorPageSection ul').append(`<li class="page-item ${(i == pageNum)?'active':''}"><a class="page-link page-${i}" onclick="move(${i})">${i}</a></li>`);
+            }
+
+            // next 버튼
+            $('#monitorPageSection ul').append(`<li class="next page-item"><a class="page-link" onclick="move(${page+10})" aria-label="Next"><span aria-hidden="true">></span></a></li>`);
+
+        }
+
+    }
+function init(params) {
+    pagectx = params;
+
+    AJAX.get(`/daily-reports/events/${params.item.id}`, '', function(item) {
+        params.item = item;
+        createForm(params);
+    });
+
+    function createForm(params) {
+        let item = params.item;
+
+        for(let pair of Object.entries(item)){
+            $(`.form-control[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 근무구분
+        let dgubun = CodeManager.work_dgubun;
+        for(let i = 0; i < dgubun.length; i++) {
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="workDgubun" value="${dgubun[i].c}" id="radio-dgubun-${i}" ${(dgubun[i].c == item.workDgubun) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-dgubun-${i}">${dgubun[i].n}</label>
+                </div>`;
+            $('#input-work-dgubun').append(str);
+        }
+
+        // 상세 상황(221226)
+        let situ = CodeManager.situ;
+        for(let i = 0; i < situ.length; i++) {
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="dummy01" value="${situ[i].c}" id="radio-bl1-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-bl1-${i}">${situ[i].n}</label>
+                </div>`;
+            $('#input-situ-type').append(str);
+        }
+
+        // 상세 장애(221226)
+        let barrierLevels = CodeManager.barrier_level;
+        for(let i = 0; i < barrierLevels.length; i++) {
+            let code = barrierLevels[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="barrierLevel" value="${barrierLevels[i].c}" id="radio-bl2-${code.c}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-bl2-${code.c}">${barrierLevels[i].n}</label>
+                </div>`;
+            $('#input-barrier-level').append(str);
+        }
+
+        selectDType(item.workDgubun);
+        showSituDetails(situ[0].c);
+        editForm(params);
+
+        // 상황 구분
+        $('input[name=workDgubun]').on('change', function(e) {
+            selectDType($(this).val());
+        });
+        // 상황 구분 상세
+        $('input[name=dummy01]').on('change', function(e) {
+            showSituDetails($(this).val());
+        });
+
+        // 일지 삭제
+        $('#btn-delete').on('click', {item:item}, function(e) {
+            Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
+                AJAX.remove('/daily-reports/events/' + item.id, null, function (data) {
+                    Dialog.alert(data.message, function() {
+                        Page.back();
+                    });
+                });
+            }, function () {
+            }, e.data.item);
+        });
+    }
+
+    // CCTV 검색
+    $('#btn-cctv-search').on('click', function() {
+        $('#dialog .modal-dialog').addClass('modal-dialog-scrollable');
+        $('#dialog .modal-body').html(`
+                <div class="row">
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <select name="cctvGubun" class="form-control" style="width:126px;"><option value="" selected="">전체</option></select>
+                            <input name="index" type="text" class="form-control" style="width:128px;">
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+                    <table id="table-cctv" class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">구분</th>
+                                <th scope="col">인덱스</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colSpan="10">결과가 없습니다.</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="col-4 mx-auto">
+                    <!-- 페이지 -->
+                    <nav id="monitorPageSection" aria-label="Page navigation example">
+                    </nav>
+                </div>
+                </div>`);
+
+        SearchManager.setSearch({callBack:function(list) {
+                console.log(list);
+                $('#table-cctv tbody *').remove();
+
+                if(list.length == 0) {
+                    $('#table-cctv tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+                }
+                for(let i = 0; i < list.length; i++) {
+                    let item = list[i];
+                    let str = `
+                        <tr>
+                            <td>${item.cctvGubun}</td>
+                            <td class="cctv-index link-primary" data-index="${item.cctvIndex}" data-cctvid="${item.id}" role="button">${item.cctvIndex}</td>
+                        </tr>`;
+
+                    $('#table-cctv tbody').append(str);
+
+                    // CCTV 선택 시
+                    $('.cctv-index').last().on('click', function(e) {
+                        $('[name=cctvIndex]').val($(e.currentTarget).data('index'));
+                        $('[name=cctvId]').val($(e.currentTarget).data('cctvid'));
+                        Dialog.hide();
+                    });
+                }
+
+                setPaging();
+                function setPaging(option){
+                    let _d = {totalPages:10000, totalElements: 1000};
+                    option = $.extend(_d, option);
+
+                    let page = 1;
+                    page = Math.clamp(page, 0, option.totalPages);
+
+                    let center = (page < 5) ? 5 : page;
+
+                    // 기존 search 유지
+                    let search = '';
+                    let paramArr = location.search.replaceAll('?','').split('&');
+                    for (let i = 0; i < paramArr.length; i++) {
+                        if(!paramArr[i].startsWith('page') && paramArr[i].length > 1) search += paramArr[i] + '&';
+                    }
+
+                    $('#monitorPageSection').html('');
+
+                    $('#monitorPageSection').append(`<ul class="pagination justify-content-center">
+                            <li class="prev page-item"><a class="page-link" onclick="move(1)" aria-label="Previous"><span aria-hidden="true"><</span></a></li>
+                        </ul>`);
+
+                    console.log(center+4 >= option.totalPages);
+                    console.log(center+4);
+                    let max = (center+4 < option.totalPages) ? center+4 : option.totalPages;
+                    for(let i = center - 4; i <= max; i++) {
+                        // 페이지
+                        $('#monitorPageSection ul').append(`<li class="page-item ${(i == page)?'active':''}"><a class="page-link page-${i}" onclick="move(${i})">${i}</a></li>`);
+                    }
+
+                    // next 버튼
+                    $('#monitorPageSection ul').append(`<li class="next page-item"><a class="page-link" onclick="move(10)" aria-label="Next"><span aria-hidden="true">></span></a></li>`);
+
+                }
+
+
+            }, src: '/cctvs', table:'#main-table', changeState: false});
+        Dialog.set();
+        $('#btn-search').trigger('click');
+    });
+
+    $('#form-event').on('submit', function() {
+        let formData = new FormData(document.getElementById('form-event'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        vData = $.extend(pagectx.item, vData);
+
+        if(vData == null) {
+            return;
+        }
+
+        console.log(vData);
+        AJAX.put("/daily-reports/events/" + vData.id, formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+function editForm(params) {
+    let item = params.item;
+    let barrierLevel = item.barrierLevel;
+    console.log(item)
+
+    // 상세 상황 선택
+    if(item.workDgubun == 'D02') {
+        $(`#radio-bl1-${barrierLevel.substr(1,1)}`).trigger('click');
+        showSituDetails(barrierLevel.substr(0,2));
+        $(`#radio-sd-${barrierLevel.substr(2,1)}`).trigger('click');
+    }
+    else { // 장애
+        $(`#radio-bl2-${barrierLevel}`).trigger('click');
+    }
+}
+
+function selectDType(type) {
+    $('.for-dtype').addClass('d-none');
+    $('.for-' + type).removeClass('d-none');
+    $('#input-situ-detail input[name=barrierLevel]').eq(0).trigger('click');
+}
+
+function showSituDetails(situCode) {
+    $('#input-situ-detail').html('');
+    let situDetails = CodeManager.situ.find(code => code.c == situCode).r.split(',');
+    for(let i = 0; i < situDetails.length; i++) {
+        let situDetail = situDetails[i];
+        let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="barrierLevel" value="${situCode + i}" id="radio-sd-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-sd-${i}">${situDetail}</label>
+                </div>`;
+        $('#input-situ-detail').append(str);
+    }
+}
+</script>
+</body>
+</html>

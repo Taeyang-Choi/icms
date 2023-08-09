@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항</title>
+    <style>
+        #page-title:before{content:url("/images/before/board.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="board/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">공지사항</p>
+
+                    <div class="preface border-top">
+                        <p class="OFgeuCmO">통합관제센터 공지사항 수정하기</p>
+
+                        <form id="form-board" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-12">
+                                <div class="col-12 d-flex">
+                                    <div class="label">공지사항</div>
+                                    <div class="content">
+                                        <div class="input-group lh-24">
+                                            <div class="form-check d-flex" style="align-items:center;">
+                                                <input class="form-check-input" type="checkbox" id="cb-notice">
+                                                <label class="form-check-label" for="cb-notice" style="margin-left: 5px;">공지</label>
+                                            </div>
+                                            <div class="d-flex" style="margin-left: 2rem;">
+                                                <p>공지종료일 : </p>
+                                            </div>
+                                            <input class="form-control" name="noticeEdate" type="date" style="max-width:140px;margin-left: 0.7rem;border-radius:0.25rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">작성자</div>
+                                    <div class="content"><input class="form-control required" name="username" style="border:1px solid #ced4da" type="text" readonly></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">제목</div>
+                                    <div class="content"><input class="form-control required" name="title" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">내용</div>
+                                    <div class="content">
+                                        <textarea name="body" class="form-control required" style="min-height:250px;"></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">파일첨부</div>
+                                    <div class="content">
+                                        <div class="input-group">
+                                            <input type="file" class="form-control pass" multiple="multiple" name="attachments">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">첨부 된 파일</div>
+                                    <div class="content">
+                                        <div id="oldFileList" class="input-group d-grid">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a id="btn-list" href="list" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+
+    AJAX.get('/board/'+request.getParameter("n")+ '/' + request.getParameter("no"), '', function(item) {
+        params.item = item;
+        createForm(params);
+    });
+
+    $('#btn-list').attr('href','list?n='+request.getParameter('n'));
+
+    function createForm(params) {
+        let item = params.item;
+
+        // 히든
+        $('#form-board input[name=username]')[0].vlaue = item.username;
+        $('#form-board').eq(0).append(`<input type="hidden" name="userid" value="${item.userid}"}>`);
+        $('#cb-notice').prop('checked', (item.noticeYn == 1) ? true: false);
+
+        for(let pair of Object.entries(params.item)){
+            $(`.form-control[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        editForm(params);
+    }
+
+    $('#form-board').on('submit', function() {
+        let formData = new FormData(document.getElementById('form-board'));
+        formData.append('noticeYn', ($('#cb-notice').prop('checked') ? '1' : '0'));
+
+        if($('input[name=noticeEdate]').val().length < 14) {
+            formData.set('noticeEdate', $('input[name=noticeEdate]').val() + 'T23:59:59.999');
+        }
+
+        // 수정 기능 전용
+        let oldFiles = [];
+        $('.old-file-item').each(function (index, el) {
+            oldFiles.push($('.old-file-item').eq(index).data('store'));
+        });
+        formData.append('oldFiles', oldFiles.join(','));
+
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        AJAX.put("/board/" + request.getParameter('n') + "/"+request.getParameter("no"), formData, function(data) {
+           Dialog.alert(data.message, function(data) {
+               Page.go('/board/list?n=notice');
+           });
+        });
+    });
+}
+
+function editForm(params) {
+    let item = params.item;
+    console.log(item);
+
+    let noticeEdate = get(item.noticeEdate, dateFormat('yyyy-MM-dd'));
+    if(noticeEdate.includes('T')) noticeEdate = noticeEdate.split('T')[0];
+    if(noticeEdate.includes(' ')) noticeEdate = noticeEdate.split(' ')[0];
+    // 초기 날짜
+    $('input[name="noticeEdate"]').val(noticeEdate);
+
+    // 첨부 파일
+    let attachments = Utils.tryParse(item.userFile, []);
+    for(const file of attachments) {
+        // href="/attach/board/${item.id}/${file.store}/${file.real}"
+        $('#oldFileList').append(`<p id="${file.store}" class="d-block old-file-item" data-store="${file.store}">${file.real} <a class="link-danger" role="button">X</a></p>`);
+        $(`.old-file-item .link-danger`).last().on('click', function(e) {
+            $(this).parent().remove();
+        });
+    }
+}
+
+</script>
+</body>
+</html>

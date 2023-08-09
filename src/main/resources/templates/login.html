@@ -1,0 +1,96 @@
+z`<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>통합관제센터 관리시스템</title>
+<style>
+    .modal-header{color:#2763FF;}
+
+</style>
+</head>
+<body class="no-side" data-option='{"auth":false}'>
+
+    <div class="modal modal-signin d-block" tabindex="-1" role="dialog" id="modalSignin">
+        <div class="pos-abs" style="background-color:#267DFF;top:0;left:0;right:0;bottom:60%;"></div>
+        <div class="modal-dialog  modal-dialog-centered" role="document">
+            <div class="modal-content rounded-5 shadow">
+                <div class="modal-header p-5 pb-4 border-bottom-0 flex-wrap text-center">
+                    <!-- <h5 class="modal-title">Modal title</h5> -->
+                    <div class="fw-bold mb-0 col-12 fw-bold" style="font-size:40px;">ICMS</div>
+                    <div class="fw-bold mb-0 col-12 fw-normal" style="font-size:26px;">통합관제센터 관리시스템</div>
+                </div>
+
+                <div class="modal-body p-5 pt-0">
+                    <form class="" method="post" onsubmit="return false;">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control rounded-4" id="floatingInput" placeholder="name@example.com">
+                            <label for="floatingInput">아이디</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control rounded-4" id="floatingPassword" placeholder="Password">
+                            <label for="floatingPassword">비밀번호</label>
+                        </div>
+                        <button class="w-100 btn btn-lg rounded-4 btn-primary" type="submit">로그인</button>
+                        <hr class="my-4">
+                        <a href="/visit/list" class="w-100 py-2 btn btn-outline-dark rounded-4">방문자등록</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    $('form').on('submit', function() {
+        Page.go('article/list?n=notice');
+        return;
+    if(pagectx.onproc) return;
+    pagectx.onproc = true;
+
+    let rawFormData = new FormData($('form')[0]);
+    let formData = new FormData();
+    let data = {};
+
+    for(let pair of rawFormData.entries()){
+        console.log(pair[0], pair[1]);
+        if(!isValid(pair[1]) && $(`input[name=${pair[0]}].required`).length != 0) {
+            Dialog.alert($(`input[name=${pair[0]}]`).parent().parent().children('div').text() + " 을(를) 입력해 주세요.", function() {
+                $(`input[name=${pair[0]}].required`).trigger('focus');
+            });
+            pagectx.onproc = false;
+            return;
+        }
+        data[pair[0].replaceAll('-','_')] = pair[1];
+    }
+
+    data.reg_date = dateFormat(new Date(),'yyyy-MM-dd hh:mm:ss');
+    data.upd_date = dateFormat(new Date(),'yyyy-MM-dd hh:mm:ss');
+
+    // filtering
+    data["ent_date"] = data["ent_date"] + " " + data["ent_date2"] + ":00";
+    data["status"] = 'N';
+
+    delete data["ent_date2"];
+
+    formData.append("data", JSON.stringify(data));
+
+    AJAX.put("/visit", formData, function(data) {
+        Dialog.alert(data.message, function() {
+            Page.back();
+        });
+    });
+});
+}
+</script>
+</body>
+</html>

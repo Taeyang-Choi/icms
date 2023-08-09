@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="common/admin/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">관리자관리</p>
+
+                    <div class="wrap border-top">
+                        <p>코드관리등록</p>
+
+                        <form id="form-member" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-12 d-flex">
+                                    <div class="label">아이디</div>
+                                    <div class="content"><input class="form-control required" name="userid" type="text" readonly></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">비밀번호</div>
+                                    <div class="content"><input class="form-control" name="userpwd" type="password" placeholder="비밀번호 미입력시 기존 비밀번호 사용"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">이름</div>
+                                    <div class="content"><input class="form-control required" name="name" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">연락처</div>
+                                    <div class="content"><input class="form-control" name="hp" type="tel"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">부서</div>
+                                    <div class="content"><input class="form-control" name="dept" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">권한</div>
+                                    <div class="content" id="grade-template">
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">모니터링</div>
+                                    <div class="content" id="monitor-template">
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">근무조</div>
+                                    <div class="content">
+                                        <select id="selectTeam" class="form-select" name="team">
+                                            <option value="NOTEAM">팀없음</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a href="list" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    AJAX.get(`/members/${params.id}`, '', function(item) {
+        pagectx.item = item;
+        createForm(item);
+        editForm(item);
+    });
+
+    function createForm(item) {
+        for(let pair of Object.entries(item)){
+            if(pair[0] == 'userpwd') continue; //수정시는 비밀번호 패스
+            $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 등급
+        for(let i = 0; i < CodeManager.admin.length; i++) {
+            let code = CodeManager.admin[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grade" value="${code.c}" id="radio-grade-${i}" ${(code.c == item.grade) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-grade-${i}">${code.n}</label>
+                </div>`;
+            $('#grade-template').append(str);
+        }
+
+        // 팀 종류
+        for(const team of CodeManager.team) {
+            $(`#selectTeam`).append(`<option value="${team.c}">${team.n}</option>`);
+        }
+
+        // 모니터링
+        for(let i = 0; i < CodeManager.monitoring.length; i++) {
+            let code = CodeManager.monitoring[i];
+            let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="monitor" value="${code.c}" id="radio-monitor-${i}" ${(code.c == item.monitor) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-monitor-${i}">${code.n}</label>
+                </div>`;
+            $('#monitor-template').append(str);
+        }
+
+        $('#form-member').on('submit', function() {
+            let formData = new FormData(document.getElementById('form-member'));
+            let vData = Utils.formToObject(formData);
+            if(vData == null) {
+                return;
+            }
+
+            let usrobj = SSO.getMember();
+
+            if(parseInt(usrobj.grade) > 1 && usrobj.userid != vData.userid) {
+                Dialog.alert("타인의 정보는 변경할 수 없습니다.");
+                return;
+            }
+
+            AJAX.put("/members/"+pagectx.item.id, formData, function(data) {
+                Dialog.alert(data.message, () => Page.back());
+            });
+        });
+    }
+
+    function editForm(item) {
+        let usrobj = SSO.getMember();
+
+        if(parseInt(usrobj.grade) > 1) {
+            $('input[name=grade]').prop('disabled', true);
+        }
+
+        $(`#selectTeam option[value="${item.team}"]`).prop('selected', true);
+    }
+}
+
+</script>
+</body>
+</html>

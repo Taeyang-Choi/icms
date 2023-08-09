@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/css/member.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>출근부</title>
+<style>
+.date-item .조{font-size:10px!important;line-height: 18px;}
+.date-item .주{font-size:10px!important;line-height: 18px;}
+.date-item .야{font-size:10px!important;line-height: 18px;}
+.date-item .비{font-size:10px!important;line-height: 18px;}
+
+#page-title:before{content:url("/images/before/calendar.svg");margin-right:10px;vertical-align:middle}
+
+input[type="month"] {position:relative;}
+input[type="month"]::-webkit-clear-button,
+input[type="month"]::-webkit-inner-spin-button{display:none;}
+input[type="month"]::-webkit-calendar-picker-indicator {
+    position:absolute;
+    top:0;
+    left:0;
+    background:transparent;
+    color:transparent;
+    cursor:pointer;
+    width:100%;
+    height: 100%;
+}
+.date-item{border-bottom:1px solid #EFEFEF!important;border-right:1px solid #EFEFEF!important}
+.flex-wrap>div{border:none}
+.calendar-head .date-item{width:14.285%;line-height:48px;background-color:#122037;color:white;}
+.calendar .date-item{width:14.285%;background:white;padding:14px;/*overflow:scroll;height:130px;*/}
+.calendar .date-item::-webkit-scrollbar{display:none;}
+.calendar .date-item:nth-child(7n) {color:black;}
+.calendar .date-item:nth-child(7n-6) {color:#dc3545;}
+
+.date-item.today{background-color:#D3E4FF}
+.date-item.today div div > div{border:none!important;border-radius:5px;background-color:white;}
+</style>
+</head>
+<body data-page-scope="schedule/calendar/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p id="page-title">출근부</p>
+
+                <!-- 버튼 -->
+                <div class="d-flex">
+                    <div class="col-2">
+                        <button id="btn-excel-download" class="btn btn-sm btn-warning" onclick="ExcelManager.download()">다운로드</button>
+                    </div>
+                    <div class="col-8 offset-2 d-flex justify-content-center gap-1">
+                        <a id="btn-prev" class="btn btn-warning" href="#" aria-label="Previous">
+                            <span aria-hidden="true"><</span>
+                        </a>
+                        <input id="input-month" class="form-control" type="month" style="max-width: 140px;border:none;background-color:transparent;text-align:center;">
+                        <a id="btn-next" class="btn btn-warning" href="#" aria-label="Next">
+                            <span aria-hidden="true">></span>
+                        </a>
+                    </div>
+                    <div class="col-2 d-flex justify-content-end">
+                        <a class="btn btn-sm btn-primary" href="write" role="button">등록</a>
+                    </div>
+                </div>
+
+                <div class="mt-3" style="border-left:1px solid #EFEFEF;border-top:1px solid #EFEFEF">
+                    <div class="d-flex calendar-head text-center">
+                        <div class="date-item">일요일</div>
+                        <div class="date-item">월요일</div>
+                        <div class="date-item">화요일</div>
+                        <div class="date-item">수요일</div>
+                        <div class="date-item">목요일</div>
+                        <div class="date-item">금요일</div>
+                        <div class="date-item">토요일</div>
+                    </div>
+                    <div class="d-flex calendar flex-wrap">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    // 초기 날자 설정
+    pagectx.year = dateFormat(new Date(), "yyyy");
+    pagectx.month = dateFormat(new Date(), "MM");
+    pagectx.date = dateFormat(new Date(), "dd");
+
+    // 달력 그리기
+    renderCalendar(pagectx.year, pagectx.month);
+
+    // 버튼 설정
+    $('#btn-prev').on('click', function() {
+        pagectx.month--;
+        if(pagectx.month == 0) {
+            pagectx.year--;
+            pagectx.month = 12;
+        }
+        renderCalendar(pagectx.year, pagectx.month);
+    });
+
+    $('#btn-next').on('click', function() {
+        pagectx.month++;
+        if(pagectx.month == 13) {
+            pagectx.year++;
+            pagectx.month = 1;
+        }
+        renderCalendar(pagectx.year, pagectx.month);
+    });
+
+    function renderCalendar(year, month) {
+        month = parseInt(month)-1;
+        year = parseInt(year);
+
+        var _p = new Date(year, month, 0);
+        var _c = new Date(year, month+1, 0);
+
+        $('#input-month').val(year+"-"+((month+1 < 10) ? '0'+(month+1) : month+1));
+
+        var prevDay = _p.getDay();
+        var nextDay = _c.getDay();
+        var nextDate = _c.getDate();
+
+        $calendar = $('.calendar');
+
+        //console.log(prevDay);
+
+        $calendar.html('');
+        // 저번달 공백
+        for (let i = 0; i <= prevDay; i++) {
+            if(prevDay == 6) break
+            $calendar.append('<div class="date-item"></div>')
+        }
+
+        let _temp = '';
+        for (let i = 0; i < CodeManager.workgubun.length; i++) {
+            _temp += `<div class="g-${CodeManager.workgubun[i].c}"></div>`;
+        }
+
+        // 이번달
+        for (let i = 1; i <= nextDate; i++) {
+            $calendar.append('<div class="date-item date-'+i.padStart(2,'0')+' d-flex justify-content-between"><div>'+i+'</div><div style="width:80%">'+_temp+'</div></div>')
+        }
+
+        // 다음달 마무리
+        for (let i = 0; i < 6 - nextDay; i++) {
+            if(nextDay == 0) break;
+            $calendar.append('<div class="date-item"></div>')
+        }
+
+        $(`.date-${pagectx.date}`).addClass('today');
+
+        loadData($('#input-month').val().replaceAll("-",""));
+    }
+
+    function loadData(datecode) {
+        AJAX.get('/schedules/monthly/'+datecode, '', function(list) {
+            list = list.sort((a ,b) =>{return a.id - b.id;});
+            pagectx.list = list;
+            for(let i = 0; i < list.length; i++) {
+                let item = list[i];
+                let date = item.sdate.substr(8,2); // 날짜
+                let workform = CodeManager.get('workform', item.workform, '');
+                let workgubun = CodeManager.get('workgubun', item.division, '조');
+                let edit = '';
+
+                if(SSO.getMember().grade == 1) {
+                    edit = `<a href="/schedule/calendar/edit?id=${item.id}" class="ps-1">[수정]</a>`;
+                }
+
+                $('.date-'+date +' .g-'+item.division).append(`<div>
+                <div class="d-flex fs-12 justify-content-between" style="align-items:center;border:1px solid #EFEFEF;border-radius:5px;margin-bottom:4px">
+                    <div class="${item.division}" style="width:18px;height:18px">${item.division}</div>
+                       <div class="member-name mx-auto text-center ps-2">${item.userwnm}</div>
+                        ${edit}
+                </div>
+            </div>`);
+            }
+            //${ + ((workform == '출근')? '':' ('+workform.substring(0,1)+')')}
+        });
+    }
+}
+
+
+
+let ExcelManager = {
+    download: function() {
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push('출근부');
+
+        let label = ['이름', '근무', '팀', '시작', '종료'];
+        let data = [label];
+        let list = pagectx.list;
+
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let sdate = item.sdate ?? '';
+            let edate = item.edate ?? '';
+            let temp = [item.userwnm, item.division, item.team, sdate.replaceAll('T',' '), edate.replaceAll('T',' ')];
+            data.push(temp);
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        wb.Sheets['출근부'] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType:'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbOut)],{type:"application/octet-stream"}), $(`#input-month`).val() + ` 출근부.xlsx`);
+    }
+}
+</script>
+</body>
+</html>

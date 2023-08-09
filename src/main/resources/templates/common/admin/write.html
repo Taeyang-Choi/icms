@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="common/admin/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">관리자관리</p>
+
+                    <div class="wrap border-top">
+                        <p>관리자등록</p>
+
+                        <form id="form-member" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-12 d-flex">
+                                    <div class="label">아이디</div>
+                                    <div class="content"><input class="form-control required" name="userid" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">비밀번호</div>
+                                    <div class="content"><input class="form-control required" name="userpwd" type="password"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">이름</div>
+                                    <div class="content"><input class="form-control required" name="name" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">부서</div>
+                                    <div class="content"><input class="form-control" name="dept" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">연락처</div>
+                                    <div class="content"><input class="form-control" name="hp" type="tel"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">권한</div>
+                                    <div class="content" id="grade-template">
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">담당</div>
+                                    <div class="content" id="monitor-template">
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">근무조</div>
+                                    <div class="content">
+                                        <select id="selectTeam" class="form-select" name="team">
+                                            <option value="NOTEAM">팀없음</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a href="list" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+
+    // 관리자 등급
+    for(let i = 0; i < CodeManager.admin.length; i++) {
+        let code = CodeManager.admin[i];
+        let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grade" value="${code.c}" id="radio-grade-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-grade-${i}">${code.n}</label>
+                </div>`;
+        $('#grade-template').append(str);
+    }
+
+    // 팀 종류
+    for(const team of CodeManager.team) {
+        $(`#selectTeam`).append(`<option value="${team.c}">${team.n}</option>`);
+    }
+
+    // 관리자 등급
+    for(let i = 0; i < CodeManager.monitoring.length; i++) {
+        let code = CodeManager.monitoring[i];
+        let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="monitor" value="${code.c}" id="radio-monitor-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="radio-monitor-${i}">${code.n}</label>
+                </div>`;
+        $('#monitor-template').append(str);
+    }
+
+    $('#form-member').on('submit', function() {
+        if(pagectx.onproc) return;
+        pagectx.onproc = true;
+
+        let formData = new FormData(document.getElementById('form-member'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        AJAX.post("/members", formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

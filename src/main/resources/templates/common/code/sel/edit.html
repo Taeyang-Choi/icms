@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>코드관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="common/code/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title" class="h3">하위코드수정</p>
+
+                    <div class="wrap border-top">
+                        <p>하위코드수정</p>
+
+                        <form id="form-code" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-12 d-flex">
+                                    <div class="label">코드종류명</div>
+                                    <div class="content"><input class="form-control form-control-plaintext" name="kindCode" type="text" readonly></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">코드</div>
+                                    <div class="content"><input class="form-control" name="code" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">코드명</div>
+                                    <div class="content"><input class="form-control" name="name" type="text"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">정렬순</div>
+                                    <div class="content"><input class="form-control" name="seq" type="number"></div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">사용여부</div>
+                                    <div class="content">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="active" value="true" id="radio-active-1">
+                                            <label class="form-check-label" for="radio-active-1">사용</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="active" value="false" id="radio-active-2">
+                                            <label class="form-check-label" for="radio-active-2">사용안함</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">특이사항</div>
+                                    <div class="content"><input class="form-control" name="remarks" type="text"></div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a href="#" class="btn btn-sm btn-warning" onclick="Page.back()">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    pagectx.item = params.item;
+
+    createForm(params);
+
+    $('#page-title').append(" - " + params.item.kindCode);
+
+    function createForm(params) {
+        let selCode = params.item;
+        for(let pair of Object.entries(selCode)){
+            if(pair[0] === 'active') continue;
+            $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        if(selCode.active) $('#radio-active-1').prop('checked', 'checked');
+        else $('#radio-active-2').prop('checked', 'checked');
+    }
+
+    $('#form-code').on('submit', function() {
+        let formData = new FormData(document.getElementById('form-code'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        console.log(vData);
+
+        AJAX.put("/sel-codes/" + pagectx.item.id, formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.back();
+           });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

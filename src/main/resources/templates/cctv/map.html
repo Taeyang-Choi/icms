@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<th:block th:replace="~{layout/common :: metas}"></th:block>
+<th:block th:replace="~{layout/common :: styles}"></th:block>
+<title>카메라 맵</title>
+<style>
+html,body{height:100%;}
+#top{left:0;top:108px;height:70px;background-color:#F0F4FAAA;z-index:1001}
+#left{top:178px;left:0;width:200px;z-index:1001;background-color:#F0F4FA;}
+#left-sub{width:200px;top:178px;left:200px;z-index:1001;background-color:#F0F4FA;}
+#aside-panel .d-flex{align-items: center}
+.A2fas5aX{background-color:#E4E4E5;width:32px;height:32px;}
+.A2fas5aX i{font-size:20px;margin:6px;}
+</style>
+</head>
+<body data-page-scope="cctv/map">
+<div id="header" class="pos-fixed" style="z-index:4000;"></div>
+
+<main style="height:100%">
+    <div id="top" class="d-flex pos-fixed w-100 justify-content-between align-items-center">
+        <div class="d-flex">
+            <div class="d-flex justify-content-end " style="background-color:#F0F4FA;width:200px;">
+                <div class="rounded-circle bg-white text-center" style="width:34px;line-height:34px;margin:18px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"></path></svg></div>
+            </div>
+            <div style="line-height:70px;font-size:28px;">CCTV</div>
+            <div style="line-height:70px;font-size:24px;">Status quo Check map</div>
+        </div>
+        <div class="d-flex">
+            <button class="btn btn-primary" onclick="ExcelManager.download()">다운로드</button>
+            <input class="form-control form-control-sm" type="file" id="formFile" style="flex:0 0 226px;" accept=".xlsx, .xlsm, .xls">
+        </div>
+    </div>
+
+    <!-- 1단 사이드 nav -->
+    <aside id="left" class="pos-fixed" style="height:calc(1080px - 108px);">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item" onclick="popup('situ')">상황</li>
+            <li class="list-group-item" onclick="popup('error')">장애</li>
+            <li class="list-group-item" onclick="popup('search')">검색</li>
+            <li class="list-group-item" onclick="popup('type')">유형별 구분</li>
+            <li class="list-group-item" onclick="popup('what')">유지보수 구분</li>
+        </ul>
+    </aside>
+
+    <!-- 2단 사이드 nav -->
+    <aside id="left-sub" class="pos-fixed d-none" style="height:calc(1080px - 108px);">
+        <ul class="list-group list-group-flush">
+        </ul>
+    </aside>
+
+    <div id="map" style="width:100%;height:100%;"></div>
+
+    <div class="container"></div>
+
+    <aside id="aside-panel" class="pos-fixed d-none" style="width:280px;right:0;top:178px;bottom:0;z-index:1001;">
+        <div style="background-color:#363636;line-height:38px;color:white;padding:8px 16px">CCTV 정보</div>
+        <div style="background-color:#F0F4FA;height:100%;padding:24px 16px;">
+            <div id="asset-name" class="d-flex">
+                <div class="A2fas5aX"><i class="ri-file-copy-line"></i></div>
+                <div class="asset-name ps-1"></div>
+            </div>
+
+            <div id="asset-event" class="d-flex mt-3">
+                <div class="A2fas5aX"><i class="ri-information-line"></i></div>
+                <div class="asset-event ps-1"></div>
+            </div>
+
+            <div id="asset-ping" class="d-flex mt-5">
+                <div class="A2fas5aX"><i class="ri-bar-chart-2-line"></i></div>
+                <div id="asset-ip" class=" ps-1"></div>
+                <div onclick="pingURL()" class="A2fas5aX d-flex ms-1">
+                    <i class="ri-upload-line"></i>
+                </div>
+            </div>
+
+            <div id="ping-test-list" class="rounded-2 mt-3" style="background-color:#BEBABA;min-height:20px;width:120px;">
+
+            </div>
+
+            <div id="asset-report" class="d-flex mt-5">
+                <div class="A2fas5aX"><i class="ri-user-fill"></i></div>
+                <div class="asset-agent-name ps-1"></div>
+                <div class="A2fas5aX ms-1"><i class="ri-article-line"></i></div>
+                <div id="report-anchor ps-1"><a>근무일지보기</a></div>
+            </div>
+        </div>
+    </aside>
+</main>
+
+<th:block th:replace="layout/common :: script"></th:block>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=97d7494e46d2ee1462301f24e6fd7333"></script>
+<script src="/js/module/map.js"></script>
+<script src="/js/proj4.js"></script>
+<script>
+pagectx.markers = [];
+async function init() {
+    /* 엑셀 업로드 */
+    $('#formFile').on('change', ExcelManager.upload);
+    AJAX2.get('/api/daily-reports/events/errors').then(cameraErrors);
+    AJAX2.get('/api/daily-reports/events/situs').then(cameraSitus);
+    let cameraList = await AJAX2.get('/api/cctvs/excel').then(AJAX2.save);
+
+    // 임시코드
+    for (let camera of cameraList) {
+        if(!isValid(camera.annox) || !isValid(camera.annoy)) continue;
+        camera.jsonobj = {};
+        let coord = convertCoordinates(Number(camera.annox), Number(camera.annoy));
+        camera.lat = coord[1];
+        camera.lng = coord[0];
+        camera.name = camera.cctvIndex;
+        camera.vmsId = camera.id;
+        camera.assetId = camera.id;
+        camera.jsonobj.ip = camera.connectIp;
+    }
+
+    MapUtils.renderMaps();
+    //renderAsset(cameraList);
+    AJAX2.get('/api/assets').then(renderAsset);
+}
+
+function convertCoordinates(x, y) {
+    const sourceCRS = '+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs';
+    const targetCRS = '+proj=longlat +datum=WGS84 +no_defs';
+
+    const transformedCoordinates = proj4(sourceCRS, targetCRS, [x, y]);
+    return transformedCoordinates;
+}
+/**
+ * 아직 수정 안된 카메라만 가져오기
+ * @param errors
+ */
+function cameraErrors(errors) {
+    pagectx.errors = errors;
+}
+function cameraSitus(situs) {
+    pagectx.situs = situs;
+}
+function renderAsset(list) {
+    for(const item of list) {
+        if(typeof(item.jsonobj) == 'string') item.jsonobj = JSON.parse(item.jsonobj);
+    }
+    pagectx.assets = list;
+
+    for(const item of list) {
+        if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item);
+    }
+
+    kakao.maps.event.addListener(MapUtils.map, 'click', function(mouseEvent) {
+        $('#aside-panel').addClass('d-none');
+        $('#left-sub').addClass('d-none');
+    });
+}
+
+function pingURL() {
+    let obj = pagectx.selectedAsset;
+    let ip = (Utils.isValid(obj.jsonobj.ip)) ? obj.jsonobj.ip : obj.jsonobj.p;
+    AJAX2.get('/api/assets/ping?ip='+ip).then(function (data) {
+        for (const d of data) {
+            $('#ping-test-list').append(`<div class="font-monospace p-1 text-white">${d}ms</div>`);
+        }
+    });
+}
+
+function popup(type) {
+    $('#left-sub').removeClass('d-none');
+    if(type == "situ") {
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(``);
+        for (const situ of pagectx.situs) {
+            $('#left-sub .list-group').append(`
+            <div class="" data-id="${situ.cctvId}">
+                <div class="bg-dark text-white p-1">${situ.cctvIndex}</div>
+                <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${situ.cctvIndex}')"; role="button">${situ.workContent}</div>
+            </div>`);
+        }
+    }
+    else if (type == 'error') {
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(``);
+        for (const error of pagectx.errors) {
+            $('#left-sub .list-group').append(`
+            <div class="" data-id="${error.cctvId}">
+                <div class="bg-dark text-white p-1">${error.cctvIndex}</div>
+                <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${error.cctvIndex}')"; role="button">${error.workContent}</div>
+            </div>`);
+        }
+    }
+    else if (type == 'search') {
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(`
+        <input id="input-search" class="form-control" tyle="text" placeholder="검색어를 입력해주세요.">
+        <div class="camera-list" style="max-height:700px;overflow-y:scroll"></div>`);
+
+        $('#input-search').on('change', function (e) {
+            let val = $('#input-search').val();
+            if(val.length > 1) {
+                $("#left-sub .list-group .camera-list").html(``);
+
+                for (const marker of MapUtils.markers) {
+                    if(marker.name.includes(val)) {
+                        $('#left-sub .list-group .camera-list').append(`
+                            <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${marker.name}')"; role="button">${marker.name}</div>
+                        `);
+                    }
+                }
+            }
+        });
+    }
+    else {
+        alert('아직 준비중인 기능입니다.');
+    }
+}
+/**
+ * 자산관리 엑셀 업로드 및 다운로드
+ * @type {{download: ExcelManager.download, upload: ExcelManager.upload}}
+ */
+let ExcelManager = {
+    header: ["assetId", "purpose", "type", "dept", "projectName", "projectType", "vmsId", "name", "emd", "li",
+        "town", "address", "refId", "lat", "lng"],
+    upload: function (e) {
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(e.target.files[0]);
+        reader.onload = function (e) {
+            //let data = new Uint8Array(reader.result);
+            let workBook = XLSX.read(reader.result, {type: 'binary'});
+            let obj = [];
+
+            const sheetName = workBook.SheetNames[0];
+            let rows = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName], {header:1, defval:''});
+
+            let header = rows[2];
+            rows = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName], {header:header, defval:''});
+            for(let i = 3; i < rows.length; i++) {
+                let jsonobj = {};
+                let temp = {};
+
+                for (const [key, value] of Object.entries(rows[i])) {
+                    if(ExcelManager.header.includes(key)) {
+                        temp[key] = value;
+                    }
+                    else {
+                        jsonobj[key] = value;
+                    }
+                }
+
+                temp.jsonobj = JSON.stringify(jsonobj);
+                console.log(temp);
+                obj.push(temp);
+            }
+
+
+            let formData = new FormData();
+            formData.set("jsonString", JSON.stringify(obj));
+
+            AJAX2.post('/api/assets/upload', formData).then(function (data) {
+                Dialog.alert(data.message, function () {
+                    Page.reload();
+                });
+            });
+
+        };
+    },
+    download: function() {
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push('목록');
+
+        let label = ['purpose','type','dept','projectName','projectType','assetId','vmsId','manufacture','model','ip','id',
+                'pass','name','emd','li','town','address','refId','direction','lat','lng','cctvmanufacture',
+                'cctvmodel','digital','rotation','form','pixel','price','screen','fdate','pole','company','manager',
+                'phone','insdate','mtnend','mtn','agency','exten','agencynum','agencyip','agencyins','renew','agencyend',
+                'electnum','electext','vendor','etcmoel','etcch','etcvolume','etcip','etcid','etcpass'];
+
+        let data = [label];
+
+        let list = pagectx.assets;
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let temp = [];
+
+            for(const key of label) {
+                if(Utils.isValid(item[key])) {
+                    temp.push(item[key]);
+                }
+                else {
+                    temp.push(item.jsonobj[key]);
+                }
+            }
+            data.push(temp);
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        wb.Sheets['목록'] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType:'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbOut)],{type:"application/octet-stream"}), dateFormat() + " 자산 목록.xlsx");
+    }
+}
+</script>
+</body>
+</html>

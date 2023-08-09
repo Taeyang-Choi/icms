@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/css/member.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+<meta charset="UTF-8">
+<title>팀스케줄</title>
+<style>
+    #page-title:before{content:url("/images/before/schedule.svg");margin-right:10px;vertical-align:middle}
+</style>
+</head>
+<body data-page-scope="dailyreport/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="d-flex" style="justify-content:space-between;">
+            <div class="d-flex align-items-center gap-3">
+                <p id="page-title">일일근무일지</p>
+                <input id="inputMonth" class="form-control" type="date" style="width:140px;">
+                <button id="btnSearch" class="btn btn-primary">조회</button>
+            </div>
+        </div>
+        <table id="mainTable" class="table">
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="buttons d-flex">
+        <div class="col-2">
+        </div>
+        <div class="col-8">
+        </div>
+        <div class="col-2 d-flex align-self-center justify-content-end gap-1">
+            <button id="btn-confirm" class="btn btn-sm btn-primary" onclick="ReportManager.down()">엑셀 다운</button>
+        </div>
+    </div>
+    </div>
+</div>
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/xlsx.full.min.js"></script>
+<script src="/js/FileSaver.min.js"></script>
+<script src="/js/xlsx.bundle.js"></script>
+<script>
+function init(params) {
+    $('#inputMonth').val(dateFormat(new Date(), 'yyyy-MM-dd'));
+    TeamMemberManager.init();
+    $('#btnSearch').on('click', function() {
+        MonitoringManager.init();
+    });
+}
+
+let TeamMemberManager = {
+    init: function () {
+        AJAX.get('/schedule/agents', '', function (list) {
+            TeamMemberManager.data = list;
+            MonitoringManager.init();
+        });
+    },
+    findByTeam: function(team) {
+        let item = this.data.find(e => e.team == team && !e.flag);
+        if(isValid(item)) {
+            item.flag = true;
+            return item;
+        }
+    },
+    reset: function() {
+        for(const member of TeamMemberManager.data) {
+            member.flag = false;
+        }
+    }
+}
+
+let MonitoringManager = {
+    init: function () {
+        AJAX.get('/daily-reports/events/date/' + $('#inputMonth').val(), '', function (list) {
+            MonitoringManager.data = list;
+            TeamScheduleManager.init();
+        });
+    }
+}
+
+let TeamScheduleManager = {
+    init: function () {
+        AJAX.get('/teams/schedules/' + $('#inputMonth').val().replaceAll('-',''), '', function (list) {
+            TeamScheduleManager.data = list;
+            ReportManager.init();
+        });
+    },
+    findByShift: function(shift) {
+        let item = this.data.find(e => e.shift == shift);
+        return item;
+    }
+}
+
+let ReportManager = {
+    headers: [],
+    subHeaders: [],
+    init: function() {
+        let date = $('#inputMonth').val();
+        let $t = $("#mainTable tbody");
+        let s = '';
+        $t.html('');
+        TeamMemberManager.reset();
+
+        $t.append(`<tr data-hpx="50">
+                    <td colspan="12">영상정보 통합관제센터 일일보고</td>
+                </tr>
+                <tr data-hpx="18"></tr>
+
+                <tr data-hpx="18">
+                    <td id="date" colspan="6" rowspan="3"></td>
+                    <td colspan="2">주무관</td>
+                    <td colspan="2">관제센터담당</td>
+                    <td colspan="2">안전관리과장</td>
+                </tr>
+
+                <tr data-hpx="14">
+                    <td colspan="2"></td>
+                    <td colspan="2"></td>
+                    <td colspan="2"></td>
+                </tr>
+
+                <tr data-hpx="24">
+                    <td colspan="2">한대성</td>
+                    <td colspan="2">황성준</td>
+                    <td colspan="2">윤경병</td>
+                </tr>`);
+
+        //근무 인원
+        $t.append(`<tr data-hpx="4"></tr>`)
+        $t.append(`<tr data-hpx="22"><td class="text-left" colspan="12">□ 근무 인원[${date}]</td></tr>`);
+        this.headers.push($("#mainTable tr").length); // 헤더 index 체크
+        $t.append(`<tr data-hpx="18"><td colspan="4">오전근무</td><td colspan="4">오후근무</td><td colspan="4">야간근무</td></tr>`);
+        this.subHeaders.push($("#mainTable tr").length);
+
+        $t.append(`<tr data-hpx="18"><td>근무조</td><td>목적</td><td>성명</td><td>비고</td>
+            <td>근무조</td><td>목적</td><td>성명</td><td>비고</td>
+            <td>근무조</td><td>목적</td><td>성명</td><td>비고</td></tr>`);
+        this.subHeaders.push($("#mainTable tr").length);
+
+        // 팀 별로 정렬
+        let arr = ['조','주','야'];
+        for(const i in TeamScheduleManager.data) {
+            let team = TeamScheduleManager.findByShift(arr[i]);
+            if(isValid(team)) arr[i] = team.team;
+        }
+
+        // 멤버 찾아서 넣기
+        let index = 0;
+        $t.append('<tr data-hpx="18"></tr>');
+
+        // 순서
+        TeamMemberManager.data.sort((a, b) => {
+            let codeA = CodeManager.getCode('monitoring', a.monitor, '1');
+            let codeB = CodeManager.getCode('monitoring', b.monitor, '1');
+            return codeA.o < codeB.o ? 1 : codeA.o > codeB.o ? -1 : 0;
+        });
+
+        for(let i = 0; i < TeamMemberManager.data.length; i++) {
+            if (index == arr.length) {
+                $t.append('<tr data-hpx="18"></tr>');
+                index = 0;
+            }
+            let member = TeamMemberManager.findByTeam(arr[index++]);
+            if(isValid(member)) {
+                $(`#mainTable tr`).last().append(`<td>${member.team}</td>
+                <td>${CodeManager.getCode('monitoring', member.monitor).n}</td>
+                <td>${member.name}</td>
+                <td>&nbsp;</td>`);
+            }
+            else {
+                $(`#mainTable tr`).last().append('<td></td><td></td><td></td><td></td>');
+            }
+        }
+
+        // 개인영상정보
+        $t.append(`<tr data-hpx="22"><td class="text-left" colspan="12">□ 개인영상정보 열람 및 제공현황</td></tr>`);
+        this.headers.push($("#mainTable tr").length); // 헤더 index 체크
+        let barrier = CodeManager.barrier_level;
+        s = `<tr data-hpx="18"><td colspan="${12-barrier.length}">구분</td>`;
+        for(let b of barrier) {
+            s += `<td>${b.n}</td>`;
+        }
+        s += `</tr>`;
+        $t.append(s);
+        this.subHeaders.push($("#mainTable tr").length); // 서브헤더
+
+        $t.append(`<tr id="todayCrime" data-hpx="18"><td colspan="${11-barrier.length}">일계</td><td class="total">0</td></tr>`);
+        for(let i = 0; i <= barrier.length-1; i++) {
+            $(`#todayCrime`).append(`<td class="barrier-${barrier[i].c}">0</td>`);
+        }
+        $t.append(`<tr id="allCrime" data-hpx="18"><td colspan="${11-barrier.length}">누계</td><td class="total">0</td></tr>`);
+        for(let i = 0; i <= barrier.length-1; i++) {
+            $(`#allCrime`).append(`<td class="barrier-${barrier[i].c}">0</td>`);
+        }
+
+        $t.append('<tr data-hpx="4"></tr>');
+
+        // 관리번호
+        $t.append(`<tr id="crimeRequest" data-hpx="18"><td colspan="2">관리번호</td><td>구분</td><td colspan="3">소속</td>
+        <td>공문호</td><td>요구자</td><td colspan="4">내용</td></tr>`);
+        this.subHeaders.push($("#mainTable tr").length);
+
+        // □ 실시간 관제모니터링 현황 (D02)
+        $t.append(`<tr data-hpx="22"><td class="text-left" colspan="12">□ 실시간 관제모니터링 현황</td></tr>`);
+        this.headers.push($("#mainTable tr").length); // 헤더 index 체크
+        $t.append(`<tr data-hpx="18"><td colspan="2">일자</td>
+            <td colspan="1">근무자</td>
+            <td colspan="2">CCTV명</td>
+            <td colspan="2">대응유형</td>
+        <td colspan="5">상황 및 조치내용</td></tr>`);
+        this.subHeaders.push($("#mainTable tr").length);
+        for(const mon of MonitoringManager.data) {
+            if(mon.workDgubun == 'D02') {
+                $t.append(`<tr>
+                    <td colspan="2">${mon.createdAt.replaceAll('T',' ')}</td>
+                    <td colspan="1">${mon.userid}</td>
+                    <td colspan="2">${mon.cctvIndex}</td>
+                    <td colspan="2">${CodeManager.get('situ_result', mon.actionCode, '-')}</td>
+                    <td colspan="5">${mon.workContent}</td>
+                </tr>`);
+            }
+        }
+
+        //□ 영상정보처리기기 장애(D01) 현황
+        $t.append(`<tr data-hpx="22"><td class="text-left" colspan="12">□ 영상정보처리기기 장애 현황</td></tr>`);
+        this.headers.push($("#mainTable tr").length); // 헤더 index 체크
+        $t.append('<tr data-hpx="18"><td colspan="8">기존 장애</td><td colspan="4">금일 장애</td></tr>');
+        this.subHeaders.push($("#mainTable tr").length);
+        for(const mon of MonitoringManager.data) {
+            let today = ($('#inputMonth').val() == mon.workDate);
+            if(mon.workDgubun == 'D01') {
+                $t.append(`<tr data-hpx="40">
+                    <td colspan="4">${mon.workContent}</td>
+                    <td colspan="4">${get(mon.actionResult,'미조치')}</td>
+                    <td colspan="4">${(today) ? mon.workContent : ''}</td>
+                </tr>`);
+            }
+        }
+
+        const d = new Date($(`#inputMonth`).val());
+        const year = d.getFullYear(); // 년
+        const month = d.getMonth();   // 월
+        const day = d.getDate();      // 일
+
+        // 어제 날짜 구하기
+        let prevDate = new Date(year, month, day - 1);
+        let week = ['일', '월', '화', '수', '목', '금', '토'];
+
+        $(`#date`).html(`${dateFormat(prevDate, 'yyyy년 MM월 dd일')}(${week[prevDate.getDay()]}요일) 09:00
+            <br> ~ ${dateFormat(d, 'yyyy년 MM월 dd일')}(${week[prevDate.getDay()+1]}요일) 09:00`);
+
+
+        // GIS 부분
+        AJAX.get(`/gis/${dateFormat(prevDate,'yyyyMMdd')}/${dateFormat(d,'yyyyMMdd')}`, '', function(data) {
+            if(data.length == 0) {
+                $('#crimeRequest').after(`<tr data-hpx="30"><td colspan="2"></td><td></td><td colspan="3"></td><td></td><td></td><td colspan="4"></td></tr>`);
+            }
+            for(const req of data) {
+                let crimeCode = ReportManager.getCrimeCode(req.crimeType);
+                let count = Number($(`#todayCrime .barrier-${crimeCode}`).text());
+                $(`#todayCrime .barrier-${crimeCode}`).text(++count);
+
+                $('#crimeRequest').after(`<tr data-hpx="30"><td colspan="2">${req.id}</td>
+                    <td>${ReportManager.getProcessCode(req.processStatCode)}</td>
+                    <td colspan="3">${req.orgName}<br>${req.dept}</td><td>${req.docNo}</td>
+                    <td>${req.requesterName}</td><td colspan="4">${req.requestDetail}</td></tr>`);
+
+                /*
+                $('#crimeRequest').after(`<tr data-hpx="30"><td colspan="2">${req.id}</td><td>${ReportManager.getProcessCode(req.processStatCode)}</td>
+                    <td colspan="3">${req.orgName}<br>${req.dept}</td><td>${req.docNo}</td><td>${req.requesterName}</td><td colspan="4">${req.requestDetail}</td></tr>`);
+
+                 */
+            }
+            $('#todayCrime .total').text(data.length);
+            ReportManager.headers[2] += data.length;
+            ReportManager.headers[3] += data.length;
+            ReportManager.subHeaders[4] += data.length;
+            ReportManager.subHeaders[5] += data.length;
+        });
+
+
+        AJAX.get('/gis/counts', '', function(data) {
+            if(data.length == 0) {
+            }
+            for(const key of Object.keys(data)) {
+                let item = data[key];
+                let crimeCode = ReportManager.getCrimeCode(item.crimeType);
+                let count = Number($(`#allCrime .barrier-${crimeCode}`).text());
+                let totalCount = Number($(`#allCrime .total`).text());
+
+                $(`#allCrime .barrier-${crimeCode}`).text(count + item);
+                $(`#allCrime .total`).text(totalCount + item);
+            }
+        });
+    },
+    down: function() {
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.table_to_sheet(document.getElementById('mainTable'), {sheet:"시트명",raw:true});
+        let rowNum = document.getElementById('mainTable').rows.length;
+
+        let borderStyle = {top: {style: "thin"},left: {style: "thin"},right: {style: "thin"},bottom: {style: "thin"}};
+        ws["!rows"] = [];
+
+        for(let i = 0; i < $('#mainTable tr').length; i++) {
+            ws["!rows"].push({hpx: $('#mainTable tr').eq(i).data('hpx')});
+        }
+
+        let cols = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+        for(let row = 1; row <= rowNum; row++){
+
+            for(const col of cols){
+                if(!isValid(ws[col+row])){
+                    ws[col+row] = {s: {alignment:{},border:{},font:{}}, v:''};
+                    if(row >= 7) ws[col+row].s.border = borderStyle;
+                }
+                else{
+                    ws[col+row].t = 's';
+                    ws[col+row].s = {alignment:{vertical:"center",horizontal:"center"},font:{sz:"10",bold:false,name:'맑은 고딕'}};
+
+                    if(row >= 7) ws[col+row].s.border = borderStyle;
+                }
+            }
+        }
+
+        // 최상단
+        ws["A1"].s.font = {
+            sz: "24",
+            bold: true,
+            name:'맑은 고딕'
+        };
+
+        console.log(ws);
+
+
+        // 사인 영역
+        for(let row = 3; row <= 5; row++){
+            for(const col of ['G','H','I','J','K','L']) {
+                ws[col+row].s.border = borderStyle;
+            }
+        }
+
+        ws['A3'].s.alignment.wrapText = true;
+
+
+        // 헤더 영역
+        for(const row of this.headers){
+            for(const col of cols) {
+                ws[col+row].s.font['bold'] = true;
+                ws[col+row].s.font['sz'] = '12';
+                ws[col+row].s.fill = {patterType:'solid', fgColor: {rgb: 'fcf9ee'}};
+                ws[col+row].s.alignment.horizontal = 'left';
+            }
+        }
+        for(const row of this.subHeaders){
+            for(const col of cols) {
+                ws[col+row].s.font['bold'] = true;
+                ws[col+row].s.fill = {patterType:'solid', fgColor:{rgb:'fafafa'}};
+            }
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, "일일업무일지");
+        XLSX.writeFile(wb, ($('#inputMonth').val()+'일일업무일지.xlsx'));
+    },
+    getCrimeCode: function(crimeType) {
+        let trans = {'99':'D', '27':'D', '18':'A', '15':'E'};
+        if(Object.keys(trans).includes(crimeType)) return trans[crimeType];
+        else return 'F'; // 강력범죄
+    },
+    getProcessCode: function(code) {
+        //let arr = {"SA":"승인완료", "SD":'승인거부', 'SF':'처리실패', 'SK':'처리완료', 'SN':'처리중', 'SW':'승인대기', 'SB':'처리완료'};
+
+        //c58
+        let arr = {"12":"영상열람",
+            "11":"영상반출",
+            "13":"긴급반출",
+            "16":"긴급차번",
+            "15":"차번열람",
+            "17":"오프라인반출",
+            "14":"차번반출"}
+        if(Object.keys(arr).includes(code)) return arr[code];
+        else return '코드없음';
+    }
+}
+</script>
+</body>
+</html>

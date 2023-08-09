@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>방문자 관리대장</title>
+    <style>
+        #page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
+        #gnb .nav{display:none}
+        #ntc .fs-14{display:none!important}
+
+        .col-6{width:49.7%;margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="visit/list" data-option='{"auth":false}'>
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div style="box-shadow: 0px 3px 15px -4px #c4c4c4;margin-top:27px;">
+                <p id="page-title" style="padding-left:30px;padding-right:30px;background-color:white">방문자 관리대장</p>
+
+                <div class="wrap" style="padding:0 30px 50px;background-color:white">
+                    <p>통합관제센터 방문자 등록</p>
+
+                    <form id="formVisit" method="post" onsubmit="return false;">
+                        <div class="d-flex flex-wrap justify-content-between">
+                            <div class="col-6 d-flex">
+                                <div class="label">방문일자</div>
+                                <div class="content"><input class="form-control required" type="date" name="entDate1"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">입실시간</div>
+                                <div class="content"><input class="form-control required" type="time" name="entDate2"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">소속</div>
+                                <div class="content"><input class="form-control required" name="companyName" type="text"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">성명</div>
+                                <div class="content"><input class="form-control required" name="username" type="text"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">연락처</div>
+                                <div class="content"><input class="form-control required" name="hpNo" type="text"></div>
+                            </div>
+                            <div class="col-6 d-flex">
+                                <div class="label">담당자명</div>
+                                <div class="content">
+                                    <select name="submitUser" class="form-select"></select>
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex">
+                                <div class="label">용무</div>
+                                <div class="content"><input class="form-control required" name="body" type="text"></div>
+                            </div>
+                        </div>
+
+                        <div class="buttons d-flex justify-content-between">
+                            <a href="list" class="btn btn-sm btn-warning">목록</a>
+                            <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script>
+function init(params) {
+    $("#ntc").append(`<div class="fs-16" style="margin:0 auto;text-align:center;padding:20px 0;width:50%;background-color:white;margin-top:40px;">방문자 정보를 남겨주시길 바랍니다.</div>`);
+
+    // 초기 날짜
+    $('input[type="date"]').val(dateFormat(new Date(),"yyyy-MM-dd"));
+    // 초기 시간
+    $('input[type="time"]').val(dateFormat(new Date(),"hh:mm"));
+
+    // 방문자
+    for(let i = 0; i < CodeManager.admin.length; i++) {
+        let code = CodeManager.admin[i];
+        let str = `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grade" value="${code.c}" id="work-monitoring-${i}" ${(i == 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="work-monitoring-${i}">${code.n}</label>
+                </div>`;
+        $('#grade-template').append(str);
+    }
+
+    $('#formVisit').on('submit', function() {
+        if(pagectx.onproc) return;
+        pagectx.onproc = true;
+
+        let formData = new FormData($('#formVisit')[0]);
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+        formData.append('entDate', vData["entDate1"] + " " + vData["entDate2"] + ":00");
+
+        AJAX.post("/visits", formData, function(data) {
+           Dialog.alert(data.message, function() {
+               Page.go('/visit/list');
+           });
+        });
+    });
+
+    AJAX2.get('/api/members').then(function (members) {
+
+        for (const member of members) {
+            $('select[name="submitUser"]').append(`<option value="${member.name}">${member.name}</option>`);
+        }
+    });
+}
+
+</script>
+</body>
+</html>

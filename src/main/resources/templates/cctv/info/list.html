@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+
+<head>
+<meta charset="UTF-8">
+<title>영상정보기기관리 | 카메라 등록수정</title>
+<style>
+#page-title:before{content:url("/images/before/statics.svg");margin-right:10px;vertical-align:middle}
+
+#excelUpload .modal-body div div{border:1px solid #dee2e6;margin:2px auto;padding:5px 10px;text-align:center;background-color:white;border-radius:5px}
+#excelUpload .modal-body div div div{background-color:#f7f7f7;border:none;border-right:1px solid #dee2e6;border-left:1px solid #dee2e6;margin:-5px;position: absolute;left:21px;border-radius: 5px 0 0 5px}
+
+@media (min-width: 576px){
+    #excelUpload  .modal-dialog {max-width: 1200px}
+}
+
+#excelUpload{background: rgba(0, 0, 0, 0.6)}
+#excelUpload .modal-header{background-color:#6f84a5;color:white}
+#excelUpload .modalBodyHeader,#excelUpload .modal-body,#excelUpload .modal-footer{background-color:#F0F4FA}
+
+.cctvCheckAll{font-size:12px;border-radius:5px;position:absolute;left:16px;border:1px solid #dee2e6;padding:5px}
+.cctvIndexName>div{background-color:#f1f1f1!important}
+</style>
+</head>
+<body data-page-scope="cctv/info/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">카메라 등록수정</p>
+
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-end gap-1">
+                            <select name="cctvGubun" class="form-select" style="width:170px;"><option value="" selected="">전체</option></select>
+                            <select class="form-select search-key" data-sfor="#search-value-1" style="width:120px;">
+                                <option value="index">인덱스</option>
+                                <option value="juso">주소</option>
+                                <option value="ymd">설치년도</option>
+                            </select>
+                            <input id="search-value-1" class="form-control" value="" style="width:180px;">
+                            <button id="btn-search" class="btn btn-sm btn-warning">검색</button>
+                        </div>
+                    </div>
+
+                    <table id="mainTable" class="table text-center fs-12">
+                        <thead>
+                        <tr>
+                            <th scope="col">구분</th>
+                            <th scope="col">담당부서</th>
+                            <th scope="col">인덱스</th>
+                            <th scope="col">주소</th>
+                            <th scope="col">위치</th>
+                            <th scope="col">img1</th>
+                            <th scope="col">img2</th>
+                            <th scope="col">img3</th>
+                            <th scope="col">img4</th>
+                            <th scope="col">img5</th>
+                            <th scope="col">설치년도</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons d-flex">
+                        <div class="col-4">
+                            <button id="btnSyncVms" class="btn-primary btn-sm btn" onclick="CameraReplaceManager.syncVms()">VMS 동기화</button>
+                            <button id="btnSyncGis" class="btn-primary btn-sm btn" onclick="CameraReplaceManager.syncGis()">GIS 동기화</button>
+                            <button id="exportExcel" class="btn btn-warning btn-sm" style="width:76px;">엑셀</button>
+                        </div>
+                        <div class="col-4">
+                            <!-- 페이지 -->
+                            <nav id="pageSection" aria-label="Page navigation example">
+                            </nav>
+                        </div>
+                        <div class="col-4 d-flex align-self-center justify-content-end gap-1">
+                            <input class="form-control form-control-sm" type="file" id="formFile" style="flex:0 0 226px;" accept=".xlsx, .xlsm, .xls">
+                            <a class="btn btn-primary" href="write" role="button">등록</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="excelUpload" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">엑셀 업로드</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="CameraReplaceManager.modalClose()"></button>
+                </div>
+                <div class="d-flex fw-bold modalBodyHeader" style="justify-content:space-around;padding:12px"></div>
+                <div class="modal-body fs-12 d-flex gap-2 justify-content-center">
+                    <div class="new d-flex" style="width:48%"></div>
+                    <div class="my-auto"><img src="/images/rightArrow.svg" style="width:24px;height:24px"></div>
+                    <div class="old" style="width:48%"></div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div class="indexPageNumber"></div>
+                    <div>
+                    <button type="button" class="btn btn-success next" data-bs-dismiss="modal" onclick="CameraReplaceManager.skip()">넘어가기</button>
+                    <button type="button" class="btn btn-primary overwrite" onclick="CameraReplaceManager.overwrite()">덮어쓰기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/module/schedule.js"></script>
+<script>
+
+function init(params) {
+    setTable(params);
+    Page.setPaging({});
+    SearchManager.setSearch({callBack:renderTable, src: '/cctvs', table:'#mainTable'});
+
+    //전체 cctv 불러오기
+    AJAX.get('/cctvs/excel', '', function(list){
+        CameraReplaceManager.oldCameraList = list;
+    });
+
+    ExcelManager.init();
+
+    function setTable(params) {
+        AJAX.get('/cctvs', location.search.substr(1), function(list) {
+            renderTable(list);
+        });
+    }
+
+      /* 엑셀 업로드 */
+    $('#formFile').on('change', {usrobj: params.usrobj}, function(e) {
+        let arr = ['cctvGubun','dept','juso','cctvIndex','location',
+                    'cameraCategory','movement','nightvision','shage','installymd',
+                    'manufacturer','model','pixel','connectType','connectIp',
+                    'connectPort','connectId','connectPw','connectModel','connectServerType',
+                    'smCompany','smPerson','smTel','ptzUseyn','presetUseyn',
+                    'fallCamera','fallDefinition','fallEquipment','fallNetwork'];
+
+            let reader = new FileReader();
+            reader.readAsArrayBuffer(e.target.files[0]);
+            reader.onload = function (e) {
+                //let data = new Uint8Array(reader.result);
+                let workBook = XLSX.read(reader.result, {type: 'binary'});
+                let obj = [];
+                console.log(obj);
+
+            const sheetName = workBook.SheetNames[0];
+            let rows = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName], {header:arr});
+            for(let row of rows) {
+                if(row.cctvGubun == 'CCTV구분' || row.cctvGubun == 'cctvGubun') continue;
+                obj.push(row);
+            }
+                CameraReplaceManager.loadCamera(obj);
+        };
+    });
+
+    function renderTable(list) {
+        $('#mainTable tbody *').remove();
+
+        if(list.length == 0) {
+            $('tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let str = `
+                <tr>
+                    <td>${item.cctvGubun}</td>
+                    <td>${item.dept}</td>
+                    <td class = link-primary role="button">${item.cctvIndex}</td>
+                    <td>${item.juso}</td>
+                    <td>${item.location}</td>
+                    <td>${get(item.img1,"")}</td>
+                    <td>${get(item.img2,"")}</td>
+                    <td>${get(item.img3,"")}</td>
+                    <td>${get(item.img4,"")}</td>
+                    <td>${get(item.img5,"")}</td>
+                    <td>${item.installymd}</td>
+                </tr>`
+
+            $('tbody').append(str);
+
+            //상세페이지
+            $('tr .link-primary').last().on('click', {item:item}, function(e) {
+                Page.go('/cctv/info/detail', {item: e.data.item});
+            });
+        }
+    }
+}
+
+let CameraReplaceManager = {
+     cctvObj : {
+         id:'',
+         cctvGubun:'',dept:'',juso:'',cctvIndex:'',location:'',
+         cameraCategory:'',movement:'',nightvision:'',shage:'',installymd:'',
+         manufacturer:'',model:'',pixel:'',connectType:'',connectIp:'',
+         connectPort:'',connectId:'',connectPw:'',connectModel:'',connectServerType:'',
+         smCompany:'',smPerson:'',smTel:'',ptzUseyn:'',presetUseyn:'',
+         fallCamera:'',fallDefinition:'',fallEquipment:'',fallNetwork:'',
+     },
+    list: null,
+    currentIndex: 0,
+    currentOldCamera: null,
+    uploadList: [],
+    oldCameraList: null,
+    loadCamera: function(list){
+        //신규엑셀
+        this.list = list;
+        CameraReplaceManager.compareCamera(this.currentIndex);
+    },
+    compareCamera: function(cameraIndex) {
+        // 전부 비교 완료
+        if(this.currentIndex === this.list.length) {
+            this.finishPage();
+            return;
+        }
+
+        this.currentIndex = cameraIndex;
+        let newCamera = this.list[cameraIndex];
+
+        if(this.mode === 'vms') {
+            this.currentOldCamera = this.findCameraById(newCamera.id);
+        }
+        else {
+            this.currentOldCamera = this.findCameraByName(newCamera.cctvIndex);
+        }
+
+        this.renderCompareWindow(newCamera, this.currentOldCamera);
+    },
+    findCameraByName: function(name) {
+        return this.oldCameraList.find(e => e.cctvIndex === name);
+    },
+    findCameraById: function(id) {
+        return this.oldCameraList.find(e => e.id === id);
+    },
+    renderCompareWindow(newCamera, oldCamera) {
+        $('#excelUpload').css('display','block');
+
+        $('#excelUpload .modalBodyHeader *').remove();
+        $('#excelUpload .modalBodyHeader').append(`<button class="cctvCheckAll" onclick="CameraReplaceManager.checkedAll()">전체선택</button>
+                    <div class="fs-20" style="position:relative;right:93px">인덱스</div>
+                    <div class="fs-20" style="position:relative;right:155px">신규</div>
+                    <div class="fs-20" style="position:relative;right:40px">기존</div>`);
+        $('#excelUpload .modal-body *').remove();
+        $('#excelUpload .modal-body').append(`<div class="cctvIndexName" style="width:18%"></div>
+                    <div class="new" style="width:39%"></div>
+                    <div class="my-auto fs-32"><i class="ri-arrow-right-line"></i></div>
+                    <div class="old" style="width:39%"></div>`);
+        $('#excelUpload .modal-footer *').remove();
+        $('#excelUpload .modal-footer').append(`<div class="indexPageNumber"></div>
+                    <div>
+                    <button type="button" class="btn btn-success next" data-bs-dismiss="modal" onclick="CameraReplaceManager.skip()">넘어가기</button>
+                    <button type="button" class="btn btn-primary overwrite" onclick="CameraReplaceManager.overwrite()">덮어쓰기</button>
+                    </div>`);
+        $('#excelUpload .modal-footer').addClass('justify-content-between');
+
+        //신규 엑셀이 기존 엑셀값에 없을 때
+        if(!isValid(oldCamera)){
+            $('#excelUpload .modal-body .new *').remove();
+            $('#excelUpload .modal-body .old *').remove();
+            $('#excelUpload .modal-body .cctvIndexName *').remove();
+
+            for (const [key, val] of Object.entries(CameraReplaceManager.cctvObj)) {
+                let value = get(newCamera[key],'&nbsp;');
+                console.log(key, value)
+                $('#excelUpload .modal-body .cctvIndexName').append(`<div class="${key}">${key}</div>`);
+                if (value == undefined || value == '') {
+                    $('#excelUpload .modal-body .new').append(`<div class='${key} d-flex justify-content-center' style="padding:17px"><p></p></div>`);
+                } else {
+                    $('#excelUpload .modal-body .new').append(`<div class='${key} d-flex justify-content-center'><p>${value}</p></div>`);
+                }
+                $('#excelUpload .modal-body .old').append(`<div class=${key}>&nbsp;</div>`)
+                //신규와 기존 엑셀값이 다를 경우 체크박스 생성 및 글씨 색상 빨간색으로 변경
+                if ($(`#excelUpload .new .${key}`)[0].innerText != $(`.old .${key}`)[0].innerText) {
+                    // $(`.new .${key}`).prepend(`<div><input class="checked ${key}" type="checkbox" style="vertical-align:middle;margin-right:2px;accent-color:#6f84a5"></div>`);
+                    $(`#excelUpload .new .${key}`).css('color', 'red');
+                    $(`#excelUpload .old .${key}`).css('color', 'red');
+                    $(`#excelUpload .cctvIndexName .${key}`).css('color','red');
+                    $(`#excelUpload .cctvIndexName .${key}`).prepend(`<div><input class="checked ${key}" type="checkbox" style="vertical-align:middle;margin-right:2px;accent-color:#6f84a5"></div>`);
+                }
+            }
+        }
+        else {
+            //신규 엑셀 출력
+            $('#excelUpload .modal-body .new *').remove();
+            $('#excelUpload .modal-body .cctvIndexName *').remove();
+            for (const [key, val] of Object.entries(CameraReplaceManager.cctvObj)) {
+                let value = get(newCamera[key],'&nbsp;');
+                $('#excelUpload .modal-body .cctvIndexName').append(`<div class="${key}">${key}</div>`);
+                if (value == undefined || value == '') {
+                    $('#excelUpload .modal-body .new').append(`<div class='${key} d-flex justify-content-center' style="padding:17px"><p></p></div>`);
+                } else {
+                    $('#excelUpload .modal-body .new').append(`<div class='${key} d-flex justify-content-center'><p>${value}</p></div>`);
+                }
+            }
+            //기존 엑셀 출력
+            $('#excelUpload .modal-body .old *').remove();
+            for (const [key, val] of Object.entries(CameraReplaceManager.cctvObj)) {
+                let value = get(oldCamera[key],'&nbsp;');
+                if (key == 'connectCnt' || key == 'cameraCnt' || key == 'integrationCnt' || key == 'origin') {
+                    continue;
+                } else if (value == undefined || value == '') {
+                    if (key == 'id') {
+                        continue;
+                    }
+                    $('#excelUpload .modal-body .old').append(`
+                            <div class="${key} justify-content-center" style="padding:17px"><p></p></div>
+                                `);
+                } else {
+                    if (key == 'id') {
+                        continue;
+                    }
+                    $('#excelUpload .modal-body .old').append(`
+                            <div class="${key} justify-content-center"><p>${value}</p></div>
+                              `);
+                }
+                //신규와 기존 엑셀값이 다를 경우 체크박스 생성 및 글씨 색상 빨간색으로 변경
+                if ($(`#excelUpload .new .${key}`)[0].innerText != $(`.old .${key}`)[0].innerText) {
+                    // $(`.new .${key}`).prepend(`<div><input class="checked ${key}" type="checkbox" style="vertical-align:middle;margin-right:2px;accent-color:#6f84a5"></div>`);
+                    $(`#excelUpload .new .${key}`).css('color', 'red');
+                    $(`#excelUpload .old .${key}`).css('color', 'red');
+                    $(`#excelUpload .cctvIndexName .${key}`).css('color','red');
+                    $(`#excelUpload .cctvIndexName .${key}`).prepend(`<div><input class="checked ${key}" type="checkbox" style="vertical-align:middle;margin-right:2px;accent-color:#6f84a5"></div>`);
+                }
+            }
+        }
+
+        if(!isValid(oldCamera)) {
+            this.checkedAll();
+            return;
+        }
+
+        $('#excelUpload .indexPageNumber *').remove();
+        $('#excelUpload .indexPageNumber').prepend(`<p>${this.currentIndex+1} / ${this.list.length}</p>`);
+    },
+    skip: function() {
+        this.compareCamera(++this.currentIndex);
+    },
+    overwrite: function() {
+        // 1. 체크된 항목 가져오고 for문 돌려서 temp에 집어넣기
+        let temp = {};
+        for (const [key,value] of Object.entries(this.list[this.currentIndex])){
+            if($('.checked.'+key).is(":checked")){
+                temp[key] = value;
+            }
+        }
+        //기존엑셀에 값이 없을 때 즉 새로운 행이 들어욌을 때
+        if(this.currentOldCamera == undefined){
+            this.currentOldCamera = this.cctvObj;
+        }
+        let newCamera = $.extend(this.currentOldCamera,temp);
+
+        // 4. uploadList에 push
+        this.uploadList.push(newCamera);
+
+        this.compareCamera(++this.currentIndex);
+    },
+    finish: function() {
+        if(this.mode === 'vms') {
+        }
+        else {
+            let formData = new FormData();
+
+            AJAX.post("/cctv/excel/upload?force=true", formData, CameraReplaceManager.uploadList, function(data) {
+                Dialog.alert(data.message, function() {
+                    Page.reload();
+                });
+            });
+            this.currentIndex = 0;
+            this.uploadList = [];
+        }
+    },
+    finishPage: function(){
+        $('#excelUpload .modalBodyHeader *').remove();
+        $('#excelUpload .modal-body *').remove();
+        $('#excelUpload .modal-body').append(`<p class="fs-26">저장하시겠습니까?</p>`);
+        $('#excelUpload .modal-footer *').remove();
+        $('#excelUpload .modal-footer').append(`<div><button id="btnCameraReplaceClose" type="button" class="btn btn-success" onclick="CameraReplaceManager.modalClose()">닫기</button>
+                        <button id="btnCameraReplaceSave" type="button" class="btn btn-primary" onclick="CameraReplaceManager.finish()">저장</button></div>`);
+        $('#excelUpload .modal-footer').removeClass('justify-content-between');
+    },
+    modalClose: function() {
+        this.list = [];
+        this.currentIndex = 0;
+        this.currentOldCamera = null;
+        this.uploadList = [];
+        $('#excelUpload').css('display','none');
+    },
+    checkedAll : function(){
+        for (const [key] of Object.entries(this.list[this.currentIndex])) {
+            if($(`.checked.${key}`).is(":checked")){
+                $(`.checked.${key}`).prop('checked',false);
+            }else{
+                $(`.checked.${key}`).prop('checked',true);
+            }
+        }
+    },
+    syncVms: function() {
+        // 임시 로딩바
+        let str = `
+                   <div class="d-flex justify-content-center">
+                   <div style="line-height:32px;">현재 VMS 동기화 작업중입니다...</div>
+                   <div class="spinner-border text-primary" role="status">
+                       <span class="visually-hidden">Loading...</span>
+                   </div></div>
+                  `;
+        $('#dialog .modal-title').html("VMS 동기화");
+        $('#dialog .modal-body').html(str);
+        $('#dialog-cancel').hide();
+        Dialog.show();
+        AJAX2.post("/api/vms/sync",).then((data)=> {
+            console.log(data)
+            Dialog.alert(data.message, Page.reload);
+        }).catch((data)=> {
+            console.log(data)
+            Dialog.alert(data.message, Page.reload);
+        });
+    },
+    syncGis: function() {
+        AJAX.post("/gis/sync", new FormData(), function(data) {
+            Dialog.alert(data.message, function() {
+                Page.reload();
+            });
+        });
+    }
+}
+
+let ExcelManager = {
+    year: null,
+    month: null,
+    data: null,
+    init: function() {
+        $('#exportExcel').on('click', function() {
+            AJAX.get('/cctvs/excel','', function(list) {
+                ExcelManager.download(list);
+            });
+        })
+    },
+    download: function(list) {
+        console.log(list);
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push('목록');
+
+        let label = ['id','cctvGubun','dept','juso','cctvIndex','location',
+            'cameraCategory','movement','nightvision','shage','installymd',
+            'manufacturer','model','pixel','connectType','connectIp',
+            'connectPort','connectId','connectPw','connectModel','connectServerType',
+            'smCompany','smPerson','smTel','ptzUseyn','presetUseyn',
+            'fallCamera','fallDefinition','fallEquipment','fallNetwork']
+        let data = [label];
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let temp = [];
+
+            for(const key of label) {
+                temp.push(item[key]);
+            }
+            data.push(temp);
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        wb.Sheets['목록'] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType:'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbOut)],{type:"application/octet-stream"}), dateFormat() + " 카메라 목록.xlsx");
+    }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<link rel="stylesheet" href="/js/bootstrap-table/excel-bootstrap-table-filter-style.css">
+<head>
+<meta charset="UTF-8">
+<title>근무자정보</title>
+<style>
+table thead{background-color:#E1E1E1;}
+table thead th{color:black;border:none}
+table td{border:none}
+.card-header{background-color:transparent;color:#122037;border-radius:0!important;display:flex;padding:0;gap:12px;border:none}
+.card-header .d-flex{flex-direction:column;justify-content:center;width:30px;height:30px;background-color:#0091FF;border-radius:50px}
+.card-body{padding:0}
+.card{border-radius:0!important;border:none;gap:50px}
+
+.member-picture{width:113px;height:113px;border-radius:75px;background-size:cover;}
+
+.SdA7{display:flex;flex-direction:column;justify-content:end;flex:1}
+.SdA7 .title{font-family:'gg';font-weight:bolder;color:#010123;font-size:14px;line-height:1;background-color:#B9BDC3;width:max-content;border-radius:50px}
+.SdA7 .title .d-flex{flex-direction:column;justify-content:center;width:30px;height:30px;background-color:#122037;border-radius:50px}
+.SdA7 ul{padding:25px 30px;margin-top:15px;margin-bottom:0;background-color:#F6F6F6}
+.SdA7 ul li{display:flex;margin-top:10px;}
+.SdA7 ul li div{width:120px;font-size:14px}
+.SdA7 ul li div:first-child{font-weight:bold}
+
+.work-title{width:12px;height:14px;background-image:url(/images/attend/title_work.svg);background-size:cover;margin:0 auto}
+.add-info-title{width:11px;height:13px;background-image:url(/images/attend/title_addinfo.svg);background-size:cover;margin:0 auto}
+.attend-title{width:17px;height:17px;background-image:url(/images/attend/title_attendtime.svg);background-size:cover;margin:0 auto}
+.calendar-logo{width:13px;height:14px;background-image:url(/images/member_calendar.svg);background-size:cover;margin:0 auto}
+
+#memberInfo .d-flex>div{border:none}
+
+#page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
+</style>
+</head>
+<body data-page-scope="attend/member/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p id="page-title">근무자정보 > 근무자 상세보기</p>
+
+                <div id="memberInfo">
+                    <div class="card" style="border-radius:0">
+                        <div class="card-body d-flex" style="padding:20px 40px;gap:50px;border:2px solid #F4F4F4">
+                            <div>
+                                <div class="member-picture" onclick="uploadImage()" role="button"></div>
+                                <input id="input-picture" type="file" class="d-none">
+                                <div id="member-name" class="mx-auto" style="margin-top:45px;width:max-content"></div>
+                            </div>
+
+                            <div style="display:flex;gap:50px;width:100%">
+                                <!-- 업무정보 -->
+                                <div class="SdA7">
+                                    <div class="title d-flex"><div class="d-flex"><div class="work-title"></div></div><div style="margin:8px 30px 8px 11px">업무정보</div></div>
+                                    <ul>
+                                        <li>
+                                            <div>근무조</div>
+                                            <div id="member-team"></div>
+                                        </li>
+                                        <li>
+                                            <div>근무시간</div>
+                                            <div id="member-shift"></div>
+                                        </li>
+                                        <li>
+                                            <div>사용권한</div>
+                                            <div id="member-grade"></div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- 부가정보 -->
+                                <div class="SdA7">
+                                    <div class="title d-flex"><div class="d-flex"><div class="add-info-title"></div></div><div style="margin:8px 30px 8px 11px">부가정보</div></div>
+                                    <ul>
+                                        <li>
+                                            <div>연락처</div>
+                                            <div id="member-tel">-</div>
+                                        </li>
+                                        <li>
+                                            <div>이메일</div>
+                                            <div id="member-mail">-</div>
+                                        </li>
+                                        <li>
+                                            <div>주소</div>
+                                            <div id="member-address">-</div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- 출근시간 -->
+                                <div class="SdA7">
+                                    <div class="title d-flex"><div class="d-flex"><div class="attend-title"></div></div><div style="margin:8px 30px 8px 11px">출퇴근정보</div></div>
+                                    <ul style="min-height:143px">
+                                        <li>
+                                            <div>출근</div>
+                                            <div id="workStartTime">9시 30분 20초</div>
+                                        </li>
+                                        <li>
+                                            <div>퇴근</div>
+                                            <div id="workEndTime">9시 30분 20초</div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-4" style="margin-top:30px;box-shadow:0 3px 6px #E1E1E1">
+                        <div class="col-12 col-md">
+
+                            <div class="card">
+                                <div class="card-header"><div class="d-flex"><div class="calendar-logo"></div></div><div class="my-auto">월별 예정시간</div></div>
+                                <div class="card-body">
+                                    <table id="tableMonth" class="table">
+                                        <thead>
+                                            <tr class="fs-12">
+                                                <th>총 근무시간</th>
+                                                <th>법정근로일수</th>
+                                                <th>휴일근무</th>
+                                                <th>초과근무</th>
+                                                <th>야간근무</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="fs-14">
+                                                <td class="acc">0시간</td>
+                                                <td>0시간</td>
+                                                <td class="holi">0시간</td>
+                                                <td class="over">0시간</td>
+                                                <td class="night">0시간</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md">
+
+                            <div class="card">
+                                <div class="card-header"><div class="d-flex"><div class="calendar-logo"></div></div><div class="my-auto">월간 근무시간</div></div>
+                                <div class="card-body">
+                                    <table id="tableNow" class="table">
+                                        <thead>
+                                            <tr class="fs-12">
+                                                <th>총 근무시간</th>
+                                                <th>법정근로일수</th>
+                                                <th>휴일근무</th>
+                                                <th>초과근무</th>
+                                                <th>야간근무</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="fs-14">
+                                                <td class="acc">0시간</td>
+                                                <td>0시간</td>
+                                                <td class="holi">0시간</td>
+                                                <td class="over">0시간</td>
+                                                <td class="night">0시간</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md">
+
+                            <div class="card">
+                                <div class="card-header"><div class="d-flex"><div class="calendar-logo"></div></div><div class="my-auto">휴가</div></div>
+                                <div class="card-body">
+                                    <table id="tableLeave" class="table">
+                                        <thead>
+                                            <tr class="fs-12">
+                                                <th>기본연가</th>
+                                                <th>사용연가</th>
+                                                <th>잔여연가</th>
+                                                <th>사용공가</th>
+                                                <th>사용병가</th>
+                                                <th>사용특가</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="fs-14">
+                                                <td>0시간</td>
+                                                <td>0시간</td>
+                                                <td>0시간</td>
+                                                <td>0시간</td>
+                                                <td>0시간</td>
+                                                <td>0시간</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+<!--                    &lt;!&ndash; 월별 스케줄 &ndash;&gt;-->
+<!--                    <div class="mt-3 calendar-schedule" style="border-top:1px solid #c1c1c1;border-left:1px solid #c1c1c1">-->
+
+<!--                        &lt;!&ndash; 헤더 &ndash;&gt;-->
+<!--                        <div class="date-header fs-14" style="display:flex;">-->
+<!--                            <div class="member-team calendar-label"><p>근무팀</p></div>-->
+<!--                            <div class="member-name calendar-label"><p>근무자</p></div>-->
+<!--                            <div class="purpose calendar-label"><p>목적별</p></div>-->
+<!--                        </div>-->
+
+<!--                        &lt;!&ndash; 메인 리스트 &ndash;&gt;-->
+<!--                        <div id="mainList"></div>-->
+<!--                    </div>-->
+
+                    <div class="card" style="margin-top:30px">
+                        <div class="card-header"><div class="d-flex"><div class="calendar-logo"></div></div><div class="my-auto">일별 사용시간</div></div>
+                        <div class="card-body">
+                            <canvas id="barChart" width="1200" height="220"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tool-section"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/bootstrap-table/excel-bootstrap-table-filter-bundle.js"></script>
+<script src="/js/chart.min.js"></script>
+<script src="/js/chart.js"></script>
+<script src="/js/module/schedule.js"></script>
+<script>
+function init(params) {
+    pagectx.member = params.member;
+    pagectx.year = request.getParameter('year',dateFormat(new Date(), "yyyy"));
+    pagectx.month = request.getParameter('month',dateFormat(new Date(), "MM"));
+
+    let member = params.member;
+
+    // 사진 업로드
+    document.getElementById('input-picture').addEventListener('change', function() {
+        let fileInput = document.getElementById('input-picture');
+        let file = fileInput.files[0];
+
+        let formData = new FormData();
+        formData.append('picture', file)
+        formData.append('name', pagectx.member.name);
+
+        AJAX2.post('/api/pictures/upload', formData).then(function (res) {
+            Dialog.alert(res, Page.reload);
+        });
+    });
+
+    // 1. 기본 정보
+    $('#member-name').html(member.name);
+    $('#member-team').html(member.team);
+    $('#member-grade').html(CodeManager.get('admin', member.grade));
+    $('.member-picture').css('background-image',`url(/pictures/${member.name})`);
+
+    // 1. fetch from server
+    ShiftManager.fetchAll(() => {
+        PatternManager.fetchAll({}, () => {
+            MemberManager.fetchAllByGrade({grade:3}, () => {
+                LeaveManager.fetchByMonth(pagectx.year, pagectx.month, () => {
+                    TeamScheduleManager.fetchByMonth(pagectx.year, pagectx.month, (list) => {
+                        StatisticsImpl.init(params, list);
+                    });
+                });
+            });
+        });
+    });
+
+}
+
+let StatisticsImpl = {
+    init: function(params, list) {
+        this.renderTable(list);
+    },
+    renderTable: function(list) {
+        let count = 0;
+        let labels = [];
+        let values = [];
+
+        // 스케줄 루프
+
+        list = list.filter(e => e.team === pagectx.member.team);
+        for(const schedule of list) {
+            let shift = ShiftManager.findByCode(schedule.shift);
+
+            shift = new Shift(shift);
+            shift.date = schedule.date;
+            StatisticsManager.append(pagectx.member.id, shift);
+
+            labels.push(schedule.date.substr(6,2) + '일');
+            values.push(shift.getWorkTime());
+        }
+
+        let date = dateFormat(new Date(), 'yyyyMMdd');
+
+        // 통계 후 작성
+        let member = pagectx.member;
+        let todayShift = ShiftManager.findByCode(TeamScheduleManager.findByDate(date, member.team).shift);
+        StatisticsManager.calculate(member.id);
+        let memberInfo = StatisticsManager.findByKey(member.id);
+
+        // 출근
+        $(`#workStartTime`).text(todayShift.workStart);
+
+        // 퇴근
+        $(`#workEndTime`).text(todayShift.workEnd);
+        $(`#member-shift`).text(todayShift.workStart + ' ~ ' + todayShift.workEnd)
+
+        // 예정시간
+        $(`#tableMonth .acc`).text(memberInfo.acc + '시간');
+        $(`#tableMonth .night`).text(memberInfo.night + '시간');
+        $(`#tableMonth .holiday`).text(memberInfo.holiday + '시간');
+        $(`#tableMonth .extra`).text(memberInfo.extra + '시간');
+
+        this.renderTable2();
+
+        StatisticsImpl.handleLeaves(LeaveManager.list);
+
+        /* 통계 */
+        ChartManager.renderChart("barChart", labels, values, 'bar');
+
+
+        $('#main-table').excelTableFilter({
+            columnSelector: '.apply-filter',
+            sort: true,
+            search: false,
+            captions: {a_to_z: '오름차순', z_to_a: '내림차순', search: '검색', select_all: '전체선택'}
+        });
+    },
+    renderTable2: function() {
+        let firstDate = new Date(pagectx.year, pagectx.month-1, 1);
+        let currentDate = new Date(pagectx.year, pagectx.month, 0);
+        pagectx.lastDate = currentDate.getDate();
+
+        // 2.for 문으로 A를 1~31 까지 한번 돌리고
+        for (let i = 1; i <= pagectx.lastDate; i++) {
+            let date = DateUtil.getDateFromDate(firstDate, i-1);
+            $('.date-header').append(`<div data-day="${date.getDay()}" class="box date-${i}"><p>${i}</p></div>`);
+        }
+
+        let member = pagectx.member;
+        let monitor = get(member.monitor, '없음');
+        $('#mainList').append(`<div class="list-item d-flex" data-name="${member.name}" data-team="${member.team}" data-monitor="${monitor}">
+                <div class="member-team calendar-label">${member.team}팀</div>
+                <div class="member-name calendar-label">${member.name}</div>
+                <div class="purpose calendar-label">${CodeManager.get('monitoring', monitor, '없음')}</div>
+            </div>`);
+
+        for (let i = 0; i < pagectx.lastDate; i++) {
+            $('.list-item').last().append(`<div class="box date-${i + 1}"></div>`);
+        }
+
+        this.previewMode();
+    },
+    previewMode: function() {
+        // 4. 팀별 패턴 입력
+        for(let i = 1; i< pagectx.lastDate+1; i++) {
+            let currentIndex = DateUtil.getDateCount(pagectx.year, pagectx.month, i)
+            for(const pattern of PatternManager.list) {
+                let shift = pattern.shiftList[currentIndex%pattern.shiftList.length];
+                this._drawTable(i, pattern.team, shift);
+            }
+        }
+    },
+    _drawTable: function(date, team, shift) {
+        $(`.list-item[data-team="${team}"] .date-${date}`).html(`
+                    <div class="shift-item" data-shift="${shift.shiftCode}" style="background-color:#${shift.color}">${shift.shiftCode}</div>`);
+    },
+    handleLeaves: function (list) { //230124교체
+        let leaveCounter = [15 * 8,0,0,0,0,0];
+        console.log(list);
+
+        for (const leave of list) {
+            if (leave.status === 0) continue;
+            if (leave.drafterId != pagectx.member.id && leave.alternativeId != pagectx.member.id) continue;
+            let startDate = new Date(leave.startDate).getDate();
+
+            // 신청자 처리
+            let drafterInfo = StatisticsManager.findByKey(leave.drafterId);
+            let shift = drafterInfo.list.find(e => e.date === leave.startDate.replaceAll('-','').substr(0,8));
+
+            if(!isValid(shift)) continue;
+            shift.workform = '06';
+
+            // 대근자 처리
+            let alterShift = new Shift(shift);
+            alterShift.workform = '02';
+            StatisticsManager.append(leave.alternativeId, alterShift);
+
+            // 휴가 시간
+            if(leave.drafterId == pagectx.member.id) {
+                switch (leave.typeType) {
+                    case '연':
+                        leaveCounter[1] += alterShift.getWorkTime();
+                        break;
+                    case '공':
+                        leaveCounter[3] += alterShift.getWorkTime();
+                        break;
+                    case '병':
+                        leaveCounter[4] += alterShift.getWorkTime();
+                        break;
+                    case '특':
+                        leaveCounter[5] += alterShift.getWorkTime();
+                        break;
+                }
+            }
+
+            if (leave.typeType === '교') { // 교대 근무
+                $(`.list-item[data-name=${leave.drafterName}] .date-${startDate} .shift-item`).html('교').attr('data-shift', '교');
+            }
+            else { // 휴가
+                $(`.list-item[data-name=${leave.drafterName}] .date-${startDate} .shift-item`).html('휴').attr('data-shift', '휴');
+            }
+        }
+
+        leaveCounter[2] = leaveCounter[0] - leaveCounter[1];
+
+        // 휴가 정보
+        for(let i = 0; i < leaveCounter.length; i++) {
+            $('#tableLeave tbody td').eq(i).text(leaveCounter[i] + '시간');
+        }
+    },
+}
+
+function uploadImage() {
+    document.getElementById('input-picture').click();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>휴가신청내역</title>
+    <style>
+        #page-title:before{content:url("/images/before/leave.svg");margin-right:10px;vertical-align:middle}
+    </style>
+</head>
+<body data-page-scope="attend/leave/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <div class="d-flex" style="gap:12px">
+                        <p id="page-title">휴가신청내역</p>
+                        <button id="btnSearchToday" class="btn btn-secondary btn-sm my-auto" style="padding:9px 18px;position:relative;top:4px">오늘</button>
+                    </div>
+
+                    <!-- 검색창 -->
+                    <div id="tool-section">
+                        <div id="search-section" class="justify-content-between">
+                            <div class="d-flex gap-1" style="flex:0 0 auto;">
+                                <!--input name="fromDate" class="form-control" type="date">
+                                <input name="toDate" class="form-control" type="date">
+                                <select name="skey" class="form-select" style="width:120px;">
+                                    <option value="title">제목</option>
+                                    <option value="body">내용</option>
+                                    <option value="username">작성자</option>
+                                </select>
+                                <input name="svalue" class="form-control" value="" style="width:180px;">
+                                <button id="btn-search" class="btn btn-sm btn-primary">검색</button !-->
+                            </div>
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="type/list" id="btnLeaveType" class="btn btn-sm btn-primary">휴가 타입 설정</a>
+                                <button id="btn-change-alt" class="btn btn-sm btn-primary">대체근무자 수정</button>
+                                <button id="btn-accept" class="btn btn-sm btn-primary">승인</button>
+                                <button id="btn-reject" class="btn btn-sm" style="background-color:#7E7E7E;color:white">거절</button>
+                                <button id="btn-delete" class="btn btn-sm btn-danger">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 테이블 -->
+                    <table id="main-table" class="table" border-spacing="0">
+                        <thead>
+                        <tr>
+                            <th scope="col">신청시각</th>
+                            <th scope="col">근로자ID</th>
+                            <th scope="col">근로자명</th>
+                            <th scope="col">직급</th>
+                            <th scope="col">부서</th>
+                            <th scope="col">종류</th>
+                            <th scope="col">시작일자</th>
+                            <th scope="col">종료일자</th>
+                            <th scope="col">기간</th>
+                            <th scope="col">대근자</th>
+                            <th scope="col">결재선</th>
+                            <th scope="col">상태</th>
+                            <th scope="col">사유</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <div class="buttons d-flex">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <!-- 페이지 -->
+                            <nav id="pageSection" aria-label="Page navigation example">
+                            </nav>
+                        </div>
+                        <div class="col-2 d-flex align-self-center justify-content-end gap-1" >
+                            <a id="btn-write" class="btn btn-sm btn-primary" href="write" role="button">신청</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script src="/js/module/leave.js"></script>
+<script>
+
+function init(params) {
+    // TODO : 권한에 따라 승인, 거절, 삭제 가능하게 변경
+    if(params.usrobj.grade == 3) {
+        $('#btn-change-alt').remove();
+        AltWorkerManager = {};
+    }
+
+    $('#btn-write').attr('href','write');
+    $('#btn-change-alt').on('click', function() { AltWorkerManager.openWindow(params); });
+
+    let usrobj = SSO.getMember();
+    let grade = parseInt(usrobj.grade);
+    if(grade > 1) {
+        $('#btn-accept,#btn-reject').remove();
+    }
+
+    // 버튼 설정
+    $('#btn-accept').on('click',{status:'1'}, changeStatus);
+    $('#btn-reject').on('click',{status:'2'}, changeStatus);
+    $('#btn-delete').on('click',{}, deleteLeave);
+
+    // 오늘 버튼
+    $('#btnSearchToday').on('click', function() {
+        AJAX.get('/leaves/today', '', function(list) {
+            renderTable(list);
+        });
+    });
+
+    // 상태 변경
+    function changeStatus(e) {
+        let item = pagectx.selectedLeave;
+        let status = e.data.status;
+
+        if(!isValid(item)) {
+            Dialog.alert('선택된 휴가가 없습니다.');
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('status', status);
+        AJAX.put(`/leaves/${item.id}/status`, formData, function(res) {
+            Dialog.alert(res.message, () => {Page.reload()});
+        });
+    }
+
+    // 삭제
+    function deleteLeave(e) {
+        let item = pagectx.selectedLeave;
+
+        if(!isValid(item)) {
+            Dialog.alert('선택된 휴가가 없습니다.');
+            return;
+        }
+
+        Dialog.confirm("해당 휴가를 삭제하시겠습니까?", function(e) {
+            AJAX.remove(`/leaves/${item.id}`, null, function(res) {
+                Dialog.alert(res.message, () => {Page.reload()});
+            });
+        });
+    }
+
+    setTable(params);
+    SearchManager.setSearch({callBack:renderTable, src: '/leaves', table:'#main-table'});
+
+    function setTable(params) {
+        AJAX.get('/leaves', 'page='+request.getParameter("page", "1"), function(list) {
+            renderTable(list);
+        });
+    }
+
+    function renderTable(page) {
+        Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
+        let list = page.content;
+        console.log(list);
+
+        pagectx.leaveList = [];
+        for(const item of list) {
+            pagectx.leaveList.push(new Leave(item));
+        }
+
+        $('#main-table tbody *').remove();
+
+        if(list.length == 0) {
+            $('tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
+        }
+
+        // 공지는 상단에 정렬
+        list.sort(function(a, b)  {
+            return b.notice_yn - a.notice_yn;
+        });
+
+        let status = ['신청', '승인', '거절'];
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+
+            let startDate = new Date(item.startDate);
+            let endDate =  new Date(item.endDate);
+            let hours = Utils.getHourBetween(startDate, endDate);
+            let str = `<tr id="leave-${item.id}">
+                    <td>${dateFormat(new Date(item.createdAt), "yyyy-MM-dd hh:mm:ss")}</td>
+                    <td>${item.drafterId}</td>
+                    <td>${item.drafterName}</td>
+                    <td>${CodeManager.get('admin',item.grade)}</td>
+                    <td>${item.dept}</td>
+                    <td>${item.typeName}(${item.typeType})</td>
+                    <td>${dateFormat(startDate, "yyyy-MM-dd hh:mm")}</td>
+                    <td>${dateFormat(endDate, "yyyy-MM-dd hh:mm")}</td>
+                    <td>${hours}</td>
+                    <td>${item.alternativeName}</td>
+                    <td>${(item.status == 0) ? 0 : 1}/1</td>
+                    <td>${status[item.status]}</td>
+                </tr>`
+            $('tbody').append(str);
+
+            $(`#leave-${item.id}`).on('click', {id:item.id}, function(e) {
+                $('.table-active').removeClass('table-active');
+                $(this).addClass('table-active');
+                pagectx.selectedLeave = pagectx.leaveList.find(ele => ele.id == e.data.id);
+            });
+        }
+    }
+}
+
+let AltWorkerManager = {
+    data: {},
+    initialized: false,
+    init: function(params) {
+        this.initialized = true;
+        AJAX.get('/members/grades/3', '', function(list) {
+            AltWorkerManager.data = list;
+            AltWorkerManager.openWindow(list);
+        });
+    },
+    openWindow(list) {
+        if (!this.initialized) {
+            this.init(list);
+            return;
+        }
+
+        let item = pagectx.selectedLeave;
+
+        if(!isValid(item)) {
+            Dialog.alert('선택된 휴가가 없습니다.');
+            return;
+        }
+
+        let form = `<div id="form-select-alt">
+            <div class="mb-3 row">
+                <label>*  찾고자 하는 사원명을 입력후 추가해주세요.</label>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">사원명</label>
+                <div class="col-sm-8">
+                    <input id="alt-name" type="text" class="form-control">
+                </div>
+            </div>
+            <p class="mt-3 fw-bold">검색 결과</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                    <th scope="col">이름</th>
+                    <th scope="col">선택</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <input type="hidden" name="alternativeId">
+            <input type="hidden" name="alternativeName">
+        </div>`;
+
+        PopupModalManager.init('대체근무자 설정', form, '수정', '취소');
+
+        $("#alt-name").off().on('keyup', function(e) {
+            $("#form-select-alt tbody").html("");
+            let value = $(this).val();
+
+            for(let i = 0; i < AltWorkerManager.data.length; i++) {
+                let worker = AltWorkerManager.data[i];
+                if(worker.team === pagectx.selectedLeave.team) continue;
+                if(worker.name.includes(value)) {
+                    $("#form-select-alt tbody").append(`<tr id="alt-${worker.id}">
+                        <td>${worker.team}</td>
+                        <td>${worker.name}</td>
+                    </tr>`);
+
+                    // 등록 선택
+                    $(`#alt-${worker.id}`).on('click', {worker:worker}, function(e) {
+                        $('#form-select-alt .table-active').removeClass('table-active');
+                        $(this).addClass('table-active');
+                        $('#form-select-alt input[name=alternativeId]').val(e.data.worker.id);
+                        $('#form-select-alt input[name=alternativeName]').val(e.data.worker.name);
+                    });
+                }
+            }
+        });
+
+        $("#alt-name").trigger('keyup');
+
+        $('#popup-ok').on('click', function () {
+            let formData = new FormData();
+            let workerId = $('#form-select-alt input[name=alternativeId]').val();
+            let workerName = $('#form-select-alt input[name=alternativeName]').val();
+
+            // 결재자 null check
+            if (!isValid(workerId)) {
+                Dialog.alert("대근자를 선택해주세요.");
+                return;
+            }
+
+            formData.append('workerId', workerId);
+            formData.append('workerName', workerName);
+
+            AJAX.put(`/leaves/${pagectx.selectedLeave.id}/change-worker`, formData, function (data) {
+                Dialog.alert(data.message, () => {
+                    Page.reload()
+                });
+            });
+        });
+    }
+}
+</script>
+</body>
+</html>

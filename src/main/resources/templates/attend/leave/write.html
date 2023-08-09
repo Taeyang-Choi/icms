@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>근무일지관리</title>
+    <style>
+        #page-title:before{content:url("/images/before/leave.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="attend/leave/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">휴가신청</p>
+
+                    <div class="wrap border-top">
+                        <p>휴가신청</p>
+
+                        <form id="form-leave" method="post" onsubmit="return false;">
+                            <div class="d-flex flex-wrap fs-14">
+                                <div class="col-12 d-flex">
+                                    <div class="label">결재자</div>
+                                    <div class="content">
+                                        <div id="btn-new-app" class="link-dark text-decoration-underline" role="button">결재자 추가</div>
+                                        <input type="hidden" name="approverId">
+                                        <input type="hidden" name="approverName">
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">휴가일자</div>
+                                    <div class="content">
+                                        <div class="input-group">
+                                            <input class="form-control" id="startDate" type="date" style="max-width:240px;">
+                                        </div>
+                                        <div id="textShiftInform" class="mt-3 form-control-plaintext text-primary"></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">대체근무자</div>
+                                    <div class="content">
+                                        <div id="btn-new-alt" class="link-dark text-decoration-underline" role="button">대체근무자 추가</div>
+                                        <input type="hidden" name="alternativeId">
+                                        <input type="hidden" name="alternativeName">
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="label">휴가/대근사유</div>
+                                    <div class="content"><select class="form-select" id="select-leave-type" style="max-width:180px;"></select></div>
+                                </div>
+                            </div>
+
+                            <div class="buttons d-flex justify-content-between">
+                                <a href="list" class="btn btn-sm btn-warning">목록</a>
+                                <button type="submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/module/schedule.js"></script>
+<script>
+function init(params) {
+    $('#btn-new-app').on('click', function() { ApproverManager.openWindow(params); });
+    $('#btn-new-alt').on('click', function() { AltWorkerManager.openWindow(params); });
+
+    ShiftManager.fetchAll((list) => {
+        console.log(list);
+    });
+    createForm(params);
+    function createForm(params) {
+        // 히든
+        $('#form-leave').append(`<input type="hidden" name="drafterId" value="${params. usrobj.id}"}>`);
+        $('#form-leave').append(`<input type="hidden" name="drafterName" value="${params.usrobj.name}"}>`);
+        $('#form-leave').append(`<input type="hidden" name="dept" value="${params.usrobj.dept}"}>`);
+
+        // 휴가 타입 설정
+        AJAX.get('/leave/types','', function(list) {
+            for(let i = 0; i < list.length; i++) {
+                let o = list[i];
+                let str = `<option ${(i == 0) ? 'selected' : ''} value="${o.id}">${o.name}(${o.type})</option>`;
+                $(`#select-leave-type`).append(str);
+            }
+            $('#form-leave').append(`<input type="hidden" name="typeId" value="${list[0].id}"}>`);
+            $('#form-leave').append(`<input type="hidden" name="typeName" value="${list[0].name}"}>`);
+
+            $('#select-leave-type').on('change', {list: list}, function(e) {
+                let val = $(this).val();
+                let list = e.data.list;
+                let item = list[0];
+                for(const o of list) {
+                    if(val == o.id) item = o;
+                }
+                $('[name="typeId"]').val(item.id);
+                $('[name="typeName"]').val(item.name);
+            });
+        });
+
+        $('#startDate').on('change', function(e) {
+            let date = $(this).val().replaceAll('-','');
+            MemberScheduleManager.getByTeamAndDate(params.usrobj.team, date, setDate);
+        });
+    }
+
+    // 그날의 시프트 정보와 근무 시간 가져오기
+    function setDate(list) {
+        let shift = ShiftManager.findByCode(list.shift);
+        pagectx.startDate = new Date($('#startDate').val() + ` ${shift.workStart}:00`);
+        pagectx.endDate = new Date(pagectx.startDate);
+        pagectx.endDate.setTime(pagectx.endDate.getTime() + ShiftManager.getHours(shift) * 60 * 60 * 1000);
+        pagectx.shiftCode = shift.shiftCode;
+        let str = `해당 날짜의 근무는 (${shift.name}) 입니다.<br>
+                   (${dateFormat(pagectx.startDate, 'yyyy년 MM월 dd일 hh시 mm분')} ~ ${dateFormat(pagectx.endDate, 'yyyy년 MM월 dd일 hh시 mm분')})`;
+        $('#textShiftInform').html(str);
+    }
+
+    $('#form-leave').on('submit', function() {
+        let formData = new FormData(document.getElementById('form-leave'));
+        let vData = Utils.formToObject(formData);
+
+        if(vData == null) {
+            return;
+        }
+
+        formData.set('startDate', dateFormat(pagectx.startDate, 'yyyy-MM-ddThh:mm:ss'));
+        formData.set('endDate', dateFormat(pagectx.endDate, 'yyyy-MM-ddThh:mm:ss'));
+        formData.set('shiftCode', pagectx.shiftCode);
+
+        // 결재자 null check
+        if(!isValid(vData.approverId)) {
+            Dialog.alert("결재자 정보를 입력해주세요.");
+            return;
+        }
+
+        AJAX.post("/leaves", formData, function(data) {
+            Dialog.alert(data.message, function() {
+                Page.back();
+            });
+        });
+    });
+}
+
+let AltWorkerManager = {
+    data: {},
+    initialized: false,
+    init: function(params) {
+        this.initialized = true;
+        AJAX.get('/members/grades/3', '', function(list) {
+            AltWorkerManager.data = list;
+            AltWorkerManager.openWindow(list);
+        });
+    },
+    openWindow(list) {
+        if(!this.initialized) {
+            this.init(list);
+            return;
+        }
+
+        let form = `<div id="form-select-alt">
+        <div class="mb-3 row">
+            <label>*  찾고자 하는 사원명을 입력후 추가해주세요.</label>
+        </div>
+        <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label">사원명</label>
+            <div class="col-sm-8">
+                <input id="alt-name" type="text" class="form-control">
+            </div>
+        </div>
+        <p class="mt-3 fw-bold">검색 결과</p>
+        <table class="table">
+            <thead>
+                <tr>
+                <th scope="col">이름</th>
+                <th scope="col">선택</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>`;
+
+        PopupModalManager.init('대체근무자 설정', form, null, null);
+
+        $("#alt-name").on('keyup', function(e) {
+            $("#form-select-alt tbody").html("");
+            let value = $(this).val();
+            for(let i = 0; i < AltWorkerManager.data.length; i++) {
+                let item = AltWorkerManager.data[i];
+                if(item.name.includes(value)) {
+                    $("#form-select-alt tbody").append(`<tr><td>${item.name}</td><td><div class="btn btn-secondary" role="button" data-bs-dismiss="modal">선택</div></td></tr>`);
+
+                    // 등록 선택
+                    $('#form-select-alt tbody .btn-secondary').last().off().on('click', {item:item}, function(e) {
+                        $('[name=alternativeId]').val(e.data.item.id);
+                        $('[name=alternativeName]').val(e.data.item.name);
+                        $('#btn-new-alt').text(e.data.item.name);
+                    });
+                }
+            }
+        });
+    }
+}
+
+let ApproverManager = {
+    data: {},
+    initialized: false,
+    init: function(params) {
+        this.initialized = true;
+        AJAX.get('/members/grades/2', '', function(list) {
+            ApproverManager.data = list;
+            ApproverManager.openWindow(list);
+        });
+    },
+    openWindow(list) {
+        if(!this.initialized) {
+            this.init(list);
+            return;
+        }
+
+        let form = `<div id="form-select-approver">
+            <div class="mb-3 row">
+                <label>*  찾고자 하는 사원명을 입력후 추가해주세요.</label>
+            </div>
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">사원명</label>
+                <div class="col-sm-8">
+                    <input id="approver-name" type="text" class="form-control">
+                </div>
+            </div>
+            <p class="mt-3 fw-bold">검색 결과</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                    <th scope="col">이름</th>
+                    <th scope="col">선택</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>`;
+
+        PopupModalManager.init('결재자 설정', form, null, null);
+
+        $("#approver-name").on('keyup', function(e) {
+            $("#form-select-approver tbody").html("");
+            let value = $(this).val();
+            for(let i = 0; i < ApproverManager.data.length; i++) {
+                let item = ApproverManager.data[i];
+                if(item.name.includes(value)) {
+                    $("#form-select-approver tbody").append(`<tr><td>${item.name}</td><td><div class="btn btn-secondary" role="button" data-bs-dismiss="modal">선택</div></td></tr>`);
+
+                    // 등록 선택
+                    $('#form-select-approver tbody .btn-secondary').last().off().on('click', {item:item}, function(e) {
+                        $('[name=approverId]').val(e.data.item.id);
+                        $('[name=approverName]').val(e.data.item.name);
+                        $('#btn-new-app').text(e.data.item.name);
+                    });
+                }
+            }
+        });
+    }
+}
+
+
+</script>
+</body>
+</html>

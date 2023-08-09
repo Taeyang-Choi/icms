@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<link rel="stylesheet" href="/js/bootstrap-table/excel-bootstrap-table-filter-style.css">
+
+<head>
+<meta charset="UTF-8">
+<title>근무현황</title>
+<style>
+.card-header{background:linear-gradient(105deg, rgba(39,93,234,1) 0%, rgba(115,150,241,1) 78%, rgba(255,255,255,1) 100%);color:white;align-items:center}
+
+#card-add-user .btn-team{line-height:40px;border-top:1px solid #E1E1E1;text-align:center;cursor:pointer;}
+#card-add-user .btn-team.active{background-color:#F0F6FF;}
+
+/* 사용자 추가 */
+.tree-view li {list-style-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>')}
+.list-item-user {cursor:move}
+.list-item-user.dragging {opacity:0.9}
+
+/* 근무 시간 */
+.card-content{background-color:#F6F6F6;border:1px solid #E1E1E1;font-size:12px;padding:8px 16px;}
+
+/* 근무 패턴 */
+.shift-box{flex:0 0 auto;width:20%;height:32px;line-height:32px;border:1px solid #E0E0E0;text-align:center;}
+.shift-box:hover{background-color:#dc3545;color:white;}
+#page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
+</style>
+</head>
+<body data-page-scope="attend/time-sheet">
+<div id="header"></div>
+
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p id="page-title">출퇴근</p>
+
+                <!-- 버튼 -->
+                <div class="d-flex gap-3 justify-content-between">
+                    <button id="btn-excel-download" class="btn btn-sm btn-warning" onclick="htmlTableToExcel()">다운로드</button>
+                    <div class="d-flex gap-3 justify-content-end">
+                        <input id="input-month" class="form-control" type="month" style="max-width: 140px;">
+                        <button id="btnDateInput" class="btn btn-sm btn-warning" role="button">조회</button>
+                    </div>
+                </div>
+
+                <div id="mainTableWrapper">
+                    <table id="main-table" class="mt-3 table table-intel" border-spacing="0">
+                        <thead>
+                        <tr>
+                            <th>아이디</th>
+                            <th class="apply-filter">근로자명</th>
+                            <th class="apply-filter">모니터링PC</th>
+                            <th class="apply-filter">근무</th>
+                            <th class="apply-filter">팀</th>
+                            <th>근무 시작</th>
+                            <th>근무 종료</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<!-- SCRIPT -->
+<script src="/js/bootstrap-table/excel-bootstrap-table-filter-bundle.js"></script>
+<script src="/js/module/schedule.js"></script>
+
+<script>
+function init(params) {
+    pagectx.tableText = $('#mainTableWrapper').html();
+
+    // 초기 날자 설정
+    pagectx.year = request.getParameter('year',dateFormat(new Date(), "yyyy"));
+    pagectx.month = request.getParameter('month',dateFormat(new Date(), "MM"));
+
+    $('#btnDateInput').on('click', function() {
+        loadData($('#input-month').val().replaceAll("-",""));
+    });
+
+    ShiftManager.fetchAll(() => {
+        MemberManager.fetchAllByGrade({grade:3}, () => {
+            renderCalendar(pagectx.year, pagectx.month);
+        });
+    });
+    // 달력 그리기
+
+    function renderCalendar(year, month) {
+        month = parseInt(month)-1;
+        year = parseInt(year);
+
+        $('#input-month').val(year+"-"+((month+1 < 10) ? '0'+(month+1) : month+1));
+        loadData($('#input-month').val().replaceAll("-",""));
+    }
+
+    function loadData(datecode) {
+        $('#main-table').remove();
+        $('#mainTableWrapper').append(pagectx.tableText);
+
+        AJAX.get('/schedules/monthly/' + datecode, '', function (list) {
+            list = list.sort((a ,b) =>{return a.id - b.id;});
+
+            pagectx.list = list;
+
+            for (let i = 0; i < list.length; i++) {
+                let item = list[i];
+                let member = MemberManager.findByUserId(item.userwid);
+
+                if(!isValid(member)) continue;
+
+                let workform = CodeManager.get('workform', item.workform, '');
+                let workgubun = CodeManager.get('workgubun', item.division, '전');
+
+                let edate = dateFormat(new Date(item.edate), (isValid(item.edate)) ? "yyyy년 MM월 dd일 hh시 mm분 ss초" : "-");
+                let shift = ShiftManager.findByCode(item.division)??ShiftManager._default;
+
+
+                $('#main-table tbody').append(`<tr class="team-${item.team}">
+                    <td>${item.userwid}</td>
+                    <td>${item.userwnm}</td>
+                    <td>${CodeManager.get('monitoring', member.monitor??'A')}</td>
+                    <td class="p-0"><div class="shift-item" style="background-color:#${shift.color};" data-shift="${item.division}">${item.division}</div></td>
+                    <td>${item.team}</td>
+                    <td>${dateFormat(new Date(item.sdate), "yyyy년 MM월 dd일 hh시 mm분 ss초")}</td>
+                    <td>${edate}</td>
+                </tr>`);
+            }
+
+            if($('.dropdown-filter-dropdown').length == 0) {
+                // 테이블 설정
+                $('#main-table').excelTableFilter({
+                    columnSelector: '.apply-filter',
+                    sort: true,
+                    search: false,
+                    captions: {a_to_z: '오름차순', z_to_a: '내림차순', search: '검색', select_all: '전체선택'}
+                });
+            }
+        });
+    }
+}
+
+
+
+function htmlTableToExcel(){
+    var data = document.getElementById('main-table');
+    var excelFile = XLSX.utils.table_to_book(data, {sheet: "sheet1"});
+    XLSX.write(excelFile, { bookType: 'xlsx', bookSST: true, type: 'base64' });
+    XLSX.writeFile(excelFile, $(`#input-month`).val() + ` 출퇴근기록.xlsx`);
+}
+</script>
+</body>
+</html>

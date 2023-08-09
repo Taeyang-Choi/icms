@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항</title>
+    <style>
+        #page-title:before{content:url("/images/before/board.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+        textarea{outline-color:#0091FF}
+    </style>
+</head>
+<body data-page-scope="board/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p id="page-title">공지사항</p>
+
+                <div class="preface border-top">
+                    <p class="OFgeuCmO">통합관제센터 공지사항</p>
+                    <div id="content" class="fs-14">
+                        <div class="col-12 d-flex">
+                            <div class="label">작성자</div>
+                            <div class="content" id="content-userid"></div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">제목</div>
+                            <div class="content" id="content-title"></div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">등록일</div>
+                            <div class="content" id="content-createdAt"></div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">조회수</div>
+                            <div class="content" id="content-count"></div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">내용</div>
+                            <div class="content" id="content-body" style="white-space:break-spaces;"></div>
+                        </div>
+                        <div class="col-12 d-flex">
+                            <div class="label">첨부파일</div>
+                            <div class="content" id="content-attach"></div>
+                        </div>
+                    </div>
+
+                    <div class="buttons d-flex">
+                        <div class="col-6 d-flex align-self-center justify-content-start gap-1" >
+                            <a id="btn-list" href="list" class="btn btn-sm btn-warning">목록</a>
+                            <a id="btn-write" class="btn btn-sm btn-warning" href="write">글쓰기</a>
+                        </div>
+
+                        <div class="col-6 d-flex align-self-center justify-content-end gap-1" >
+                            <a id="btn-edit" class="btn btn-sm btn-primary" role="button">수정</a>
+                            <a id="btn-delete" class="btn btn-sm btn-danger" role="button">삭제</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--댓글 등록 UI-->
+    <section class="container mt-4">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p class="page-title fw-bold fs-20" style="font-family:'NanumGothic';color: #010123;padding-top:30px">댓글</p>
+                <div style="padding:30px">
+                    <form id="commentForm">
+                        <textarea name="msg_text" class="w-100" type="text" style="min-height:100px;padding:10px;border-radius:10px;border:1px solid #b1b1b1;background-color:#f4f4f4" placeholder="댓글 입력"></textarea>
+                        <div role="button" class="btn btn-primary mt-2 float-end" onclick="writeComment()">등록</div>
+                    </form>
+                </div>
+                <div class="comment-list mt-5 d-flex flex-column gap-3" style="padding:30px;background-color:#f4f4f4;border-radius:10px"></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+    let no = request.getParameter('no');
+    function init(params) {
+        $('#btn-list').attr('href','list?n='+request.getParameter('n'));
+        $('#btn-write').attr('href','write?n='+request.getParameter('n'));
+
+        setboard(params, no);
+
+        //댓글 리스트 불러오기 (공지사항 번호로 불러옴)
+        AJAX.get(`/comment/list/${no}`,'',(items)=>{
+            renderComment(items);
+        });
+
+        function setboard(params, id) {
+            let table = request.getParameter("n");
+            AJAX.get('/board/'+table+ '/' + id, '', function(item) {
+                params.item = item;
+
+                console.log(item);
+
+                $("#content-userid").text(item.userid);
+                $("#content-title").text(item.title);
+                $("#content-body").text(StringUtils.brToCr(item.body));
+                $("#content-createdAt").text(item.createdAt.replaceAll('T', ' '));
+                $("#content-count").text(item.count);
+
+
+                // 첨부 파일
+                item.userFile = Utils.tryParse(item.userFile, []);
+                for(let i = 0; i < item.userFile.length; i++) {
+                    let file = item.userFile[i];
+                    $('#content-attach').append(`<a class="d-block" href="/attach/board/${item.id}/${file.store}/${file.real}">${file.real}</a>`);
+                }
+
+                // 수정
+                $('#btn-edit').on('click', {item: params.item}, function(e) {
+                    Page.go('/board/edit'+location.search, {item: e.data.item});
+                });
+            });
+        }
+
+        // 삭제
+        $('#btn-delete').on('click', function(e) {
+            Dialog.confirm('정말 삭제하시겠습니까?', function () {
+                let formData = new FormData();
+                AJAX.remove('/board/'+request.getParameter("n") + '/' + request.getParameter('no'), formData, function (data) {
+                    Dialog.alert(data.message, function() {
+                        Page.back();
+                    });
+                });
+            }, function () {
+            });
+        });
+    }
+
+    //댓글 작성
+    function writeComment(){
+        //gs_board_comment에서 id는 공지사항 id 넣음,ip는 나중에 변경 not null 이여서 일단 넣었음
+        $('#commentForm').append(`<input name="id" type="hidden" value=${no}>
+                <input name="name" type="hidden" value=${SSO.getMember().name}>
+                <input name="userid" type="hidden" value=${SSO.getMember().userid}>
+                <input name="userip" type="hidden" value="127.0.0.1">
+            `);
+
+        let formData = new FormData(document.getElementById('commentForm'));
+        let vData = Utils.formToObject(formData);
+
+        console.log(vData);
+
+        AJAX.post('/comment/write',formData,(res)=>{
+            Dialog.alert(res.message,Page.reload);
+        });
+    }
+
+    //가져온 댓글 표출
+    function renderComment(items){
+        console.log(items);
+        $('.comment-list *').remove();
+
+        if(items.length == 0){
+            $('.comment-list').append('<div class="text-center">등록된 댓글이 없습니다.</div>');
+        }else{
+            for(const item of items){
+                //depth 1일 때 제외 --> depth 1이면 대댓글임
+                if(item.depth == 1) continue;
+
+                let date = item.regdate.split('T')[0];
+                let str1 = `<div class="btn btn-primary" style="height:max-content" onclick="Page.go('/board/comment/edit?idx=${item.idx}')">수정</div>
+                            <div class="btn btn-danger" style="height:max-content" onclick="deleteComment(${item.idx})">삭제</div>`;
+                //로그인 된 자신의 아이디에만 수정 삭제 표출
+                let str = item.name == SSO.getMember().name ? str1 : '';
+
+                $('.comment-list').append(`<div><div style="border-bottom:1px solid #b1b1b1">
+                       <div class="d-flex justify-content-between">
+                           <div style="padding-bottom:10px;width:80%">
+                               <div class="d-flex gap-2 align-items-center">
+                                   <div class="fw-bold fs-18">${item.name}</div>
+                                   <div class="fs-14" style="color:#b1b1b1">${date}</div>
+                                   <div role="button" class="fs-14" onclick="showUnderCommentForm(${item.idx})">댓글달기</div>
+                               </div>
+                               <div class="mt-1 text-break">${item.msg_text}</div>
+                           </div>
+                           <div class="d-flex gap-1 align-items-center">
+                               ${str}
+                           </div>
+                       </div>
+                   </div>
+                   <div class="comment-${item.idx}" style="padding:30px;display:none">
+                       <form class="under-comment-form-${item.idx}">
+                            <textarea name="msg_text" class="w-100" type="text" style="min-height:100px;padding:10px;border-radius:10px;border:1px solid #b1b1b1;background-color:#f4f4f4" placeholder="댓글 입력"></textarea>
+                            <div role="button" class="btn btn-primary mt-2 float-end" onclick="writeUnderComment(${item.idx})">등록</div>
+                        </form>
+                    </div>
+                    <div class="d-flex gap-2 mt-2" style="padding:0 20px">
+                        <div class="comment-arrow-${item.idx}"></div>
+                        <div class="comment-under-${item.idx} d-flex flex-column gap-2 w-100"></div>
+                    </div></div>`);
+
+                    //댓글의 idx 번호를 통해서 pos에 저장한 번호와 비교 후 특정 댓글의 대댓글 리스트 가져옴
+                    AJAX.get(`/comment/under/${item.idx}`,'',(items)=>{
+                        renderUnderComment(item.idx,items);
+                    });
+            }
+        }
+    }
+
+    //댓글 삭제 기능 대댓글도 같이 사용함 idx 번호로 삭제
+    function deleteComment(idx){
+        Dialog.confirm('정말 삭제하시겠습니까?', function () {
+            AJAX.remove(`/comment/${idx}`,'',(res)=>{
+                Dialog.alert(res.message,Page.reload);
+            });
+        }, function () {
+        });
+    }
+
+    //대댓글 작성 기능
+    function writeUnderComment(idx){
+        //대댓글 db에 저장 시 depth 를 1로, pos를 댓글의 idx 번호를 넣어 pos 번호로 찾을 것임
+        $(`.under-comment-form-${idx}`).append(`<input name="id" type="hidden" value=${no}>
+                <input name="name" type="hidden" value=${SSO.getMember().name}>
+                <input name="userid" type="hidden" value=${SSO.getMember().userid}>
+                <input name="userip" type="hidden" value="127.0.0.1">
+                <input name="depth" type="hidden" value="1">
+                <input name="pos" type="hidden" value="${idx}">
+            `);
+
+        let formData = new FormData($(`.under-comment-form-${idx}`)[0]);
+        let vData = Utils.formToObject(formData);
+
+        console.log(vData);
+
+        AJAX.post('/comment/write',formData,(res)=>{
+            Dialog.alert(res.message,Page.reload);
+        });
+    }
+
+    //댓글에 대한 대댓글을 작성하기 위한 form 표출 및 숨기기
+    function showUnderCommentForm(idx){
+        $(`.comment-${idx}`).toggle('show');
+    }
+
+    //대댓글 표출
+    function renderUnderComment(idx,items){
+       console.log(items);
+       //대댓글 없으면 넘어가기
+       if(items.length == 0) return;
+
+       //대댓글 처음 부분에 arrow logo 표시
+       $(`.comment-arrow-${idx}`).append('<i class="ri-arrow-right-line fs-20"></i>');
+       for(const item of items){
+           let str1 = `<div role="button" class="fs-14" onclick="Page.go('/board/comment/edit?idx=${item.idx}')">수정</div>
+                       <div role="button" class="fs-14" onclick="deleteComment(${item.idx})">삭제</div>`;
+           let str = item.name == SSO.getMember().name ? str1 : '';
+
+           let date = item.regdate.split('T')[0];
+           $(`.comment-under-${idx}`).append(`<div style="border:1px solid #b1b1b1;border-radius:10px;padding:10px">
+               <div style="padding-bottom:10px">
+                       <div class="d-flex gap-2 align-items-center">
+                           <div class="fw-bold fs-18">${item.name}</div>
+                           <div class="fs-14" style="color:#b1b1b1">${date}</div>
+                               ${str}
+                           </div>
+                           <div class="mt-1 text-break">${item.msg_text}</div>
+                       </div>
+                   </div>`);
+       }
+    }
+</script>
+</body>
+</html>

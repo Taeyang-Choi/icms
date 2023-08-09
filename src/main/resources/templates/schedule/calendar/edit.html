@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>출근부</title>
+    <style>
+        #page-title:before{content:url("/images/before/calendar.svg");margin-right:10px;vertical-align:middle}
+
+        .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
+    </style>
+</head>
+<body data-page-scope="schedule/calendar/list">
+<div id="header"></div>
+
+<div id="main">
+    <div class="container">
+        <div class="shadow-container">
+            <div class="white-background">
+                <p id="page-title">출근부</p>
+
+                <div class="wrap border-top">
+                    <p>통합관제센터 출근부등록</p>
+
+                    <form id="formSchedule" method="post" onsubmit="return false;">
+                        <div class="d-flex flex-wrap fs-14">
+                            <div class="col-12 d-flex">
+                                <div class="label">출근자</div>
+                                <div class="content">
+                                    <select name="team" class="form-select"></select>
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex">
+                                <div class="label">출근일</div>
+                                <div class="content">
+                                    <div id="work-date"></div>
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex">
+                                <div class="label">근무형태</div>
+                                <div id="input-workform" class="content"></div>
+                            </div>
+                            <div class="col-12 d-flex">
+                                <div class="label">근무구분</div>
+                                <div class="content">
+                                    <select name="division" class="form-select"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="buttons d-flex justify-content-between">
+                            <a id="btn-list" href="#" class="btn btn-sm btn-warning" onclick="Page.back();">목록</a>
+
+                            <div class="d-flex justify-content-between gap-1">
+                                <div id="btn-delete" class="btn btn-sm btn-danger">삭제</div>
+                                <button type="submit" id="btn-submit" class="btn btn-sm btn-primary">확인</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<!-- SCRIPT -->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init(params) {
+    AJAX.get('/schedules/'+request.getParameter("id",''), '', function (data) {
+        params.item = data;
+        editForm(params);
+    });
+
+    function editForm(params) {
+        let item = params.item;
+        console.log(item);
+        for(let pair of Object.entries(item)){
+            $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 삭제 버튼
+        $('#btn-delete').on('click', function () {
+            Dialog.alert("정말 삭제하시겠습니까?", function () {
+                AJAX.remove(`/schedules/${item.id}`, null, function (data) {
+                    Dialog.alert(data.message, function() {
+                        Page.back();
+                    });
+                });
+            });
+        });
+
+        // 히든
+        $('#formSchedule').append(`<input type="hidden" name="userwid" value="${item.userwid}">`);
+        $('#formSchedule').append(`<input type="hidden" name="userwnm" value="${item.userwnm}">`);
+
+        $('#formSchedule').append(`<input type="hidden" name="grade" value="${item.grade}">`);
+        $('#formSchedule').append(`<input type="hidden" name="id" value="${item.id}">`);
+
+        // 근무조
+        for(let i = 0; i < CodeManager.team.length; i++) {
+            let o = CodeManager.team[i];
+            let str = `<option ${(o.c == item.team) ? 'selected' : ''} value="${o.c}">${o.n} 조 관리자</option>`;
+            $('[name=team]').append(str);
+        }
+
+        // 근무형태
+        for(let i = 0; i < CodeManager.workform.length; i++) {
+            let o = CodeManager.workform[i];
+            let str = `<div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="workform" value="${o.c}" id="radio-division-${i}" ${(o.c === item.workform) ? 'checked' : ''}>
+                <label class="form-check-label" for="radio-division-${i}">${o.n}</label>
+            </div>`;
+            $('#input-workform').append(str);
+        }
+
+        // 근무조
+        for(let i = 0; i < CodeManager.workgubun.length; i++) {
+            let o = CodeManager.workgubun[i];
+            let str = `<option ${(o.c == item.division) ? 'selected' : ''} value="${o.c}">${o.n}</option>`;
+            $('[name=division]').append(str);
+        }
+
+        // 초기 날짜
+        $('#work-date').text(dateFormat(new Date(item.sdate),"yyyy-MM-dd"));
+    }
+
+    $('#formSchedule').on('submit', function(e) {
+        let formData = new FormData(document.getElementById('formSchedule'));
+        let vData = Utils.formToObject(formData);
+        if(vData == null) {
+            return;
+        }
+
+        formData.append('datecode', $('#work-date').text().replaceAll("-","").substring(0,6));
+        console.log(vData);
+
+        AJAX.post('/schedules/edit', formData, function(data) {
+            Dialog.alert(data.message, function() {
+                Page.back();
+            });
+        });
+    });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/common :: metas}"></th:block>
+    <th:block th:replace="~{layout/common :: styles}"></th:block>
+    <title>메인 타이틀</title>
+</head>
+
+<body>
+<header th:replace="layout/common :: header"></header>
+
+<main>
+    <div class="container"></div>
+</main>
+
+<th:block th:replace="layout/common :: script"></th:block>
+<script>
+function init() {
+}
+</script>
+</body>
+</html>
