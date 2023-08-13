@@ -32,6 +32,7 @@ public class LeaveServiceImpl {
     private final MemberRepository memberRepository;
 
     public Page<Leave> getLeavePage(LeaveSearchCondition leaveSearchCondition, Pageable pageable) {
+        //System.out.println("ss:");
         int page = pageable.getPageNumber()-1;
         PageRequest newPageRequest = PageRequest.of((page <= 0) ? 0 : page, 10);
         return leaveJpaRepository.findByQuery(leaveSearchCondition, newPageRequest);

@@ -1,0 +1,50 @@
+.map {
+  &__overlay {
+    background-color: white;
+    min-width: 250px;
+
+  }
+  &__title__box {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    background-color: #122037;
+    color: #FFFFFF;
+    line-height: 22px;
+
+
+    .title {
+      font-weight: 500;
+    }
+    .icon {
+      width: 24px;
+      height: 24px;
+      background-image: url("/images/ico__cancel_w.svg");
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+  }
+  &__value {
+    padding: 6px 16px;
+    color: black;
+    cursor: pointer;
+  }
+}
+
+.dir {
+  &__image {
+    width: 44px;
+    height: 56px;
+    background-image: url("/images/dir__y.svg");
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+
+    &.selected {
+      background-image: url("/images/dir__r.svg");
+    }
+  }
+}
+

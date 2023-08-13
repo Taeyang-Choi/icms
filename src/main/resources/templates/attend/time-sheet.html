@@ -114,7 +114,14 @@ function init(params) {
         AJAX.get('/schedules/monthly/' + datecode, '', function (list) {
             list = list.sort((a ,b) =>{return a.id - b.id;});
 
+            // update시각 기준으로 desc
+            list = list.sort(function(a, b)  {
+                return (new Date(b.updatedAt)) - (new Date(a.updatedAt));
+            });
+
             pagectx.list = list;
+            console.log(list);
+
 
             for (let i = 0; i < list.length; i++) {
                 let item = list[i];

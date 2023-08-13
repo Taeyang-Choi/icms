@@ -35,6 +35,7 @@ public class LeaveJpaRepository  extends Querydsl4RepositorySupport {
         return applyPagination(pageable, query -> query
                 .selectFrom(leave)
                 .where(dateBetween(leaveSearchCondition.getSearchStartDate(), leaveSearchCondition.getSearchEndDate()))
+                .orderBy(leave.updatedAt.desc())
         );
     }
 
