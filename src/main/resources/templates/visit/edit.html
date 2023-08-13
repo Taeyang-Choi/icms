@@ -14,6 +14,7 @@
         #page-title:before{content:url("/images/before/visit.svg");margin-right:10px;vertical-align:middle}
         #gnb .nav{display:none}
         #ntc .fs-14{display:none!important}
+        #deleteBtn {cursor: pointer}
 
         .col-6{width:49.7%;margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
         .col-12{margin-top:8px;border:1px solid #F6F6F6;border-radius:2px}
@@ -72,9 +73,12 @@
                             </div>
                         </div>
 
-                        <div class="buttons d-flex justify-content-between">
+                        <div class="buttons d-flex">
                             <a href="list" class="btn btn-sm btn-warning">목록</a>
-                            <button type="submit" class="btn btn-sm btn-primary">수정하기</button>
+                            <div class="d-flex ms-auto">
+                                <div id="deleteBtn" class="btn-sm btn-primary d-none">삭제하기</div>
+                                <button type="submit" class="btn btn-sm btn-primary ms-2">수정하기</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -91,6 +95,7 @@
 <script src="/js/core.js"></script>
 <script>
 function init(params) {
+    pagectx = params;
     AJAX.get(`/visits/${request.getParameter('id')}`, '', function(item) {
         params.item = item;
         createForm(params);
@@ -103,6 +108,11 @@ function init(params) {
 
         for(let pair of Object.entries(params.item)){
             $(`input[name=${pair[0]}]`).val(pair[1]);
+        }
+
+        // 71번 방문대장 관리
+        if (pagectx.usrobj.grade == 1) {
+            $("#deleteBtn").removeClass("d-none");
         }
 
         // 수정 가능하게 변경
@@ -151,6 +161,18 @@ function init(params) {
            });
         });
     });
+    //TODO 삭제버튼에 서버에서 admin 계정 관련 무결성 체크해야함
+    $("#deleteBtn").on("click", function () {
+        const res = confirm("삭제하시겠습니까?");
+        if (res) {
+            AJAX.get(`/visits/delete/${request.getParameter('id')}`, '', function(res) {
+                if (res.code == 0) {
+                    alert(res.message);
+                    Page.back();
+                }
+            });
+        }
+    })
 }
 
 </script>

@@ -91,5 +91,11 @@ public class VisitServiceImpl {
     public List<VisitingMonthlyCount> statistics() {
         return visitJpaRepository.countAllByMonthly();
     }
+
+    // 삭제처리
+    public ResultCode deleteVisitor(Long id) {
+        visitJpaRepository.deleteById(id);
+        return new ResultCode(0, "삭제를 완료하였습니다.");
+    }
 }
 

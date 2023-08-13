@@ -73,6 +73,13 @@ public class VisitApiController {
 
     // endregion 통계
 
+    // region 관리자 방문자 삭제
+    @GetMapping("/api/visits/delete/{id}")
+    public ResultCode deleteVisit(@PathVariable Long id) {
+        return visitService.deleteVisitor(id);
+    }
+    // endregion 관리자 방문자 삭제
+
     // 방문자 직접 퇴실
     /*
     @PostMapping("/api/visits/vout")

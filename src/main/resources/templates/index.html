@@ -61,6 +61,8 @@
 
 $(document).ready(function() {
     $("#logo").css('background-image',`url(/assets/${activeProfile}/logo.png)`);
+    // 70번 바로가기 아이콘 properties 값에따라 변경
+    $('link[rel="shortcut icon"]').attr('href', `/assets/${activeProfile}/favicon.ico`);
 });
 
 
