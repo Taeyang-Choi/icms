@@ -13,10 +13,10 @@
     <style>
         td{vertical-align:middle;}
         td:nth-child(2){width:70px;}
-        td:nth-child(5){width:90px;}
-        td:nth-child(6){width:20%;}
-        td:nth-child(7){width:90px;}
-        td:nth-child(8){width:20%;}
+        td:nth-child(6){width:90px;}
+        td:nth-child(7){width:20%;}
+        td:nth-child(8){width:90px;}
+        td:nth-child(9){width:20%;}
         #page-title:before{content:url("/images/before/monitor.svg");margin-right:10px;vertical-align:middle}
     </style>
 </head>
@@ -56,7 +56,7 @@
                             <th scope="col">일시</th>
                             <th scope="col">구분</th>
                             <th scope="col">CCTV</th>
-
+                            <th scope="col">주소</th>
                             <th scope="col">담당자</th>
                             <th scope="col">장애레벨</th>
                             <th scope="col">상황</th>
@@ -135,7 +135,10 @@ function init(params) {
             }
         });
 
-        AJAX2.get('/api/daily-reports/events'+location.search).then(renderTable);
+        AJAX.get('/cctvs/excel', '', function(list){
+            pagectx.camera = list;
+            getCCtvs(list);
+        });
 
         // 조치결과
         for(const code of CodeManager.work_jochi) {
@@ -144,6 +147,12 @@ function init(params) {
         for(const code of CodeManager.situ_result) {
             $('select[name="actionCode"]').append(`<option value="${code.c}">${code.n}</option>`);
         }
+    }
+
+    function getCCtvs() {
+        AJAX.get('/daily-reports/events', location.search.substr(1), function(page) {
+            renderTable(page)
+        });
     }
 
     function renderTable(page) {
@@ -159,12 +168,13 @@ function init(params) {
         for(let i = 0; i < list.length; i++) {
             let item = list[i];
             let actionResultCode = CodeManager.getCode((item.workDgubun === 'D01') ? "work_jochi" : "situ_result", item.actionCode, "미조치");
-            console.log(actionResultCode);
+            const camera = pagectx.camera.find(d=> d.cctvIndex == item.cctvIndex);
             let str = `
                 <tr data-id="${item.id}" role="button">
                     <td class="link-primary text-decoration-underline" role="button">${item.createdAt.split('T')[0]} ${item.workDtimeFrom}</td>
                     <td>${CodeManager.get('work_dgubun', item.workDgubun)}</td>
                     <td>${item.cctvIndex}</td>
+                    <td>${camera.juso}</td>
                     <td>${item.userid}</td>
                     <td>${Monitoring.getBarrierLevel(item).n}</td>
                     <td><div class="text-truncate" style="border-right:0;white-space:pre-line;">${item.workContent}</div></td>
@@ -189,6 +199,8 @@ function init(params) {
         }
     }
 }
+
+
 
 let ExcelManager = {
     year: null,
