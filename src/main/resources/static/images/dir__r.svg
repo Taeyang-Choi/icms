@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="25" height="28.697" viewBox="0 0 25 28.697">
+  <g id="그룹_1" data-name="그룹 1" transform="translate(-232 -573)">
+    <path id="다각형_1" data-name="다각형 1" d="M11.587,2.045a1,1,0,0,1,1.826,0L24.372,26.592A1,1,0,0,1,23.458,28H1.542a1,1,0,0,1-.913-1.408Z" transform="translate(232 573)" fill="rgba(255,0,0,0.2)"/>
+    <line id="선_2" data-name="선 2" x1="12" y2="28" transform="translate(232.5 573.5)" fill="none" stroke="red" stroke-width="1"/>
+    <line id="선_3" data-name="선 3" x1="12" y1="28" transform="translate(244.5 573.5)" fill="none" stroke="red" stroke-width="1"/>
+  </g>
+</svg>

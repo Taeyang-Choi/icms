@@ -4,6 +4,7 @@
 <th:block th:replace="~{layout/common :: metas}"></th:block>
 <th:block th:replace="~{layout/common :: styles}"></th:block>
 <title>카메라 맵</title>
+<link rel="stylesheet" href="/css/map.css">
 <style>
 html,body{height:100%;}
 #top{left:0;top:108px;height:70px;background-color:#F0F4FAAA;z-index:1001}
@@ -164,7 +165,7 @@ function pingURL() {
 
 function popup(type) {
     $('#left-sub').removeClass('d-none');
-    if(type == "situ") {
+    if (type == "situ") {
         $('#left-sub .list-group').removeClass('d-none')
         $('#left-sub .list-group').html(``);
         for (const situ of pagectx.situs) {
@@ -174,8 +175,7 @@ function popup(type) {
                 <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${situ.cctvIndex}')"; role="button">${situ.workContent}</div>
             </div>`);
         }
-    }
-    else if (type == 'error') {
+    } else if (type == 'error') {
         $('#left-sub .list-group').removeClass('d-none')
         $('#left-sub .list-group').html(``);
         for (const error of pagectx.errors) {
@@ -185,8 +185,7 @@ function popup(type) {
                 <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${error.cctvIndex}')"; role="button">${error.workContent}</div>
             </div>`);
         }
-    }
-    else if (type == 'search') {
+    } else if (type == 'search') {
         $('#left-sub .list-group').removeClass('d-none')
         $('#left-sub .list-group').html(`
         <input id="input-search" class="form-control" tyle="text" placeholder="검색어를 입력해주세요.">
@@ -206,8 +205,7 @@ function popup(type) {
                 }
             }
         });
-    }
-    else {
+    } else {
         alert('아직 준비중인 기능입니다.');
     }
 }
