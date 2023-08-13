@@ -36,7 +36,8 @@ let MemberManager = {
         this.fetchAllByGradeCallback = callback;
 
         AJAX.get('/schedule/agents', '', function (list) {
-            MemberManager.list = list;
+            // 58번 NOTEAM 필터링
+            MemberManager.list = list.filter(d=> d.team !== "NOTEAM")
             MemberManager.fetchAllByGradeCallback(MemberManager.list);
         });
     },

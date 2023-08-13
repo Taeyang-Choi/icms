@@ -79,6 +79,7 @@
 <th:block th:replace="~{layout/common :: script}"></th:block>
 <script>
 function init(params) {
+    pagectx = params;
     $("#ntc").append(`<div class="fs-16" style="margin:0 auto;text-align:center;padding:20px 0;width:50%;background-color:white;margin-top:40px;">방문자 정보를 남겨주시길 바랍니다.</div>`);
 
     // 초기 날짜
@@ -119,6 +120,7 @@ function init(params) {
         for (const member of members) {
             $('select[name="submitUser"]').append(`<option value="${member.name}">${member.name}</option>`);
         }
+        $(`select[name="submitUser"] > option[value=${pagectx.usrobj.name}]`).attr("selected", "true");
     });
 }
 

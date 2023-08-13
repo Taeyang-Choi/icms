@@ -195,3 +195,15 @@ p{margin:0}
 .dark-mode #header-login a{color:white!important}
 .dark-mode #footer{background-color:#0D1927}
 
+/* board icon */
+.board {
+  &__att__icon {
+    width: 12px;
+    height: 12px;
+    background-image: url("/images/attachment.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50%;
+  }
+}
+

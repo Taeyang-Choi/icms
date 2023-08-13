@@ -816,4 +816,14 @@ p {
   background-color: #0D1927;
 }
 
+/* board icon */
+.board__att__icon {
+  width: 12px;
+  height: 12px;
+  background-image: url("/images/attachment.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
 /*# sourceMappingURL=core.css.map */

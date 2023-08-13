@@ -103,11 +103,17 @@ function init(params) {
 
         for(let i = 0; i < list.length; i++) {
             let item = list[i];
+            let userFile = Utils.tryParse(item.userFile, []);
 
             let notice = (item.noticeYn == 1) && (item.noticeEdate.replaceAll('-','') >= dateFormat(new Date(),'yyyyMMdd'));
             let str = `<tr class="${(notice) ? 'notice' : ''}" data-id="${item.id}" role="button">
                     <td class="no">${(notice) ? '공지' : item.id}</td>
-                    <td class="title text-left"><a href="detail?n=${request.getParameter('n','notice')}&no=${item.id}">${item.title}</a></td>
+                    <td class="title text-left">
+                        <a class="d-flex align-items-center" href="detail?n=${request.getParameter('n','notice')}&no=${item.id}">
+                            ${Utils.isValid(userFile) ? `<div class="me-2 board__att__icon"></div>` : ""}
+                            <div>${item.title}</div>
+                        </a>
+                    </td>
                     <td>${item.username}</td>
                     <td>${item.createdAt.split('T')[0]}</td>
                     <td style="color:#FF0000">${item.count}</td>

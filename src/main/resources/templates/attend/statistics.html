@@ -127,6 +127,8 @@ let StatisticsImpl = {
 
         // 통계 후 작성
         for(const member of MemberManager.list) {
+            // 58번 NOTEAM 숨김처리
+            if (member.team === "NOTEAM") continue;
             StatisticsManager.calculate(member.id);
             let memberInfo = StatisticsManager.findByKey(member.id);
             let bold = (memberInfo.total != memberInfo.acc) ? 'fw-bold' : '';
