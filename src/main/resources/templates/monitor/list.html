@@ -94,7 +94,6 @@
 function init(params) {
     console.log(JSON.stringify(CodeManager.situ));
     pagectx = params;
-    console.log(params);
 
     setTable(params);
     SearchManager.setSearch({callBack:renderTable, src: '/daily-reports/events', table:'#main-table'})
@@ -169,9 +168,10 @@ function init(params) {
             let item = list[i];
             let actionResultCode = CodeManager.getCode((item.workDgubun === 'D01') ? "work_jochi" : "situ_result", item.actionCode, "미조치");
             const camera = pagectx.camera.find(d=> d.cctvIndex == item.cctvIndex);
+            // 73번 item.createdAt.split('T')[0] -> item.workDate 로, 상황발생 시간으로 보이게 변경
             let str = `
                 <tr data-id="${item.id}" role="button">
-                    <td class="link-primary text-decoration-underline" role="button">${item.createdAt.split('T')[0]} ${item.workDtimeFrom}</td>
+                    <td class="link-primary text-decoration-underline" role="button">${item.workDate} ${item.workDtimeFrom}</td>
                     <td>${CodeManager.get('work_dgubun', item.workDgubun)}</td>
                     <td>${item.cctvIndex}</td>
                     <td>${camera.juso}</td>
