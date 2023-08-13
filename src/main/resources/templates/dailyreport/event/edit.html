@@ -387,7 +387,8 @@ function editForm(params) {
 
     // 상세 상황 선택
     if(item.workDgubun == 'D02') {
-        $(`#radio-bl1-${barrierLevel.substr(1,1)}`).trigger('click');
+        // 73번 상황구분 코드 정렬시 순서값을 따르는게 아니라 코드값을 따라가도록 할
+        $(`.form-check-input[value="${barrierLevel.substring(0, 2)}"]`).trigger("click");
         showSituDetails(barrierLevel.substr(0,2));
         $(`#radio-sd-${barrierLevel.substr(2,1)}`).trigger('click');
     }

@@ -148,6 +148,7 @@ function init(params) {
             // 상세 상황(221226)
             let situ = CodeManager.situ;
             for(let i = 0; i < situ.length; i++) {
+
                 let str = `<div class="form-check form-check-inline" onclick="showSituDetails('${situ[i].c}')">
                     <input class="form-check-input" type="radio" name="dummy01" value="${situ[i].c}" id="radio-bl1-${i}" ${(i == 0) ? 'checked' : ''}>
                     <label class="form-check-label" for="radio-bl1-${i}">${situ[i].n}</label>
@@ -203,11 +204,13 @@ function init(params) {
 function editForm(params) {
     let item = params.item;
     let barrierLevel = item.barrierLevel;
-    console.log(item)
+    console.log(item, barrierLevel, barrierLevel.substr(1, 1))
 
     // 상세 상황 선택
     if(item.workDgubun == 'D02') {
-        $(`#radio-bl1-${barrierLevel.substr(1,1)}`).trigger('click');
+        // 73번 상황구분 코드 정렬시 순서값을 따르는게 아니라 코드값을 따라가도록 할
+        $(`.form-check-input[value="${barrierLevel.substring(0, 2)}"]`).trigger("click");
+        //$(`#radio-bl1-${barrierLevel.substr(1,1)}`).trigger('click');
         showSituDetails(barrierLevel.substr(0,2));
         $(`#radio-sd-${barrierLevel.substr(2,1)}`).trigger('click');
     }
