@@ -340,6 +340,7 @@ function init(params) {
             return;
         }
 
+        formData.append("workMonitoring", pagectx.item.workMonitoring);
         AJAX.post('/daily-reports/events', formData, function(data) {
            Dialog.alert(data.message, function() {
                Page.back();

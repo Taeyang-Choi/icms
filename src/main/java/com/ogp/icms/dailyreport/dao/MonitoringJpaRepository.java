@@ -1,13 +1,16 @@
 package com.ogp.icms.dailyreport.dao;
 
+import com.ogp.icms.dailyreport.domain.DailyReport;
 import com.ogp.icms.dailyreport.domain.Monitoring;
 import com.ogp.icms.dailyreport.request.MonitoringSearchCondition;
 import com.ogp.icms.global.repository.support.Querydsl4RepositorySupport;
+import com.ogp.icms.global.util.ResultCode;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.TypedQuery;
@@ -16,6 +19,7 @@ import java.util.List;
 
 import static com.ogp.icms.board.domain.QArticle.article;
 import static com.ogp.icms.dailyreport.domain.QMonitoring.monitoring;
+import static com.ogp.icms.dailyreport.domain.QDailyReport.dailyReport;
 import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
@@ -69,9 +73,32 @@ public class MonitoringJpaRepository extends Querydsl4RepositorySupport {
                         actionCodeEq(searchCondition.getActionCode()),
                         dateLoe(searchCondition.getEndDate()),
                         useridContains(searchCondition.getUserid()),
-                        cctvIndexContains(searchCondition.getCctvIndex()))
+                        cctvIndexContains(searchCondition.getCctvIndex()),
+                        workMonitoringContains(searchCondition.getMonitoring()))
                 .orderBy(monitoring.id.desc())
         );
+    }
+
+    //@Modifying
+    public ResultCode setWorkMonitoring() {
+        JPAQuery<Monitoring> query = selectFrom(monitoring);
+        List<Monitoring> list = query.fetch();
+        int size = list.size();
+        int i=0;
+
+        for(Monitoring m : list) {
+            long id = m.getDailyreportId();
+            JPAQuery<DailyReport> q = selectFrom(dailyReport).where(dailyReport.id.eq(id));
+            DailyReport d = q.fetchOne();
+            if (d != null) {
+                String workMonitoring = d.getWorkMonitoring();
+                m.setWorkMonitoring(workMonitoring);
+            }
+            System.out.println(i++ + " / " + size);
+        }
+
+        return new ResultCode(0, "수정을 완료했습니다.");
+
     }
 
     public List<Monitoring> getAllNotRepairedAssets() {
@@ -135,5 +162,6 @@ public class MonitoringJpaRepository extends Querydsl4RepositorySupport {
     }
     private BooleanExpression useridContains(String id) { return !hasText(id) ? null : monitoring.userid.contains(id);}
     private BooleanExpression cctvIndexContains(String index) { return !hasText(index) ? null : monitoring.cctvIndex.contains(index);}
+    private BooleanExpression workMonitoringContains(String workMonitoring) { return !hasText(workMonitoring) ? null : monitoring.workMonitoring.contains(workMonitoring); }
 
 }

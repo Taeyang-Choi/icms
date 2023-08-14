@@ -17,4 +17,5 @@ public class MonitoringSearchCondition implements SearchCondition {
     private String cctvIndex;
 
     private String userid;
+    private String monitoring;
 }

@@ -12,11 +12,11 @@
     <title>모니터링현황</title>
     <style>
         td{vertical-align:middle;}
-        td:nth-child(2){width:70px;}
-        td:nth-child(6){width:90px;}
-        td:nth-child(7){width:20%;}
-        td:nth-child(8){width:90px;}
-        td:nth-child(9){width:20%;}
+        td:nth-child(3){width:70px;}
+        td:nth-child(7){width:90px;}
+        td:nth-child(8){width:20%;}
+        td:nth-child(9){width:90px;}
+        td:nth-child(10){width:20%;}
         #page-title:before{content:url("/images/before/monitor.svg");margin-right:10px;vertical-align:middle}
     </style>
 </head>
@@ -34,8 +34,10 @@
                             <select class="form-select search-key" data-sfor="#search-value-1" style="width:120px;">
                                 <option value="cctvIndex">CCTV별</option>
                                 <option value="userid">작성자</option>
+
                             </select>
                             <input id="search-value-1" class="form-control" value="" style="width:120px;">
+                            <select name="monitoring" class="form-control" style="width:160px;"><option value="" selected="">모니터링 PC 전체</option></select>
                             <select name="workDgubun" class="form-control" style="width:160px;"><option value="" selected="">상황 구분 전체</option></select>
                             <select name="situ" class="form-control" style="width:160px;display:none"><option value="" selected="">상황 대구분 전체</option></select>
                             <select name="barrierLevel" class="form-control" style="width:160px;display:none"><option value="" selected="">장애레벨 전체</option></select>
@@ -54,6 +56,7 @@
                         <thead class="text-truncate">
                         <tr>
                             <th scope="col">일시</th>
+                            <th scope="col">PC</th>
                             <th scope="col">구분</th>
                             <th scope="col">CCTV</th>
                             <th scope="col">주소</th>
@@ -92,7 +95,7 @@
 <script src="/js/module/reports.js"></script>
 <script>
 function init(params) {
-    console.log(JSON.stringify(CodeManager.situ));
+    //console.log(JSON.stringify(CodeManager.situ));
     pagectx = params;
 
     setTable(params);
@@ -100,7 +103,7 @@ function init(params) {
     ExcelManager.init();
 
     function setTable(params) {
-        console.log(JSON.stringify(CodeManager.situ));
+        //console.log(JSON.stringify(CodeManager.situ));
         // 구분 전체
         $('select[name=workDgubun]').on('change', function(e) {
             let val = $(this).val()
@@ -108,13 +111,11 @@ function init(params) {
             if(val == 'D02') {
                 $('select[name=situ]').show();
                 $('select[name=barrierLevel]').hide();
-            }
-            else if(val=='D01') {
+            } else if(val=='D01') {
                 $('select[name=situ]').hide();
                 $('select[name=barrierLevel]').show();
                 setBarrierLevel(CodeManager.barrier_level);
-            }
-            else {
+            } else {
                 $('select[name=situ]').hide();
                 $('select[name=barrierLevel]').hide();
             }
@@ -149,6 +150,7 @@ function init(params) {
     }
 
     function getCCtvs() {
+        console.log(location.search, location.search.substr(1))
         AJAX.get('/daily-reports/events', location.search.substr(1), function(page) {
             renderTable(page)
         });
@@ -157,8 +159,8 @@ function init(params) {
     function renderTable(page) {
         let list = page.content;
         Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
-
         $('#main-table tbody *').remove();
+        console.log(list);
 
         if(list.length == 0) {
             $('#main-table tbody').append('<tr><td colSpan="10">결과가 없습니다.</td></tr>');
@@ -172,9 +174,10 @@ function init(params) {
             let str = `
                 <tr data-id="${item.id}" role="button">
                     <td class="link-primary text-decoration-underline" role="button">${item.workDate} ${item.workDtimeFrom}</td>
+                    <td>${CodeManager.get('monitoring', item.workMonitoring)}</td>
                     <td>${CodeManager.get('work_dgubun', item.workDgubun)}</td>
                     <td>${item.cctvIndex}</td>
-                    <td>${camera.juso}</td>
+                    <td>${isValid(camera) ? camera.juso : ""}</td>
                     <td>${item.userid}</td>
                     <td>${Monitoring.getBarrierLevel(item).n}</td>
                     <td><div class="text-truncate" style="border-right:0;white-space:pre-line;">${item.workContent}</div></td>

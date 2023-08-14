@@ -29,6 +29,11 @@ public class MonitoringApiController {
         return monitoringService.getList(searchCondition, pageable);
     }
 
+    @GetMapping("/api/daily-reports/setWorkMonitoring")
+    public ResultCode setWorkMonitoring() {
+        return monitoringService.setWorkMonitoring();
+    }
+
     @GetMapping("/api/daily-reports/events/date/{date}")
     public List<Monitoring> getPage(@PathVariable String date) {
         return monitoringService.findByDate(date);
@@ -49,6 +54,7 @@ public class MonitoringApiController {
     // 모니터링 등록
     @PostMapping("/api/daily-reports/events")
     public ResultCode addDailyReportDetail(@ModelAttribute Monitoring monitoring) {
+
         return monitoringService.addDailyReport(monitoring);
     }
 

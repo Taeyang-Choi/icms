@@ -39,6 +39,10 @@ public class MonitoringServiceImpl {
         return monitoringJpaRepository.getList(searchCondition, newPageRequest);
     }
 
+    public ResultCode setWorkMonitoring() {
+        return monitoringJpaRepository.setWorkMonitoring();
+    }
+
     public List<Monitoring> getDailyEvents(Long reportId) {
         return monitoringJpaRepository.getListByReportId(reportId);
     }
@@ -52,8 +56,7 @@ public class MonitoringServiceImpl {
         
         if(monitoring.getWorkDgubun().equals("D01")) { // 장애
             monitoring.setActionCode("R02");
-        }
-        else { // 상황
+        } else { // 상황
             monitoring.setActionCode("R11");
         }
 

@@ -51,6 +51,7 @@ dependencies {
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
     implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
 
+
     // reason: class file for javax.annotation.meta.When not found 에러
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 

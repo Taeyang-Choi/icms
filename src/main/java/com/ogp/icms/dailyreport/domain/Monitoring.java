@@ -28,6 +28,7 @@ public class Monitoring extends DateEntity {
   private String workDtimeFrom;
   private String workDtimeTo;
   private String workDgubun;
+  private String workMonitoring;
   private Long cctvId;
   private String cctvIndex;
   private String workContent;
