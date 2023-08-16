@@ -207,3 +207,11 @@ p{margin:0}
   }
 }
 
+#mainTableWrapper {
+  #timesheet__sdate, #timesheet__edate {
+    .checkbox-container {
+      display: none;
+    }
+  }
+}
+

@@ -903,7 +903,9 @@ let GlobalMenuNav = {
 
             // 소분류 추가
             for(let a = 0; a < menus[i].length; a++) {
+
                 if(typeof(ServerPreference)!= 'undefined' ) if(ServerPreference[activeProfile].blackList.includes(menus[i][a].f)) continue;
+                //console.log(typeof(ServerPreference), ServerPreference[activeProfile].blackList.includes(menus[i][a].f))
                     $('#largeCategory-'+i).append(`
                 <li><a class="dropdown-item" style="border-bottom:1px solid #E9E9E9;" href="/${menus[i][a].f}">${menus[i][a].n}</a></li>`);
 

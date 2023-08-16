@@ -1,72 +1,40 @@
-2023-08-14 16:48:32.127  INFO 95484 --- [restartedMain] com.ogp.icms.IcmsApplication             : Starting IcmsApplication using Java 1.8.0_352 on choileui-MacBookPro.local with PID 95484 (/Users/choetaeyang/Documents/intelliJ/projects/icms/build/classes/java/main started by choetaeyang in /Users/choetaeyang/Documents/intelliJ/projects/icms)
-2023-08-14 16:48:32.130  INFO 95484 --- [restartedMain] com.ogp.icms.IcmsApplication             : The following 1 profile is active: "dev"
-2023-08-14 16:48:32.157  INFO 95484 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2023-08-14 16:48:32.157  INFO 95484 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2023-08-14 16:48:32.558  INFO 95484 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2023-08-14 16:48:32.628  INFO 95484 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 66 ms. Found 17 JPA repository interfaces.
-2023-08-14 16:48:33.389  INFO 95484 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 80 (http)
-2023-08-14 16:48:33.406  INFO 95484 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2023-08-14 16:48:33.407  INFO 95484 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.62]
-2023-08-14 16:48:33.730  INFO 95484 --- [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
-2023-08-14 16:48:33.734  INFO 95484 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2023-08-14 16:48:33.734  INFO 95484 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1577 ms
-2023-08-14 16:48:33.820  INFO 95484 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Starting...
-2023-08-14 16:48:33.955  INFO 95484 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Start completed.
-2023-08-14 16:48:34.143  INFO 95484 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2023-08-14 16:48:34.175  INFO 95484 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.8.Final
-2023-08-14 16:48:34.282  INFO 95484 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-2023-08-14 16:48:34.350  INFO 95484 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MariaDB53Dialect
-2023-08-14 16:48:34.832  INFO 95484 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-2023-08-14 16:48:34.836  INFO 95484 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2023-08-14 16:48:35.497  WARN 95484 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2023-08-14 16:48:35.694  INFO 95484 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
-2023-08-14 16:48:35.791  INFO 95484 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2023-08-14 16:48:35.824  INFO 95484 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
-2023-08-14 16:48:35.825  INFO 95484 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
-2023-08-14 16:48:35.825  INFO 95484 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@981c842]]
-2023-08-14 16:48:35.826  INFO 95484 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
-2023-08-14 16:48:35.831  INFO 95484 --- [restartedMain] com.ogp.icms.IcmsApplication             : Started IcmsApplication in 3.941 seconds (JVM running for 4.447)
-2023-08-14 16:48:35.888  INFO 95484 --- [http-nio-80-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2023-08-14 16:48:35.888  INFO 95484 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2023-08-14 16:48:35.889  INFO 95484 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2023-08-14 16:48:39.237  INFO 95484 --- [http-nio-80-exec-7] c.ogp.icms.member.api.MemberController   : logged in user=admin
-2023-08-14 16:49:35.488  INFO 95484 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
-2023-08-14 17:19:35.294  INFO 95484 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
-2023-08-14 17:24:58.915  INFO 95484 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
-2023-08-14 17:24:58.916  INFO 95484 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@981c842]]
-2023-08-14 17:24:58.916  INFO 95484 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
-2023-08-14 17:24:58.933  INFO 95484 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2023-08-14 17:24:58.935  INFO 95484 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
-2023-08-14 17:24:58.959  INFO 95484 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.
-2023-08-14 17:25:00.281  INFO 96177 --- [restartedMain] com.ogp.icms.IcmsApplication             : Starting IcmsApplication using Java 1.8.0_352 on choileui-MacBookPro.local with PID 96177 (/Users/choetaeyang/Documents/intelliJ/projects/icms/build/classes/java/main started by choetaeyang in /Users/choetaeyang/Documents/intelliJ/projects/icms)
-2023-08-14 17:25:00.282  INFO 96177 --- [restartedMain] com.ogp.icms.IcmsApplication             : The following 1 profile is active: "dev"
-2023-08-14 17:25:00.305  INFO 96177 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2023-08-14 17:25:00.305  INFO 96177 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2023-08-14 17:25:00.659  INFO 96177 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2023-08-14 17:25:00.724  INFO 96177 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 60 ms. Found 17 JPA repository interfaces.
-2023-08-14 17:25:01.030  INFO 96177 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 80 (http)
-2023-08-14 17:25:01.034  INFO 96177 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2023-08-14 17:25:01.035  INFO 96177 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.62]
-2023-08-14 17:25:01.160  INFO 96177 --- [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
-2023-08-14 17:25:01.163  INFO 96177 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2023-08-14 17:25:01.163  INFO 96177 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 857 ms
-2023-08-14 17:25:01.201  INFO 96177 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Starting...
-2023-08-14 17:25:01.262  INFO 96177 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Start completed.
-2023-08-14 17:25:01.357  INFO 96177 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2023-08-14 17:25:01.378  INFO 96177 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.8.Final
-2023-08-14 17:25:01.445  INFO 96177 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-2023-08-14 17:25:01.500  INFO 96177 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MariaDB53Dialect
-2023-08-14 17:25:01.899  INFO 96177 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-2023-08-14 17:25:01.903  INFO 96177 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2023-08-14 17:25:02.527  WARN 96177 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2023-08-14 17:25:02.716  INFO 96177 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
-2023-08-14 17:25:02.806  INFO 96177 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2023-08-14 17:25:02.837  INFO 96177 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
-2023-08-14 17:25:02.838  INFO 96177 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
-2023-08-14 17:25:02.838  INFO 96177 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@1db250d]]
-2023-08-14 17:25:02.838  INFO 96177 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
-2023-08-14 17:25:02.844  INFO 96177 --- [restartedMain] com.ogp.icms.IcmsApplication             : Started IcmsApplication in 2.754 seconds (JVM running for 3.268)
-2023-08-14 17:25:04.860  INFO 96177 --- [http-nio-80-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2023-08-14 17:25:04.860  INFO 96177 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2023-08-14 17:25:04.861  INFO 96177 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2023-08-14 17:26:02.516  INFO 96177 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2023-08-16 09:12:36.271  INFO 97482 --- [restartedMain] com.ogp.icms.IcmsApplication             : Starting IcmsApplication using Java 1.8.0_352 on choileui-MacBookPro.local with PID 97482 (/Users/choetaeyang/Documents/intelliJ/projects/icms/build/classes/java/main started by choetaeyang in /Users/choetaeyang/Documents/intelliJ/projects/icms)
+2023-08-16 09:12:36.274  INFO 97482 --- [restartedMain] com.ogp.icms.IcmsApplication             : The following 1 profile is active: "dev"
+2023-08-16 09:12:36.303  INFO 97482 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2023-08-16 09:12:36.304  INFO 97482 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2023-08-16 09:12:36.744  INFO 97482 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2023-08-16 09:12:36.817  INFO 97482 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 64 ms. Found 17 JPA repository interfaces.
+2023-08-16 09:12:37.218  INFO 97482 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 80 (http)
+2023-08-16 09:12:37.225  INFO 97482 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-08-16 09:12:37.225  INFO 97482 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.62]
+2023-08-16 09:12:37.366  INFO 97482 --- [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2023-08-16 09:12:37.369  INFO 97482 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-08-16 09:12:37.369  INFO 97482 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1065 ms
+2023-08-16 09:12:37.411  INFO 97482 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Starting...
+2023-08-16 09:12:37.477  INFO 97482 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Start completed.
+2023-08-16 09:12:37.582  INFO 97482 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2023-08-16 09:12:37.612  INFO 97482 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.8.Final
+2023-08-16 09:12:37.699  INFO 97482 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2023-08-16 09:12:37.759  INFO 97482 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MariaDB53Dialect
+2023-08-16 09:12:38.329  INFO 97482 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2023-08-16 09:12:38.336  INFO 97482 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2023-08-16 09:12:39.398  WARN 97482 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2023-08-16 09:12:39.631  INFO 97482 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2023-08-16 09:12:39.737  INFO 97482 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2023-08-16 09:12:39.770  INFO 97482 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
+2023-08-16 09:12:39.771  INFO 97482 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2023-08-16 09:12:39.771  INFO 97482 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@582349c3]]
+2023-08-16 09:12:39.772  INFO 97482 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2023-08-16 09:12:39.778  INFO 97482 --- [restartedMain] com.ogp.icms.IcmsApplication             : Started IcmsApplication in 3.734 seconds (JVM running for 4.296)
+2023-08-16 09:13:20.619  INFO 97482 --- [http-nio-80-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-16 09:13:20.619  INFO 97482 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2023-08-16 09:13:20.620  INFO 97482 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2023-08-16 09:13:39.383  INFO 97482 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2023-08-16 09:25:39.871  INFO 97482 --- [http-nio-80-exec-10] c.ogp.icms.member.api.MemberController   : logged in user=admin
+2023-08-16 09:43:39.388  INFO 97482 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+2023-08-16 09:45:47.426  INFO 97482 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2023-08-16 09:45:47.427  INFO 97482 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@582349c3]]
+2023-08-16 09:45:47.427  INFO 97482 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2023-08-16 09:45:47.444  INFO 97482 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-08-16 09:45:47.446  INFO 97482 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
+2023-08-16 09:45:47.452  INFO 97482 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.

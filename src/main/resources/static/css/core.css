@@ -826,4 +826,8 @@ p {
   background-position: 50%;
 }
 
+#mainTableWrapper #timesheet__sdate .checkbox-container, #mainTableWrapper #timesheet__edate .checkbox-container {
+  display: none;
+}
+
 /*# sourceMappingURL=core.css.map */
