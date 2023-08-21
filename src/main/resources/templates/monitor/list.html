@@ -191,7 +191,7 @@ function init(params) {
         }
         // 퇴실
         $('#main-table tbody tr').on('click', function(e) {
-            Page.go(`/monitor/detail?id=${$(this).data('id')}`);
+            Page.go(`/monitor/detail?id=${$(this).data('id')}`, request.getParameter('page'));
         });
     }
     function setBarrierLevel(arr) {

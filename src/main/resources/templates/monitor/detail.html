@@ -178,7 +178,13 @@ function init(params) {
                 let formData = new FormData();
                 AJAX.remove('/dailyreport/event/' + item.id, formData, function (data) {
                     Dialog.alert(data.message, function() {
-                        Page.go('/monitor/list');
+                        const page = SessionStore.get(`/monitor/detail?id=${request.getParameter('id')}`);
+                        if (isValid(page)) {
+                            SessionStore.clear(`/monitor/detail?id=${request.getParameter('id')}`);
+                            Page.go(`/monitor/list?page=${page}`);
+                        } else {
+                            Page.go('/monitor/list');
+                        }
                     });
                 });
             }, function () {
@@ -196,7 +202,13 @@ function init(params) {
 
         AJAX.put('/daily-reports/events/'+pagectx.item.id+'/action', formData, function(data) {
             Dialog.alert(data.message, function() {
-                Page.go('/monitor/list');
+                const page = SessionStore.get(`/monitor/detail?id=${request.getParameter('id')}`);
+                if (isValid(page)) {
+                    SessionStore.clear(`/monitor/detail?id=${request.getParameter('id')}`);
+                    Page.go(`/monitor/list?page=${page}`);
+                } else {
+                    Page.go('/monitor/list');
+                }
             });
         });
     });
