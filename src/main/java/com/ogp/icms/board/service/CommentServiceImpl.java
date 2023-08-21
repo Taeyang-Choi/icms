@@ -2,6 +2,7 @@ package com.ogp.icms.board.service;
 
 import com.ogp.icms.board.dao.CommentRepository;
 import com.ogp.icms.board.domain.Comment;
+import com.ogp.icms.board.domain.Comments;
 import com.ogp.icms.global.util.ResultCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,10 @@ public class CommentServiceImpl {
 
     public List<Comment> getList(Long id) throws IOException {
         return commentRepository.findAllById(id);
+    }
+
+    public List<Comments> getList(List<String> ids) throws IOException {
+        return commentRepository.findAllByIds(ids);
     }
 
     public List<Comment> getUnderList(Long pos) throws IOException {

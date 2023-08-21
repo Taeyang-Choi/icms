@@ -81,13 +81,22 @@ function init(params) {
     setTable(params);
     SearchManager.setSearch({callBack:renderTable, src: '/board/notice', table:'#mainTable'});
 
-    function setTable(params) {
+    function setTable() {
         AJAX.get('/board/notice', location.search.substr(1), function(list) {
-            renderTable(list);
+
+            const ids = [];
+            list.content.map(d => ids.push(d.id));
+            AJAX.get(`/comment/lists/${ids.join("_")}`, '', _comments => {
+                const comments = {};
+                _comments.map(c => comments[c.id] = c);
+                renderTable(list, comments);
+            })
+
+
         });
     }
 
-    function renderTable(page) {
+    function renderTable(page, comments) {
         let list = page.content;
         Page.setPaging({totalPages: page.totalPages, totalElements: page.totalElements});
 
@@ -113,6 +122,7 @@ function init(params) {
                         <a class="d-flex align-items-center" href="detail?n=${request.getParameter('n','notice')}&no=${item.id}">
                             ${Utils.isValid(userFile) ? `<div class="me-2 board__att__icon"></div>` : ""}
                             <div>${item.title}</div>
+                            ${isValid(comments[item.id]) ? `<div class="ms-sm-2 text-black-50">[${comments[item.id].comments}]</div>` : ""}
                         </a>
                     </td>
                     <td>${item.username}</td>
