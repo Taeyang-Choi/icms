@@ -14,7 +14,7 @@ plugins {
 }
 
 group = 'com.ogp'
-version = '0.9.1'
+version = '0.9.3'
 sourceCompatibility = "1.8"
 
 repositories {

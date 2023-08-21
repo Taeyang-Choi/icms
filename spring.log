@@ -38,3 +38,79 @@
 2023-08-16 09:45:47.444  INFO 97482 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
 2023-08-16 09:45:47.446  INFO 97482 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
 2023-08-16 09:45:47.452  INFO 97482 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.
+2023-08-16 14:55:47.246  INFO 98680 --- [restartedMain] com.ogp.icms.IcmsApplication             : Starting IcmsApplication using Java 1.8.0_352 on choileui-MacBookPro.local with PID 98680 (/Users/choetaeyang/Documents/intelliJ/projects/icms/build/classes/java/main started by choetaeyang in /Users/choetaeyang/Documents/intelliJ/projects/icms)
+2023-08-16 14:55:47.247  INFO 98680 --- [restartedMain] com.ogp.icms.IcmsApplication             : The following 1 profile is active: "dev"
+2023-08-16 14:55:47.275  INFO 98680 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2023-08-16 14:55:47.275  INFO 98680 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2023-08-16 14:55:47.715  INFO 98680 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2023-08-16 14:55:47.779  INFO 98680 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 59 ms. Found 17 JPA repository interfaces.
+2023-08-16 14:55:48.148  INFO 98680 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 80 (http)
+2023-08-16 14:55:48.154  INFO 98680 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-08-16 14:55:48.154  INFO 98680 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.62]
+2023-08-16 14:55:48.306  INFO 98680 --- [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2023-08-16 14:55:48.309  INFO 98680 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-08-16 14:55:48.310  INFO 98680 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1035 ms
+2023-08-16 14:55:48.354  INFO 98680 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Starting...
+2023-08-16 14:55:48.427  INFO 98680 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Start completed.
+2023-08-16 14:55:48.543  INFO 98680 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2023-08-16 14:55:48.575  INFO 98680 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.8.Final
+2023-08-16 14:55:48.664  INFO 98680 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2023-08-16 14:55:48.728  INFO 98680 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MariaDB53Dialect
+2023-08-16 14:55:49.212  INFO 98680 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2023-08-16 14:55:49.217  INFO 98680 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2023-08-16 14:55:49.952  WARN 98680 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2023-08-16 14:55:50.177  INFO 98680 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2023-08-16 14:55:50.285  INFO 98680 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2023-08-16 14:55:50.321  INFO 98680 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
+2023-08-16 14:55:50.322  INFO 98680 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2023-08-16 14:55:50.323  INFO 98680 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2ebf0d1]]
+2023-08-16 14:55:50.323  INFO 98680 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2023-08-16 14:55:50.330  INFO 98680 --- [restartedMain] com.ogp.icms.IcmsApplication             : Started IcmsApplication in 3.322 seconds (JVM running for 3.964)
+2023-08-16 14:56:30.388  INFO 98680 --- [http-nio-80-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-16 14:56:30.388  INFO 98680 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2023-08-16 14:56:30.390  INFO 98680 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2023-08-16 14:56:49.937  INFO 98680 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2023-08-16 15:04:06.773  INFO 98680 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2023-08-16 15:04:06.774  INFO 98680 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2ebf0d1]]
+2023-08-16 15:04:06.774  INFO 98680 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2023-08-16 15:04:06.794  INFO 98680 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-08-16 15:04:06.795  INFO 98680 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
+2023-08-16 15:04:06.802  INFO 98680 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.
+2023-08-16 15:22:30.206  INFO 98927 --- [restartedMain] com.ogp.icms.IcmsApplication             : Starting IcmsApplication using Java 1.8.0_352 on choileui-MacBookPro.local with PID 98927 (/Users/choetaeyang/Documents/intelliJ/projects/icms/build/classes/java/main started by choetaeyang in /Users/choetaeyang/Documents/intelliJ/projects/icms)
+2023-08-16 15:22:30.207  INFO 98927 --- [restartedMain] com.ogp.icms.IcmsApplication             : The following 1 profile is active: "dev"
+2023-08-16 15:22:30.232  INFO 98927 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2023-08-16 15:22:30.233  INFO 98927 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2023-08-16 15:22:30.644  INFO 98927 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2023-08-16 15:22:30.712  INFO 98927 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 62 ms. Found 17 JPA repository interfaces.
+2023-08-16 15:22:31.070  INFO 98927 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 80 (http)
+2023-08-16 15:22:31.075  INFO 98927 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-08-16 15:22:31.075  INFO 98927 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.62]
+2023-08-16 15:22:31.215  INFO 98927 --- [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2023-08-16 15:22:31.218  INFO 98927 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-08-16 15:22:31.218  INFO 98927 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 985 ms
+2023-08-16 15:22:31.259  INFO 98927 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Starting...
+2023-08-16 15:22:31.329  INFO 98927 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool - Start completed.
+2023-08-16 15:22:31.429  INFO 98927 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2023-08-16 15:22:31.452  INFO 98927 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.8.Final
+2023-08-16 15:22:31.527  INFO 98927 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2023-08-16 15:22:31.585  INFO 98927 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MariaDB53Dialect
+2023-08-16 15:22:32.039  INFO 98927 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2023-08-16 15:22:32.044  INFO 98927 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2023-08-16 15:22:32.760  WARN 98927 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2023-08-16 15:22:32.954  INFO 98927 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2023-08-16 15:22:33.062  INFO 98927 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2023-08-16 15:22:33.097  INFO 98927 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
+2023-08-16 15:22:33.098  INFO 98927 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2023-08-16 15:22:33.098  INFO 98927 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@18e3f4af]]
+2023-08-16 15:22:33.098  INFO 98927 --- [restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2023-08-16 15:22:33.104  INFO 98927 --- [restartedMain] com.ogp.icms.IcmsApplication             : Started IcmsApplication in 3.115 seconds (JVM running for 3.477)
+2023-08-16 15:22:47.764  INFO 98927 --- [http-nio-80-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-16 15:22:47.765  INFO 98927 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2023-08-16 15:22:47.767  INFO 98927 --- [http-nio-80-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2023-08-16 15:23:32.750  INFO 98927 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2023-08-16 15:37:05.579  INFO 98927 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2023-08-16 15:37:05.580  INFO 98927 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@18e3f4af]]
+2023-08-16 15:37:05.580  INFO 98927 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2023-08-16 15:37:05.599  INFO 98927 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-08-16 15:37:05.601  INFO 98927 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
+2023-08-16 15:37:05.609  INFO 98927 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.
