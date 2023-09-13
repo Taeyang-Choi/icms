@@ -204,7 +204,7 @@ function init(params) {
     function createForm(params) {
         pagectx = params;
         let item = params.item;
-
+        console.log(item);
         AJAX.get("/cctv/" + item.id, '', function(data) {
             console.log(data);
             for(let pair of Object.entries(data)){

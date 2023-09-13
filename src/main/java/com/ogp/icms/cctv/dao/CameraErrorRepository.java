@@ -16,4 +16,5 @@ public interface CameraErrorRepository extends JpaRepository<CameraError, Long> 
     Optional<CameraError> findByCctvId(Long cctvId);
 
     List<CameraError> findByDataNot(String s);
+    List<CameraError> findByCctvGubun(String cctvGubun);
 }

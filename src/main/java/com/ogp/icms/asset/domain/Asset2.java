@@ -14,15 +14,12 @@ import javax.persistence.Table;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "gs_asset")
+@Table(name = "gs_asset2")
 @Data
-public class Asset {
-    @Id
-    @Column(name="id")
+public class Asset2 {
+
     private String assetId;
-
     private String purpose;
-
     private String dept;
 
     private String type;
@@ -33,6 +30,7 @@ public class Asset {
 
     private String vmsId;
 
+    @Id
     private String name;
 
     private String emd;

@@ -7,7 +7,7 @@ let MapUtils = {
     markerImage: null,
     selectedMarkerImage: null,
     showOverlay: null,
-    renderMaps: function() {
+    renderMaps: function(option) {
         let mapContainer = document.getElementById('map'); // 지도를 표시할 di
         let mapOption = {
             center: new kakao.maps.LatLng(34.9773528, 128.3155509), // 지도의 중심좌표
@@ -28,6 +28,8 @@ let MapUtils = {
         let selectedImageSrc = "/images/marker-3.svg";
         let selectedMarkerImage = new kakao.maps.MarkerImage(selectedImageSrc, imageSize);
         this.selectedMarkerImage = selectedMarkerImage;
+
+        this.addClickEvent(option);
     },
     addMarker: function(obj, callback) {
         // 방향값을 설정합니다
@@ -191,6 +193,18 @@ let MapUtils = {
             $('#aside-panel').addClass('d-none');
             this.showOverlay.setMap(null);
             this.showOverlay = null;
+        }
+    },
+    addClickEvent: function (option) {
+        if (isValid(option.coord)) {
+            let marker = new kakao.maps.Marker({position:this.map.getCenter()});
+            marker.setMap(this.map);
+            kakao.maps.event.addListener(this.map, 'click', function (e) {
+                let latlng = e.latLng;
+                $(`input[name=lat]`).val(latlng.getLat().toString().substring(0, 10));
+                $(`input[name=lng]`).val(latlng.getLng().toString().substring(0, 10));
+                marker.setPosition(latlng);
+            })
         }
     },
 }

@@ -136,7 +136,7 @@ function init(params) {
             }
         });
 
-        AJAX.get('/cctvs/excel', '', function(list){
+        AJAX.get('/asset2', '', function(list){
             pagectx.camera = list;
             getCCtvs(list);
         });
@@ -151,7 +151,6 @@ function init(params) {
     }
 
     function getCCtvs() {
-        console.log(location.search, location.search.substr(1))
         AJAX.get('/daily-reports/events', location.search.substr(1), function(page) {
             renderTable(page)
         });
@@ -170,7 +169,7 @@ function init(params) {
         for(let i = 0; i < list.length; i++) {
             let item = list[i];
             let actionResultCode = CodeManager.getCode((item.workDgubun === 'D01') ? "work_jochi" : "situ_result", item.actionCode, "미조치");
-            const camera = pagectx.camera.find(d=> d.cctvIndex == item.cctvIndex);
+            const camera = pagectx.camera.find(d=> d.name == item.cctvIndex);
             // 73번 item.createdAt.split('T')[0] -> item.workDate 로, 상황발생 시간으로 보이게 변경
             let str = `
                 <tr data-id="${item.id}" role="button">

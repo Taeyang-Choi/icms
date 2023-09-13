@@ -31,18 +31,24 @@ public class CommonController {
     public String codeWrite() {return "common/code/write";}
 
     @GetMapping("/code/sel/edit")
-    public String codeSelEdit() {return "common/code/sel/edit";}
+    public String codeSelEdit() {return "common/ver1/code/sel/edit";}
 
     @GetMapping("/code/sel/list")
     public String codeSelList() {return "common/code/sel/list";}
 
     @GetMapping("/code/sel/write")
-    public String codeSelWrite() {return "common/code/sel/write";}
+    public String codeSelWrite() {return "common/ver1/code/sel/write";}
 
     @GetMapping("/license/list")
-    public String licenseList() {return "common/license/list";}
-
+    public String licenseList() {return "common/ver1/license/list";}
     @GetMapping("/license/detail")
     public String licenseDetail() {return "common/license/detail";}
+
+    @GetMapping("/license/list2")
+    public String license2List() {return "common/ver2/license/list";}
+    @GetMapping("/code/sel/edit2")
+    public String codeSel2Edit() {return "common/ver2/code/sel/edit";}
+    @GetMapping("/code/sel/write2")
+    public String codeSel2Write() {return "common/ver2/code/sel/write";}
 
 }

@@ -220,25 +220,25 @@ public class GisRepository {
                 camera.setDept(rs.getString("org_mgr_no"));
 
                 camera.setJuso(rs.getString("addr"));
-                camera.setDept("부서");
+                camera.setDept(""); // 부서
                 camera.setInstallymd(rs.getString("const_year"));
 
                 camera.setCctvIndex(rs.getString("cctv_nm"));
                 camera.setLocation(rs.getString("loc_desc"));
 
                 camera.setCameraCategory(rs.getString("cde_nm"));
-                camera.setMovement("무브먼트");
+                camera.setMovement(""); // 무브먼트
                 camera.setNightvision(rs.getString("infrd_yn"));
-                camera.setShage("형태");
+                camera.setShage(""); // 형태
                 camera.setInstallymd(rs.getString("const_year"));
 
-                camera.setManufacturer("제조사");
-                camera.setModel("모델");
-                camera.setPixel("화소수");
-                camera.setConnectCnt("연결대수");
-                camera.setIntegrationCnt("1");
+                camera.setManufacturer(""); // 제조사
+                camera.setModel(""); // 모델
+                camera.setPixel(""); // 화소수
+                camera.setConnectCnt(""); // 연결대수
+                camera.setIntegrationCnt(""); // 1
 
-                camera.setConnectType("접속종류");
+                camera.setConnectType(""); // 접속종류
                 camera.setConnectIp(rs.getString("ip_addr"));
                 camera.setConnectPort(rs.getString("port_num"));
                 camera.setConnectId(rs.getString("con_id"));
@@ -246,9 +246,9 @@ public class GisRepository {
 
                 camera.setConnectModel(rs.getString("md_mgr_no"));
                 camera.setConnectServerType(rs.getString("site_mgr_no"));
-                camera.setSmCompany("유지보수업체");
-                camera.setSmPerson("유지보수담당자");
-                camera.setSmTel("번호");
+                camera.setSmCompany(""); // 유지보수업체
+                camera.setSmPerson(""); // 유지보수담당자
+                camera.setSmTel(""); // 번호
 
                 camera.setPtzUseyn(rs.getString("tilt_yn"));
                 camera.setFallCamera("");
@@ -259,6 +259,9 @@ public class GisRepository {
                 //20230227 추가 위 경도
                 camera.setAnnox(rs.getString("_annox"));
                 camera.setAnnoy(rs.getString("_annoy"));
+
+                // 20230908 추가 방향
+                camera.setDirection(rs.getString("angle"));
                 list.add(camera);
             }
         } catch (Exception e) {

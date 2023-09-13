@@ -28,12 +28,12 @@ let largeCategory = [{n:'방문자대장 관리',f:'visit', t:true, g:3}, {n:'�
     {n:'팀 스케줄',f:'schedule', t:true, g:1}, {n:'자산관리',f:'cctv', t:true, g:1}, {n:'휴가',f:'leave', t:false, g:3}, {n:'공통관리',f:'common', t:true, g:3}];
 let menus = [[{n:'방문자대장 관리',f:'visit/list'}],
     [{n:'근무일지현황',f:'dailyreport/list'},{n:'공지사항',f:'board/list?n=notice'},{n:'출근부',f:'schedule/calendar/list'}],
-    [{n:'모니터링현황',f:'monitor/list'}],
+    [{n:'모니터링현황',f:'monitor/list2'}],
     [{n:'근무자정보',f:'attend/member/list'},{n:'월간근무통계',f:'attend/statistics'},{n:'휴가신청',f:'attend/leave/list'},{n:'출퇴근',f:'attend/time-sheet'}],
     [{n:'팀스케줄',f:'schedule/main'},{n:'월별 근무팀',f:'schedule/monthly'}],
-    [{n:'카메라별 장애관리',f:'cctv/error/list'},{n:'카메라 등록수정',f:'cctv/info/list'},{n:'카메라지도',f:'cctv/map'}],
+    [{n:'카메라별 장애관리',f:'cctv/error/list'},{n:'카메라 등록수정',f:'cctv/info/list2'},{n:'카메라지도',f:'cctv/map'}],
     [{n:'휴가신청',f:'leave/write'},{n:'휴가신청내역',f:'leave/list'}],
-    [{n:'관리자관리',f:'common/admin/list'},{n:'코드관리',f:'common/code/list'},{n:'라이센스',f:'common/license/list'}]]
+    [{n:'관리자관리',f:'common/admin/list'},{n:'코드관리',f:'common/code/list'},{n:'라이센스',f:'common/license/list2'}]]
 
 //{n:'근로정보',f:'workreport/list'},
 let statFlag = {
@@ -1002,6 +1002,7 @@ let SearchManager = {
     },
     _doSearch(option) {
         let $inputs = $(`${option.target} .form-control, ${option.target} .form-select`);
+        console.log($inputs);
         let $searchKeys = $(`${option.target} .search-key`);
         let q = '';
         let doSearch = false;
@@ -1026,7 +1027,7 @@ let SearchManager = {
             doSearch = true;
             q += name +'=' +val + '&';
         }
-        console.log(q);
+        //console.log(q);
 
         q = q.substr(0, q.length-1);
 

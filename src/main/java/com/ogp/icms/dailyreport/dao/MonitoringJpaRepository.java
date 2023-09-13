@@ -107,7 +107,7 @@ public class MonitoringJpaRepository extends Querydsl4RepositorySupport {
                         dateGoe("20221001"))
                 .orderBy(monitoring.id.desc());
         List<Monitoring> list = query.fetch();
-
+        //System.out.println("call : getAllNotRepairedAssets, size: " + list.size());
         return list;
     }
 

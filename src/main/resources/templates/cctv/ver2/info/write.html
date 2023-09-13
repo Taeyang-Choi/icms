@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html  lang="kr" xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/core.css">
+<link rel="stylesheet" href="/fonts/remixicon.css">
+<head>
+    <meta charset="UTF-8">
+    <title>카메라 등록수정</title>
+    <style>
+        #page-title:before{content:url("/images/before/statics.svg");margin-right:10px;vertical-align:middle}
+
+        .wrap{overflow-x:scroll}
+        .label{flex: 0 0 278px;width:auto;text-align:center;}
+        .label2{vertical-align:middle;width:104px;background-color:#FCFCFC;padding:9px 0;border:1px solid #E1E1E1;line-height:24px;font-size:14px;text-align:center;}
+        .content{width:auto; flex:1;}
+        .content.d-flex span{flex:0 0 94px;}
+        .content.d-flex input{flex:0 0 calc(100% - 94px);}
+
+        @media (min-width: 576px){
+            #map__container  .modal-dialog {max-width: 1200px}
+        }
+
+        #map__container{background: rgba(0, 0, 0, 0.6)}
+        #map__container .modal-header{background-color:#6f84a5;color:white}
+        #map__container .modal-body,#excelUpload .modal-footer{background-color:#F0F4FA}
+        #map {height: 800px;}
+    </style>
+</head>
+<body data-page-scope="cctv/info/list">
+    <div id="header"></div>
+
+    <div id="main">
+        <div class="container">
+            <div class="shadow-container">
+                <div class="white-background">
+                    <p id="page-title">카메라 등록수정</p>
+
+                    <form id="form-cctv" method="post" onsubmit="return false;">
+                        <div class="wrap border-top">
+                            <p style="min-width:768px;">등록수정</p>
+                            <div style="min-width:768px;">
+                                <div class="d-flex flex-wrap">
+                                    <div style="width: 100%">
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">목적</div>
+                                            <div class="content"><input  required type="text" class="form-control" name="purpose"></div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">구분</div>
+                                            <div class="content"><input   type="text" class="form-control" name="type"></div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">담당부서</div>
+                                            <div class="content"><input   type="text" class="form-control" name="dept"></div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">사업명</div>
+                                            <div class="content"><input   type="text" class="form-control" name="project_name"></div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">사업분류</div>
+                                            <div class="content"><input   type="text" class="form-control" name="project_type"></div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">관리번호</div>
+                                            <div class="content"><input   type="text" class="form-control" name="asset_id"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- VMS 연계 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">VMS 연계</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">VMS ID</div>
+                                                <div class="content"><input   type="text" class="form-control" name="vms_id"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">제조사</div>
+                                                <div class="content"><input   type="text" class="form-control" name="manufacture"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">모델명</div>
+                                                <div class="content"><input   type="text" class="form-control" name="model"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">IP</div>
+                                                <div class="content"><input   type="text" class="form-control" name="ip"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">ID</div>
+                                                <div class="content"><input   type="text" class="form-control" name="id"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">PASS</div>
+                                                <div class="content"><input   type="text" class="form-control" name="pass"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">장비 이름</div>
+                                                <div class="content"><input  required type="text" class="form-control" name="name"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 주소 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">주소</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">00면</div>
+                                                <div class="content"><input   type="text" class="form-control" name="emd"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">00리</div>
+                                                <div class="content"><input   type="text" class="form-control" name="li"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">00마을</div>
+                                                <div class="content"><input   type="text" class="form-control" name="town"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">상세주소</div>
+                                                <div class="content"><input   type="text" class="form-control" name="address"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- GIS연계 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">GIS 연계</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">차번코드<br />VMS ID<br />장비명(마을방범)</div>
+                                                <div class="content"><input  required type="text" class="form-control" name="ref_id"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">방향</div>
+                                                <div class="content"><input   type="text" class="form-control" name="direction"></div>
+                                            </div>
+                                            <div class="d-flex">
+                                                <div style="flex: 1">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="label2">위도</div>
+                                                        <div class="content"><input   type="text" class="form-control" name="lat"></div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="label2">경도</div>
+                                                        <div class="content"><input   type="text" class="form-control" name="lng"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="btn btn-primary d-flex align-items-center" style="margin: 8px 16px 8px 0px;" onclick="MapManager.open()">지도에서 위치 선택</div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 카메라 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">카메라</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">제조사</div>
+                                                <div class="content"><input   type="text" class="form-control" name="cctvmanufacture"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">모델명</div>
+                                                <div class="content"><input   type="text" class="form-control" name="cctvmodel"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">디지털구분</div>
+                                                <div class="content"><input   type="text" class="form-control" name="digital"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">회전구분</div>
+                                                <div class="content"><input   type="text" class="form-control" name="rotation"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">형태</div>
+                                                <div class="content"><input   type="text" class="form-control" name="form"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">화소</div>
+                                                <div class="content"><input   type="text" class="form-control" name="pixel"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">가격</div>
+                                                <div class="content"><input   type="text" class="form-control" name="price"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">선별관제</div>
+                                                <div class="content"><input   type="text" class="form-control" name="screen"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">투광기설치일</div>
+                                                <div class="content"><input   type="text" class="form-control" name="fdate"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-wrap">
+                                    <div style="width: 100%">
+                                        <div class="d-flex align-items-center">
+                                            <div class="label">폴설치형태</div>
+                                            <div class="content"><input   type="text" class="form-control" name="pole"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 유지보수 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">유지보수</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">설치업체</div>
+                                                <div class="content"><input   type="text" class="form-control" name="company"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">담당자</div>
+                                                <div class="content"><input   type="text" class="form-control" name="manager"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">연락처</div>
+                                                <div class="content"><input   type="text" class="form-control" name="phone"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">설치년도<br />(00.0)</div>
+                                                <div class="content"><input   type="text" class="form-control" name="insdate"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">유지보수<br />종료일</div>
+                                                <div class="content"><input   type="text" class="form-control" name="mtnend"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">유지보수<br />용역대상</div>
+                                                <div class="content"><input   type="text" class="form-control" name="mtn"></div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 통신회선 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">통신 회선</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">사업자</div>
+                                                <div class="content"><input   type="text" class="form-control" name="agency"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">구분</div>
+                                                <div class="content"><input   type="text" class="form-control" name="exten"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">회선번호<br />연장내용</div>
+                                                <div class="content"><input   type="text" class="form-control" name="agencynum"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">장비IP</div>
+                                                <div class="content"><input   type="text" class="form-control" name="agencyip"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">최초개통일</div>
+                                                <div class="content"><input   type="text" class="form-control" name="agencyins"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">재약정일</div>
+                                                <div class="content"><input   type="text" class="form-control" name="renew"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">만료일</div>
+                                                <div class="content"><input   type="text" class="form-control" name="agencyend"></div>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 전기인입 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">전기인입</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">고객번호</div>
+                                                <div class="content"><input   type="text" class="form-control" name="electnum"></div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">연장내용</div>
+                                                <div class="content"><input   type="text" class="form-control" name="electext"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 기타기기 -->
+                                <div class="d-flex flex-wrap">
+                                    <div class="d-flex" style="width: 100%">
+                                        <div class="label d-flex justify-content-center align-items-center" style="flex:0 0 174px;">기타기기</div>
+                                        <div style="width: 100%">
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">제조사</div>
+                                                <div class="content"><input   type="text" class="form-control" name="vendor"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">모델명</div>
+                                                <div class="content"><input   type="text" class="form-control" name="etcmoel"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">CH</div>
+                                                <div class="content"><input   type="text" class="form-control" name="etcch"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">용량(TB)</div>
+                                                <div class="content"><input   type="text" class="form-control" name="etcvolume"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">IP</div>
+                                                <div class="content"><input   type="text" class="form-control" name="etcip"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">ID</div>
+                                                <div class="content"><input   type="text" class="form-control" name="etcid"></div>
+
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="label2">PASS</div>
+                                                <div class="content"><input   type="text" class="form-control" name="etcpass"></div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex d-none">
+                                    <div class="label2" style="flex:0 0 278px;line-height:268px;">이미지 업로드</div>
+                                    <div class="content">
+                                        <!--input type="file" name="img1" class="label">
+                                        <input type="file" name="img2" class="label">
+                                        <input type="file" name="img3" class="label">
+                                        <input type="file" name="img4" class="label">
+                                        <input type="file" name="img5" class="label"-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between" style="margin-top:30px">
+                            <a class="btn btn-warning" role="button" href="/cctv/info/list2">목록</a>
+                            <button type="submit" class="btn btn-primary">확인</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+    <div id="map__container" class="modal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">위치 선택</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="MapManager.close()"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- SCRIPT -->
+<th:block th:replace="~{layout/common :: script}"></th:block>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=97d7494e46d2ee1462301f24e6fd7333"></script>
+<script src="/js/module/map.js"></script>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.md5.js"></script>
+<script src="/js/preloader.js"></script>
+<script src="/js/core.js"></script>
+<script>
+function init() {
+    $('#form-cctv').on('submit', function() {
+        let rawFormData = new FormData($('form')[0]);
+        let formData = new FormData();
+        let data = {};
+
+        for(let pair of rawFormData.entries()){
+            if(!isValid(pair[1]) && $(`input[name=${pair[0]}].required`).length != 0) {
+                Dialog.alert($(`input[name=${pair[0]}]`).parent().parent().children('div').text() + " 을(를) 입력해 주세요.", function() {
+                    $(`input[name=${pair[0]}].required`).trigger('focus');
+                });
+                return;
+            }
+            data[StringUtils.snakeToCamel(pair[0])] = pair[1];
+        }
+
+        const jsonobj = {};
+        let label = ['manufacture','model','ip','id','pass','direction',
+            'cctvmanufacture','cctvmodel','digital','rotation','form','pixel','price','screen','fdate',
+            'pole',
+            'company','manager','phone','insdate','mtnend','mtn',
+            'agency','exten','agencynum','agencyip','agencyins','renew','agencyend',
+            'electnum','electext',
+            'vendor','etcmoel','etcch','etcvolume','etcip','etcid','etcpass'];
+        label.map(d => jsonobj[d] = $(`input[name=${d}]`).val());
+        data.jsonobj = JSON.stringify(jsonobj);
+
+        console.log(data);
+        //formData.append("data", JSON.stringify(data));
+        AJAX.put("/asset2/write", null, data ,function(res) {
+            console.log(res);
+            Dialog.alert(res.message, function() {
+                Page.back();
+            });
+        });
+
+    });
+
+}
+function dummy() {
+    $i = $('input');
+    for(let i = 0 ; i < $i.length; i++) {
+        $i.eq(i).val(i);
+    }
+}
+
+let MapManager = {
+    close: function() {
+        $('#map__container').css('display','none');
+    },
+    open: function() {
+        $('#map__container').css('display','block');
+        MapUtils.renderMaps({coord:true});
+    },
+}
+</script>
+</body>
+</html>

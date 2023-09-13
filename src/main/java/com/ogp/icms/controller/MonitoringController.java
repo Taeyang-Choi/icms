@@ -13,11 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MonitoringController {
     @GetMapping("/list")
     public String list() {
-        return "monitor/list";
+        return "monitor/ver1/list";
     }
 
     @GetMapping("/detail")
     public String detail() {
         return "monitor/detail";
+    }
+
+    @GetMapping("/list2")
+    public String list2() {
+        return "monitor/ver2/list";
     }
 }

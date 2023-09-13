@@ -10,6 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import static com.ogp.icms.gis.connection.ConnectionConst.*;
 
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +59,21 @@ public class GisServiceImpl {
                 Camera listItem = list.get(i);
                 Optional<Camera> cameraByIdOptional = cameraRepository.findById(listItem.getId());
 
+                Double annox = Double.parseDouble(listItem.getAnnox());
+                Double annoy = Double.parseDouble(listItem.getAnnoy());
+
+                CRSFactory factory = new CRSFactory();
+                CoordinateReferenceSystem wgs84 = factory.createFromParameters("EPSG:4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+                CoordinateReferenceSystem grs80 = factory.createFromParameters("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs");
+                BasicCoordinateTransform transformer = new BasicCoordinateTransform(grs80, wgs84);
+
+                ProjCoordinate beforeCoord = new ProjCoordinate(annox, annoy);
+                ProjCoordinate afterCoord = new ProjCoordinate();
+                transformer.transform(beforeCoord, afterCoord);
+                listItem.setLat(Double.toString(afterCoord.y).substring(0, 10));
+                listItem.setLng(Double.toString(afterCoord.x).substring(0, 10));
+                //System.out.println(listItem.getJuso() + ", before: " + beforeCoord.x + ", " + beforeCoord.y + ", after:" + afterCoord.x + ", " + afterCoord.y);
+
                 if (cameraByIdOptional.isPresent()) { // 있다면(VMS에서 가져왔다면, 정보만 변경)
                     if(i % 50 == 0) log.info("camera is exist {}, {}", i , listItem);
                     Camera oldCamera = cameraByIdOptional.get();
@@ -61,6 +81,9 @@ public class GisServiceImpl {
                     oldCamera.setCctvGubun(listItem.getCctvGubun());
                     oldCamera.setAnnox(listItem.getAnnox());
                     oldCamera.setAnnoy(listItem.getAnnoy());
+                    oldCamera.setDirection(listItem.getDirection());
+                    oldCamera.setLat(Double.toString(afterCoord.y).substring(0, 10));
+                    oldCamera.setLng(Double.toString(afterCoord.x).substring(0, 10));
                 }
                 else { // 기존에 없으면 추가
                     if(i % 50 == 0) log.info("camera is new {}, {}", i , listItem);

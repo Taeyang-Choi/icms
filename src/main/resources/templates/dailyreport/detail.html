@@ -178,7 +178,7 @@ function init(params) {
 
                 // 모니터링 수정
                 $('tr .text-secondary').last().on('click', {item:item}, function(e) {
-                    Page.go('/dailyreport/event/edit', {item: e.data.item});
+                    Page.go('/dailyreport/event/edit2', {item: e.data.item});
                 });
             }
         });
@@ -200,7 +200,7 @@ function init(params) {
 
         // 모니터링 등록
         $('#btn-add-event').on('click', {item:item}, function(e) {
-            Page.go('/dailyreport/event/write', {item: e.data.item});
+            Page.go('/dailyreport/event/write2', {item: e.data.item});
         });
 
         // 일지 수정

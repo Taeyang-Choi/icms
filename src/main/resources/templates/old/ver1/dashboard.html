@@ -623,7 +623,7 @@ let ErrorManager = {
 //자산관리
 let LicenseManager = {
     init: function() {
-        AJAX.get("/asset2/license/count", "", function(data) {
+        AJAX.get("/cctv/licenses/count", "", function(data) {
             LicenseManager.renderChart(data);
         });
     },

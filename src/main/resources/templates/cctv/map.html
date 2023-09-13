@@ -27,7 +27,7 @@ html,body{height:100%;}
             <div style="line-height:70px;font-size:28px;">CCTV</div>
             <div style="line-height:70px;font-size:24px;">Status quo Check map</div>
         </div>
-        <div class="d-flex">
+        <div class="d-flex d-none">
             <button class="btn btn-primary" onclick="ExcelManager.download()">다운로드</button>
             <input class="form-control form-control-sm" type="file" id="formFile" style="flex:0 0 226px;" accept=".xlsx, .xlsm, .xls">
         </div>
@@ -101,7 +101,7 @@ async function init() {
     $('#formFile').on('change', ExcelManager.upload);
     AJAX2.get('/api/daily-reports/events/errors').then(cameraErrors);
     AJAX2.get('/api/daily-reports/events/situs').then(cameraSitus);
-    let cameraList = await AJAX2.get('/api/cctvs/excel').then(AJAX2.save);
+    let cameraList = await AJAX2.get('/api/asset2').then(AJAX2.save);
 
     // 임시코드
     for (let camera of cameraList) {
@@ -115,10 +115,10 @@ async function init() {
         camera.assetId = camera.id;
         camera.jsonobj.ip = camera.connectIp;
     }
-
+    console.log(cameraList);
     MapUtils.renderMaps();
     //renderAsset(cameraList);
-    AJAX2.get('/api/assets').then(renderAsset);
+    AJAX2.get('/api/asset2').then(renderAsset);
 }
 
 function convertCoordinates(x, y) {
@@ -133,9 +133,11 @@ function convertCoordinates(x, y) {
  * @param errors
  */
 function cameraErrors(errors) {
+    console.log("errors: ", errors);
     pagectx.errors = errors;
 }
 function cameraSitus(situs) {
+    console.log("situs: ", situs);
     pagectx.situs = situs;
 }
 function renderAsset(list) {
@@ -213,6 +215,7 @@ function popup(type) {
 /**
  * 자산관리 엑셀 업로드 및 다운로드
  * @type {{download: ExcelManager.download, upload: ExcelManager.upload}}
+ * 엑셀 통합으로 인해 deprecated
  */
 let ExcelManager = {
     header: ["assetId", "purpose", "type", "dept", "projectName", "projectType", "vmsId", "name", "emd", "li",

@@ -5,12 +5,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ogp.icms.asset.domain.Asset;
+import com.ogp.icms.asset.domain.Asset2;
+import com.ogp.icms.asset.request.Asset2SearchCondition;
 import com.ogp.icms.asset.service.AssetService;
+import com.ogp.icms.cctv.domain.Camera;
+import com.ogp.icms.cctv.request.CameraSearchCondition;
+import com.ogp.icms.global.entity.SearchCondition;
 import com.ogp.icms.global.util.ResultCode;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -55,4 +59,89 @@ public class AssetApiController {
         }
         return list;
     }
+
+
+
+    // 엑셀 통합 asset2
+    @GetMapping("/api/asset2")
+    public List<Asset2> getAll2() {
+        return assetService.getAll2();
+    }
+
+    @GetMapping("/api/asset2/page")
+    public List<Asset2> getCameraList(Asset2SearchCondition searchCondition, Pageable pageable) {
+        return assetService.getAsset2Page(searchCondition, pageable);
+    }
+
+    @PostMapping("/api/asset2/syncGis")
+    public ResultCode syncGis() {
+        int gisCount = 0;
+
+        String profile = System.getProperty("spring.profiles.active");
+
+        if(profile.equals("prod") || profile.equals("dev")) {
+            gisCount = assetService.updateDataBase();
+        }
+
+        return new ResultCode(0, "gis (" + gisCount + ") 개 업데이트 완료");
+    }
+
+    @GetMapping("/api/asset2/{id}")
+    public Asset2 getCamera(@PathVariable String id) {
+        return assetService.findOne(id);
+    }
+
+    /**
+     * 카메라 수정
+     * @param asset 수정할 오브젝트
+     * @// TODO: 2022-06-29 DTO 만들어서 제공해야함
+     */
+    @PutMapping("/api/asset2/edit")
+    public ResultCode editCamera(@RequestBody Asset2 asset) {
+        return assetService.editCamera(asset);
+    }
+
+    @PutMapping("/api/asset2/upload")
+    public ResultCode addCameraList(@RequestBody List<Asset2> list) {
+        return assetService.uploadCameraList(list);
+    }
+
+    /**
+     * 카메라 삭제
+     * @param id
+     */
+    @DeleteMapping("/api/asset2/delete/{id}")
+    public ResultCode deleteCamera(@PathVariable String id) {
+        return assetService.deleteCamera(id);
+    }
+
+    @PutMapping("/api/asset2/write")
+    public ResultCode addCamera(@RequestBody Asset2 asset) {
+        return assetService.save(asset);
+    }
+
+    @GetMapping("/api/asset2/refId/{id}")
+    public Asset2 getCameraByRefId(@PathVariable String id) {
+        return assetService.findOneByRefId(id);
+    }
+
+    //region 카메라 라이센스
+
+    /**
+     * @return
+     */
+    /*@GetMapping("/api/asset2/license")
+    public List<Asset2> getLicenseList(Asset2SearchCondition searchCondition, Pageable pageable) {
+        return assetService.getAsset2Page(searchCondition, pageable);
+    }*/
+
+    /**
+     * 총 등록중인 라이센스 수 반환
+     * @return
+     */
+    @GetMapping("/api/asset2/license/count")
+    public Long getLicenseCount() {
+        return assetService.getAsset2LicenseCount();
+    }
+    //endregion
 }

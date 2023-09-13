@@ -4,7 +4,6 @@ import com.ogp.icms.dailyreport.service.DailyReportServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,8 +39,13 @@ public class DailyReportController {
     public String excel() {return "dailyreport/excel";}
 
     @GetMapping("/event/write")
-    public String eventWrite() {return "dailyreport/event/write";}
+    public String eventWrite() {return "dailyreport/ver1/event/write";}
 
     @GetMapping("/event/edit")
-    public String eventEdit() {return "dailyreport/event/edit";}
+    public String eventEdit() {return "dailyreport/ver1/event/edit";}
+
+    @GetMapping("/event/write2")
+    public String eventWrite2() {return "dailyreport/ver2/event/write";}
+    @GetMapping("/event/edit2")
+    public String eventEdit2() {return "dailyreport/ver2/event/edit";}
 }

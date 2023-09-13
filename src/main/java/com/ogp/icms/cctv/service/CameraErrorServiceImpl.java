@@ -2,6 +2,8 @@ package com.ogp.icms.cctv.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ogp.icms.asset.dao.Asset2Repository;
+import com.ogp.icms.asset.domain.Asset2;
 import com.ogp.icms.cctv.dao.CameraErrorJpaRepository;
 import com.ogp.icms.cctv.dao.CameraErrorRepository;
 import com.ogp.icms.cctv.dao.CameraRepository;
@@ -12,6 +14,9 @@ import com.ogp.icms.dailyreport.dao.MonitoringRepository;
 import com.ogp.icms.dailyreport.domain.Monitoring;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +38,7 @@ public class CameraErrorServiceImpl {
     private final CameraRepository cameraRepository;
     private final CameraErrorJpaRepository cameraErrorJpaRepository;
     private final CameraErrorRepository cameraErrorRepository;
+    private final Asset2Repository asset2Repository;
     private final ObjectMapper om;
 
     /**
@@ -92,25 +98,37 @@ public class CameraErrorServiceImpl {
         if(optionalCameraError.isPresent()) {
             cameraError = optionalCameraError.get();
             cameraError.setData(jsonNode.toString());
-        }
-        else {
-            Optional<Camera> optionalCamera = cameraRepository.findById(cctvId);
+        } else {
+            Optional<Asset2> optionalCamera = asset2Repository.findByRefId(cctvId.toString());
             if(optionalCamera.isPresent()) {
-                Camera camera = optionalCamera.get();
+                Asset2 asset2 = optionalCamera.get();
+                JSONObject jsonobj = new JSONObject();
+                try {
+                    jsonobj = (JSONObject) (new JSONParser()).parse(asset2.getJsonobj());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 cameraError = new CameraError();
-                cameraError.setCctvId(camera.getId());
-                cameraError.setCctvIndex(camera.getCctvIndex());
-                cameraError.setCctvGubun(camera.getCctvGubun());
-                cameraError.setJuso(camera.getJuso());
-                cameraError.setModel(camera.getModel());
-                cameraError.setYmd(camera.getInstallymd());
+                cameraError.setCctvId(Long.parseLong(asset2.getRefId()));
+                cameraError.setCctvIndex(asset2.getName());
+                cameraError.setCctvGubun(asset2.getPurpose());
+                cameraError.setJuso(asset2.getAddress());
+                cameraError.setModel(jsonobj.get("cctvmodel").toString());
+                cameraError.setYmd(jsonobj.get("insdate").toString());
                 cameraError.setData(jsonNode.toString());
                 cameraErrorRepository.save(cameraError);
-            }
-            else {
+            } else {
                 log.info("no camera({})", cctvId);
             }
         }
+    }
+
+    @Deprecated
+    public void updateCameraError(Asset2 asset2) {
+        List<CameraError> list = cameraErrorRepository.findByCctvGubun(asset2.getName());
+
+        //TODO error도 업데이트
+        System.out.println(list);
     }
 
     /**

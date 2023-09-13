@@ -48,4 +48,7 @@ public class Camera {
   private String fallNetwork;
   private String annox;
   private String annoy;
+  private String direction;
+  private String lat;
+  private String lng;
 }
