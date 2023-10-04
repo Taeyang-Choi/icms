@@ -23,6 +23,7 @@ public class SelCode extends DateEntity {
     String kindCode;
     String code;
     String name;
+    private String userFile;
 
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private Boolean active;

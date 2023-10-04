@@ -101,6 +101,7 @@ async function init() {
     $('#formFile').on('change', ExcelManager.upload);
     AJAX2.get('/api/daily-reports/events/errors').then(cameraErrors);
     AJAX2.get('/api/daily-reports/events/situs').then(cameraSitus);
+    AJAX2.get('/api/kind-codes/purpose/sel-codes').then(purposeImgs);
     let cameraList = await AJAX2.get('/api/asset2').then(AJAX2.save);
 
     // 임시코드
@@ -139,6 +140,13 @@ function cameraErrors(errors) {
 function cameraSitus(situs) {
     console.log("situs: ", situs);
     pagectx.situs = situs;
+
+
+}
+function purposeImgs(imgs) {
+    pagectx.purpose = {};
+    imgs.map(d => pagectx.purpose[d.code] = d);
+    console.log(imgs, pagectx.purpose);
 }
 function renderAsset(list) {
     for(const item of list) {
@@ -147,7 +155,7 @@ function renderAsset(list) {
     pagectx.assets = list;
 
     for(const item of list) {
-        if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item);
+        if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item, {purpose: pagectx.purpose});
     }
 
     kakao.maps.event.addListener(MapUtils.map, 'click', function(mouseEvent) {
@@ -212,6 +220,10 @@ function popup(type) {
         alert('아직 준비중인 기능입니다.');
     }
 }
+
+
+
+
 /**
  * 자산관리 엑셀 업로드 및 다운로드
  * @type {{download: ExcelManager.download, upload: ExcelManager.upload}}

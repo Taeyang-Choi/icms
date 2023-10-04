@@ -12,6 +12,7 @@
     <title>코드관리</title>
     <style>
         #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
+        #img{width: 84px; height: 84px;}
     </style>
 </head>
 <body data-page-scope="common/code/list">
@@ -25,8 +26,7 @@
 
                     <div class="wrap border-top">
                         <p>하위코드수정</p>
-
-                        <form id="form-code" method="post" onsubmit="return false;">
+                        <form id="form-code" method="post" onsubmit="return false;" enctype="multipart/form-data">
                             <div class="d-flex flex-wrap fs-14">
                                 <div class="col-12 d-flex">
                                     <div class="label">코드종류명</div>
@@ -61,6 +61,16 @@
                                     <div class="label">특이사항</div>
                                     <div class="content"><input class="form-control" name="remarks" type="text"></div>
                                 </div>
+                                <div id="purpose_input"  class="col-12 d-flex" style="display: none;">
+                                    <div class="label">이미지</div>
+                                    <div class="content">
+                                        <div class="">
+                                            <input class="d-none" type="file" id="input__img" multiple="multiple" name="image">
+                                            <img id="img" class="image"></img>
+                                            <a class="btn btn-primary ms-1" role="button" onclick="ImageManager.uploadImage()">등록</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="buttons d-flex justify-content-between">
@@ -85,10 +95,11 @@
 <script>
 function init(params) {
     pagectx.item = params.item;
-
+    console.log(params);
     createForm(params);
 
     $('#page-title').append(" - " + params.item.kindCode);
+    ImageManager.init();
 
     function createForm(params) {
         let selCode = params.item;
@@ -99,24 +110,79 @@ function init(params) {
 
         if(selCode.active) $('#radio-active-1').prop('checked', 'checked');
         else $('#radio-active-2').prop('checked', 'checked');
+
+
+        if (selCode.kindCode == "purpose") {
+            $("#purpose_input").css('display','block');
+            if (isValid(selCode.userFile)) {
+                const userFile = JSON.parse(selCode.userFile);
+                $('#img').attr('src', `/attach/purpose/0/${userFile[0].store}/${userFile[0].real}`);
+            }
+        }
     }
 
     $('#form-code').on('submit', function() {
-        let formData = new FormData(document.getElementById('form-code'));
-        let vData = Utils.formToObject(formData);
+        let formData = new FormData(document.getElementById('form-code'))
+        let vData = Utils.formToObject();
         if(vData == null) {
             return;
         }
 
-        console.log(vData);
-
-        AJAX.put("/sel-codes/" + pagectx.item.id, formData, function(data) {
+        AJAX.post(`/sel-codes/edit/${pagectx.item.id}`, formData, function(data) {
            Dialog.alert(data.message, function() {
                Page.back();
            });
         });
     });
+
+
 }
+
+let ImageManager = {
+    image: null,
+    init: function () {
+        document.getElementById('input__img').onchange = function() {
+            ImageManager.showImage(this)
+        };
+    },
+    uploadImage: function () {
+        document.getElementById('input__img').click();
+    },
+    showImage: function (input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#img').attr('src', e.target.result);
+            }
+
+            this.image = input;
+            reader.readAsDataURL(input.files[0]);
+        }
+    },
+}
+
+
+
+
+
+/*
+ function() {
+        let fileInput = document.getElementById('input-picture');
+        let file = fileInput.files[0];
+
+
+
+
+        let formData = new FormData();
+        formData.append('picture', file)
+        //formData.append('name', pagectx.member.name);
+        console.log(file)
+
+        /*AJAX2.post('/api/pictures/upload', formData).then(function (res) {
+            Dialog.alert(res, Page.reload);
+        });*/
+
 
 </script>
 </body>

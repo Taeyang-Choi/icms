@@ -1,5 +1,12 @@
 package com.ogp.icms.code.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.ogp.icms.attachment.FileStore;
+import com.ogp.icms.attachment.domain.UploadFile;
+import com.ogp.icms.board.domain.Article;
+import com.ogp.icms.cctv.domain.Camera;
 import com.ogp.icms.code.dao.SelCodeRepository;
 import com.ogp.icms.code.domain.SelCode;
 import com.ogp.icms.global.util.ResultCode;
@@ -7,8 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -16,6 +26,7 @@ import java.util.List;
 @Service
 public class SelCodeServiceImpl {
     private final SelCodeRepository selCodeRepository;
+    private final FileStore fileStore;
 
     public ResultCode save(SelCode selCode) {
         selCodeRepository.save(selCode);
@@ -65,5 +76,35 @@ public class SelCodeServiceImpl {
 
     public List<SelCode> getSelCodesByCode(String kindCode) {
         return selCodeRepository.getByKindCode(kindCode);
+    }
+
+    public ResultCode update(SelCode selCode, List<MultipartFile> image) throws IOException {
+        Optional<SelCode> selCodeOptional = selCodeRepository.findById(selCode.getId());
+
+        if(!selCodeOptional.isPresent()) {
+            return new ResultCode(0, "오류가 발생하였습니다.");
+        }
+
+        SelCode old = selCodeOptional.get();
+
+        List<UploadFile> imgs = fileStore.storeFiles(image, "purpose/");
+
+        ObjectMapper om = new ObjectMapper();
+        ArrayNode arrayNode = om.createArrayNode();
+        for(UploadFile img : imgs) {
+            ObjectNode objectNode = om.createObjectNode();
+            objectNode.put("store", img.getStoreFileName());
+            objectNode.put("real", img.getUploadFileName());
+            arrayNode.add(objectNode);
+        }
+
+        old.setCode(selCode.getCode());
+        old.setName(selCode.getName());
+        old.setActive(selCode.getActive());
+        old.setSeq(selCode.getSeq());
+        old.setRemarks(selCode.getRemarks());
+        old.setUserFile(arrayNode.toString());
+
+        return new ResultCode(0, "코드를 수정였습니다.");
     }
 }

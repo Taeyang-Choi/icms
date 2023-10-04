@@ -64,7 +64,7 @@ function init(params) {
 
     // 하위 목록 추가
     $('.btn-append').on('click', {item:params.item}, function(e) {
-        Page.go('/common/code/sel/write', {item: e.data.item});
+        Page.go('/common/code/sel/write2', {item: e.data.item});
     });
 
     setTable(params);
@@ -98,7 +98,7 @@ function init(params) {
 
                 // 수정
                 $('tr .black').last().on('click', {item:item}, function(e) {
-                    Page.go('/common/code/sel/edit', {item: e.data.item});
+                    Page.go('/common/code/sel/edit2', {item: e.data.item});
                 });
 
                 // 삭제 버튼

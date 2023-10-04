@@ -29,9 +29,9 @@ let MapUtils = {
         let selectedMarkerImage = new kakao.maps.MarkerImage(selectedImageSrc, imageSize);
         this.selectedMarkerImage = selectedMarkerImage;
 
-        this.addClickEvent(option);
+        if (isValid(option)) this.addClickEvent(option);
     },
-    addMarker: function(obj, callback) {
+    addMarker: function(obj, option) {
         // 방향값을 설정합니다
         let content = `<div class="dir__image" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`;
         let direction = new kakao.maps.CustomOverlay({
@@ -43,16 +43,34 @@ let MapUtils = {
         })
         obj.dir = direction;
 
+        let markerImage = null;
+        if (isValid(option)) {
+            if (isValid(option.purpose)) {
+                const selCode = option.purpose[obj.purpose];
+                if (selCode) {
+                    const userFile = JSON.parse(selCode.userFile);
+                    // 이미지 생성
+                    let imageSrc = `http://${window.location.host}/attach/purpose/0/${userFile[0].store}/${userFile[0].real}`;
+                    let imageSize = new kakao.maps.Size(27, 34);
+                    markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                    //this.markerImage = markerImage;
+                }
+
+            }
+        }
+
+
         // 마커를 생성합니다
         let marker = new kakao.maps.Marker({
             map: MapUtils.map,
             position: new kakao.maps.LatLng(obj.lat, obj.lng),
             title: obj.name, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
-            image: this.markerImage, // 마커 이미지
+            image: markerImage == null ? this.markerImage : markerImage, // 마커 이미지
             id: obj.assetId,
             zIndex: 2,
         });
 
+        //if (markerImage != null) console.log(markerImage)
         // 마커가 지도 위에 표시되도록 설정합니다
         marker.setMap(MapUtils.map);
         obj.marker = marker;

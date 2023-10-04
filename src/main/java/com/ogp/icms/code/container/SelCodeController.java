@@ -8,7 +8,9 @@ import com.ogp.icms.global.util.ResultCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -44,5 +46,12 @@ public class SelCodeController {
     @DeleteMapping("/api/sel-codes/{id}")
     public ResultCode deleteCode(@PathVariable Long id) {
         return selCodeService.deleteById(id);
+    }
+
+    @PostMapping("/api/sel-codes/edit/{id}")
+    public ResultCode updateCode(@ModelAttribute SelCode selCode, List<MultipartFile> image) throws IOException {
+        //System.out.println(selCode);
+        return selCodeService.update(selCode, image);
+        //return null;//selCodeService.save(selCode);
     }
 }
