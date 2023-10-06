@@ -89,7 +89,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">엑셀 업로드드</h5>
+        <h5 class="modal-title">엑셀 업로드</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="CameraReplaceManager.modalClose()"></button>
       </div>
       <div class="d-flex fw-bold modalBodyHeader" style="justify-content:space-around;padding:12px"></div>
@@ -205,7 +205,7 @@
       connectPort:'',connectId:'',connectPw:'',connectModel:'',connectServerType:'',
       smCompany:'',smPerson:'',smTel:'',ptzUseyn:'',presetUseyn:'',
       fallCamera:'',fallDefinition:'',fallEquipment:'',fallNetwork:'',
-    },
+    }, // deprecated object
     assetObj: {
       name:'',
       purpose:'', type:'', dept:'', projectName:'', projectType:'', assetId:'',
@@ -245,8 +245,27 @@
       } else {
         this.currentOldCamera = this.findCameraByName(newCamera.name);
       }
+      const cp = this._compareCamera(newCamera, this.currentOldCamera);
+      if (cp) {
+        this.compareCamera(++this.currentIndex);
+      } else {
+        this.renderCompareWindow(newCamera, this.currentOldCamera);
+      }
 
-      this.renderCompareWindow(newCamera, this.currentOldCamera);
+    },
+    _compareCamera: function (n, o) { // new, old
+      let flag = true;
+      Object.assign(o, JSON.parse(o.jsonobj));
+      //console.log(n, o);
+      for (const [key, val] of Object.entries(CameraReplaceManager.assetObj)) {
+        const nVal = get(n[key],'&nbsp;');
+        const oVal = get(o[key],'&nbsp;');
+        if (nVal !== oVal) {
+          flag = false;
+          break;
+        }
+      }
+      return flag;
     },
     findCameraByName: function(name) {
       return this.oldCameraList.find(e => e.name === name);

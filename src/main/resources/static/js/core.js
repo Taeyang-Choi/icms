@@ -875,7 +875,7 @@ let GlobalMenuNav = {
                 <div class="container">
                 <div id="header-login" style="align-items:center;color:white;padding:5px 0">
                     <div style="height:33px"><a class="navbar-brand fs-40" href="/dashboard" style="color:white;font-family:PlayfairDisplay;position:relative;bottom:17px">ICMS</a></div>
-                    <p class="fs-18">통합관제센터 관리시스템</p>
+                    <p class="fs-18 d-none">통합관제센터 관리시스템</p>
                 </div>
                     <ul class="nav"></ul>
                 </nav>
@@ -932,8 +932,14 @@ let GlobalMenuNav = {
 
 
         if(SSO.isLogined()) {
+            let usr = "";
+            if (isValid(params.usrobj) && isValid(params.usrobj.name)) {
+                usr = `${params.usrobj.name}(${params.usrobj.userid})`;
+            } else {
+                usr = "방문자"
+            }
             $('#header-login').append(`<div><a href="#" role="link" onclick="SSO.logout()" style="color:black;">로그아웃</a></div>
-            <div><span class="text-primary">${params.usrobj.name}(${params.usrobj.userid})</span> 님 로그인중입니다.</div>`);
+            <div><span class="text-primary">${usr}</span> 님 로그인중입니다.</div>`);
         }
         else {
             $('#header-login').append(`<div></div><div style="align-self:center"><a href="${SSO.getLoginUrl()}" class="btn btn-sm btn-primary">로그인</a></div>`);
