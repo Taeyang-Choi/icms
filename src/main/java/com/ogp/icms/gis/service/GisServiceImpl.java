@@ -84,8 +84,7 @@ public class GisServiceImpl {
                     oldCamera.setDirection(listItem.getDirection());
                     oldCamera.setLat(Double.toString(afterCoord.y).substring(0, 10));
                     oldCamera.setLng(Double.toString(afterCoord.x).substring(0, 10));
-                }
-                else { // 기존에 없으면 추가
+                } else { // 기존에 없으면 추가
                     if(i % 50 == 0) log.info("camera is new {}, {}", i , listItem);
                     newList.add(listItem);
                 }

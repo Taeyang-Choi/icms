@@ -33,7 +33,7 @@ public class CommentApiController {
 
     @GetMapping("/api/comment/lists/{ids}")
     public List<Comments> getList(@PathVariable String ids) throws IOException {
-        System.out.println(ids +" "+ids.replaceAll("_", ","));
+        //System.out.println(ids +" "+ids.replaceAll("_", ","));
         String[] _ids = ids.split("_");
         List<String> __ids = new ArrayList<>();
         for (int i=0; i<_ids.length; i++) {

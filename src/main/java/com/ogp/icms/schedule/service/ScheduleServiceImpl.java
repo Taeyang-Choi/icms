@@ -87,10 +87,14 @@ public class ScheduleServiceImpl {
 
     public ResultCode edit(Schedule schedule) {
         Schedule oldSchedule = scheduleRepository.getById(schedule.getId());
+        System.out.println(oldSchedule);
+        System.out.println(schedule);
 
         oldSchedule.setTeam(schedule.getTeam());
         oldSchedule.setWorkform(schedule.getWorkform());
         oldSchedule.setDivision(schedule.getDivision());
+        oldSchedule.setSDate(schedule.getSDate());
+        oldSchedule.setDatecode(schedule.getDatecode());
 
         scheduleRepository.flush();
 

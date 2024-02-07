@@ -37,9 +37,12 @@
                                 </div>
                             </div>
                             <div class="col-12 d-flex">
-                                <div class="label">출근일</div>
-                                <div class="content">
+                                <div class="label" aria-label="workDate">출근일</div>
+                                <!--<div class="content">
                                     <div id="work-date"></div>
+                                </div>-->
+                                <div class="content">
+                                    <input id="work-date" class="form-control" type="date">
                                 </div>
                             </div>
                             <div class="col-12 d-flex">
@@ -134,7 +137,10 @@ function init(params) {
         }
 
         // 초기 날짜
-        $('#work-date').text(dateFormat(new Date(item.sdate),"yyyy-MM-dd"));
+        //$('#work-date').text(dateFormat(new Date(item.sdate),"yyyy-MM-dd"));
+
+        var today = new Date(item.sdate).toISOString().split('T')[0];
+        $("#work-date").val(today);
     }
 
     $('#formSchedule').on('submit', function(e) {
@@ -144,8 +150,13 @@ function init(params) {
             return;
         }
 
-        formData.append('datecode', $('#work-date').text().replaceAll("-","").substring(0,6));
-        console.log(vData);
+        formData.append('datecode', $('#work-date').val().replaceAll("-","").substring(0,6));
+        formData.append('sDate', new Date($("#work-date").val()).toISOString().split(".")[0]);
+        //formData.append('sDate', new Date($("#work-date").val()).toISOString().split(".")[0]);
+        let entries = formData.entries();
+        for (const pair of entries) {
+            console.log(pair[0]+ ', ' + pair[1]);
+        }
 
         AJAX.post('/schedules/edit', formData, function(data) {
             Dialog.alert(data.message, function() {

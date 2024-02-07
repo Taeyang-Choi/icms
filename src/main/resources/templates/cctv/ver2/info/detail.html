@@ -418,8 +418,8 @@ function init(params) {
         //삭제
         $('#btn-delete').on('click', {item:item}, function(e) {
             Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
-                let formData = new FormData();
-                AJAX.remove(`/asset2/delete/${item.id}`, formData, function (data) {
+                console.log(item);
+                AJAX.remove("/asset2/delete/" + item.name, '', function (data) {
                     Dialog.alert(data.message, function() {
                         Page.back();
                     });

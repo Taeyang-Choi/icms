@@ -52,7 +52,7 @@ public class DailyReportServiceImpl {
     }
 
     public List<DailyReport> getListByDate(String date) {
-        System.out.println("date = " + date);
+        //System.out.println("date = " + date);
         return dailyReportRepository.findByWorkDateFrom(date);
     }
 

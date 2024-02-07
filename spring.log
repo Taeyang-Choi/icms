@@ -1,13 +1,12 @@
-2023-10-05 00:00:53.194  WARN 8490 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=17m20s474ms).
-2023-10-05 00:03:43.295  WARN 8490 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=2m50s102ms).
-2023-10-05 00:07:58.192  WARN 8490 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=1m44s851ms).
-2023-10-05 00:13:23.553  WARN 8490 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=2m25s322ms).
-2023-10-05 00:16:53.124  WARN 8490 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=1m59s550ms).
-2023-10-05 00:18:38.275  WARN 8490 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=45s145ms).
-2023-10-05 00:29:39.418  INFO 8490 --- [MessageBroker-2] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 3, active threads = 1, queued tasks = 0, completed tasks = 2]
-2023-10-05 00:58:27.447  INFO 8490 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
-2023-10-05 00:58:27.448  INFO 8490 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@b7f259a]]
-2023-10-05 00:58:27.448  INFO 8490 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
-2023-10-05 00:58:27.474  INFO 8490 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2023-10-05 00:58:27.476  INFO 8490 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
-2023-10-05 00:58:27.510  INFO 8490 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.
+2023-11-14 00:32:39.331  WARN 26379 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=1h1m4s802ms).
+2023-11-14 04:44:58.203  WARN 26379 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=4h12m18s872ms).
+2023-11-14 07:00:24.093  WARN 26379 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=2h15m25s890ms).
+2023-11-14 08:26:44.868  WARN 26379 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=1h26m20s775ms).
+2023-11-14 12:30:43.607  WARN 26379 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=4h3m58s739ms).
+2023-11-14 15:33:50.564  WARN 26379 --- [HikariPool housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool - Thread starvation or clock leap detected (housekeeper delta=3h3m6s957ms).
+2023-11-14 16:28:04.105  INFO 26379 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2023-11-14 16:28:04.107  INFO 26379 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6597b086]]
+2023-11-14 16:28:04.107  INFO 26379 --- [SpringApplicationShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2023-11-14 16:28:04.127  INFO 26379 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-11-14 16:28:04.129  INFO 26379 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown initiated...
+2023-11-14 16:28:04.149  INFO 26379 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool - Shutdown completed.

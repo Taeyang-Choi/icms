@@ -255,16 +255,17 @@ public class VMSServiceImpl {
                 Optional<Camera> cameraByIdOptional = cameraRepository.findById(camera.getId());
 
                 if (cameraByIdOptional.isPresent()) { // 기존에 없으면 추가
-                    if(i % 50 == 0) log.info("vms camera is exist {}, {}", i , camera);
+                    log.info("vms camera is exist {}, {}", i , camera);
+                    //if(i % 50 == 0) log.info("vms camera is exist {}, {}", i , camera);
                     Camera oldCamera = cameraByIdOptional.get();
                     oldCamera.setManufacturer(camera.getManufacturer());
                     oldCamera.setModel(camera.getModel());
                     oldCamera.setConnectIp(camera.getConnectIp());
                     oldCamera.setConnectId(camera.getConnectId());
                     oldCamera.setConnectPw(camera.getConnectPw());
-                }
-                else {
-                    if(i % 50 == 0) log.info("vms camera is new {}, {}", i , camera);
+                } else {
+                    log.info("vms camera is new {}, {}", i , camera);
+                    //if(i % 50 == 0) log.info("vms camera is new {}, {}", i , camera);
                     cameras.add(camera);
                     count++;
                 }

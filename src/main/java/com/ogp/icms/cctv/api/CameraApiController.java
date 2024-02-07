@@ -2,6 +2,7 @@ package com.ogp.icms.cctv.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.ogp.icms.asset.service.AssetService;
 import com.ogp.icms.cctv.request.CameraErrorSearchCondition;
 import com.ogp.icms.cctv.request.CameraSearchCondition;
 import com.ogp.icms.cctv.service.CameraErrorServiceImpl;
@@ -32,6 +33,7 @@ public class CameraApiController {
     private final CameraServiceImpl cameraService;
     private final VMSServiceImpl vmsService;
     private final GisServiceImpl gisService;
+    private final AssetService assetService;
 
     //region 카메라
 
@@ -173,11 +175,11 @@ public class CameraApiController {
         String profile = System.getProperty("spring.profiles.active");
         String[] vmsProfiles = {"prod", "dev", "hd"};
 
-        if(profile.equals("prod") || profile.equals("dev")) {
-            //gisCount += gisService.UpdateDataBase();
+        if(profile.equals("hd")) {
+            gisCount = assetService.updateDataBase();
         }
 
-        return new ResultCode(0, vmsCount + "개 업데이트 완료");
+        return new ResultCode(0, gisCount + "개 업데이트 완료");
     }
 
     @PostMapping("/api/gis/sync")

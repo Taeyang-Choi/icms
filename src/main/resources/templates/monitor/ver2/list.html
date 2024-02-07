@@ -14,6 +14,7 @@
         td{vertical-align:middle;}
         td:nth-child(2) { width: 90px;}
         td:nth-child(3) {width:70px;}
+        td:nth-child(5) {width:150px;}
         td:nth-child(7){width:90px;}
         td:nth-child(8){width:20%;}
         td:nth-child(9){width:90px;}
@@ -177,7 +178,7 @@ function init(params) {
                     <td>${CodeManager.get('monitoring', item.workMonitoring)}</td>
                     <td>${CodeManager.get('work_dgubun', item.workDgubun)}</td>
                     <td>${item.cctvIndex}</td>
-                    <td>${isValid(camera) ? camera.juso : ""}</td>
+                    <td>${isValid(camera) ? (camera.address ? camera.address : "") : ""}</td>
                     <td>${item.userid}</td>
                     <td>${Monitoring.getBarrierLevel(item).n}</td>
                     <td><div class="text-truncate" style="border-right:0;white-space:pre-line;">${item.workContent}</div></td>

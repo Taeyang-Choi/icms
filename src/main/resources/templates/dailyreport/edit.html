@@ -83,6 +83,7 @@
 <script src="/js/jquery.md5.js"></script>
 <script src="/js/preloader.js"></script>
 <script src="/js/core.js"></script>
+<script src="/js/module/schedule.js"></script>
 <script>
 function init(params) {
     createForm(params);
@@ -90,6 +91,10 @@ function init(params) {
     function createForm(params) {
         let item = params.item;
         console.log(item);
+
+        ShiftManager.fetchAll(function() {
+            ScheduleManager.init(params);
+        });
 
         for(let pair of Object.entries(params.item)){
             $(`input[name=${pair[0]}]`).val(pair[1]);
@@ -122,8 +127,25 @@ function init(params) {
             $('#input-work-monitor').append(str);
         }
 
+        // 버튼 설정
+        $('input[name="workGubun"]').on('change', function(e) {
+            let shift = ShiftManager.findByCode($('input[name="workGubun"]:checked').val());
+
+            pagectx.startDate = new Date($('input[name="workDateFrom"]').val() + ` ${shift.workStart}:00`);
+            pagectx.endDate = new Date(pagectx.startDate);
+            pagectx.endDate.setTime(pagectx.endDate.getTime() + ShiftManager.getHours(shift) * 60 * 60 * 1000);
+
+            $('input[name="workDateTo"]').val(dateFormat(pagectx.endDate, 'yyyy-MM-dd'));
+
+            $('input[name="workTimeFrom"]').val(shift.workStart);
+            $('input[name="workTimeTo"]').val(shift.workEnd);
+
+            pagectx.shiftCode = shift.shiftCode;
+        });
+
         pagectx = params;
         editForm(params);
+        console.log(pagectx);
     }
 
     $('#form-daily-report').on('submit', function() {
@@ -137,9 +159,9 @@ function init(params) {
 
         AJAX.put("/daily-reports/" + vData.id, formData, function(data) {
             if(data.code == 0) {
-                let old = SessionStore.get('dailyreport/detail');
+                /*let old = SessionStore.get('dailyreport/detail');
                 old.item = pagectx.item;
-                SessionStore.set('dailyreport/detail', old);
+                SessionStore.set('dailyreport/detail', old);*/
             }
 
             Dialog.alert(data.message, function() {
@@ -156,6 +178,25 @@ function init(params) {
         if(item.workDateTo.length == 8) {
             $('input[name=workDateTo]').val(item.workDateTo.insert(4,'-').insert(7,'-'));
         }
+    }
+}
+
+let ScheduleManager = {
+    init: function(params) {
+        if(!isValid(params.usrobj.team) || params.usrobj.team === 'NOTEAM') return;
+        let date = $('input[name="workDateFrom"]').val();
+        AJAX.get(`/teams/schedules/${params.usrobj.team}/${date.replaceAll('-','')}`,'', function(data) {
+            ScheduleManager.render(data);
+        });
+    },
+    render: function(data) {
+        let shift = ShiftManager.findByCode(data.shift);
+        console.log(`#radio-work-type-${shift.shiftCode}`)
+        $(`#radio-work-type-${shift.shiftCode}`).prop('checked', true);
+        $('input[name="workTimeFrom"]').val(shift.workStart);
+        $('input[name="workTimeTo"]').val(shift.workEnd);
+
+        $('input[name="workGubun"]').trigger('change');
     }
 }
 
