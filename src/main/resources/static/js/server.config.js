@@ -4,7 +4,7 @@ let ServerPreference = {
 
     },
     hd: {
-        blackList: ['cctv/map']
+        blackList: ['cctv/map', 'cctv/map2']
     },
     dev: {
         blackList: []

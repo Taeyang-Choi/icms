@@ -191,6 +191,7 @@
         //상세페이지
         $('tr .link-primary').last().on('click', {item:item}, function(e) {
           Page.go('/cctv/info/detail2', {item: e.data.item});
+
         });
       }
     }

@@ -403,31 +403,37 @@ function init(params) {
                 $(`input[name=${StringUtils.camelToSnake(pair[0])}]`).val(pair[1]);
             }
 
-            const jsonobj = JSON.parse(item.jsonobj);
+            const jsonobj = JSON.parse(data.jsonobj);
             for (let pair of Object.entries(jsonobj)) {
                 //console.log(pair);
                 $(`input[name=${StringUtils.camelToSnake(pair[0])}]`).val(pair[1]);
             }
+
+            setPage(data);
         });
 
-        //수정페이지
-        $('#btn-edit').last().on('click', {item:item}, function(e) {
-            Page.go('/cctv/info/edit2', {item: e.data.item});
-        });
 
-        //삭제
-        $('#btn-delete').on('click', {item:item}, function(e) {
-            Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
-                console.log(item);
-                AJAX.remove("/asset2/delete/" + item.name, '', function (data) {
-                    Dialog.alert(data.message, function() {
-                        Page.back();
-                    });
-                });
-            }, function () {
-            }, e.data.item);
-        });
     }
+}
+
+function setPage(item) {
+    //수정페이지
+    $('#btn-edit').last().on('click', {item:item}, function(e) {
+        Page.go('/cctv/info/edit2', {item: e.data.item});
+    });
+
+    //삭제
+    $('#btn-delete').on('click', {item:item}, function(e) {
+        Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
+            console.log(item);
+            AJAX.remove("/asset2/delete/" + item.name, '', function (data) {
+                Dialog.alert(data.message, function() {
+                    Page.back();
+                });
+            });
+        }, function () {
+        }, e.data.item);
+    });
 }
 
 </script>

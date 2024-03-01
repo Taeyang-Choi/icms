@@ -218,7 +218,7 @@ let ExcelManager = {
         })
     },
     download: function(list) {
-        console.log(list);
+        //console.log(list);
         let wb = XLSX.utils.book_new();
         wb.SheetNames.push('목록');
 
@@ -226,8 +226,7 @@ let ExcelManager = {
         let data = [columns];
 
         let max = Math.clamp(list.length, 0, 1000);
-        for(let i = 0; i < max; i++) {
-            let item = list[i];
+        list.map(item => {
             let temp = [];
             temp.push(item.id);
             temp.push(item.createdAt.replaceAll('T', ' '));
@@ -243,11 +242,11 @@ let ExcelManager = {
             temp.push(StringUtils.brToCr(item.actionResult));
 
             data.push(temp);
-        }
+        })
 
-        console.log(data);
+        //console.log(data);
         let ws = XLSX.utils.aoa_to_sheet(data);
-        console.log(ws);
+        //console.log(ws);
 
         wb.Sheets['목록'] = ws;
 

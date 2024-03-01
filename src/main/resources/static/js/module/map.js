@@ -4,9 +4,10 @@ let MapUtils = {
     groups: {},
     selectedMarker: null,
     selectedDir: null,
-    markerImage: null,
-    selectedMarkerImage: null,
+    markerImage: {},
+    selectedMarkerImage: {},
     showOverlay: null,
+    allowClick: false,
     renderMaps: function(option) {
         let mapContainer = document.getElementById('map'); // 지도를 표시할 di
         let mapOption = {
@@ -23,15 +24,16 @@ let MapUtils = {
         let imageSrc = "/images/marker-1.svg";
         let imageSize = new kakao.maps.Size(27, 34);
         let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
-        this.markerImage = markerImage;
+        this.markerImage.d = markerImage;
 
         let selectedImageSrc = "/images/marker-3.svg";
         let selectedMarkerImage = new kakao.maps.MarkerImage(selectedImageSrc, imageSize);
-        this.selectedMarkerImage = selectedMarkerImage;
+        this.selectedMarkerImage.d = selectedMarkerImage;
 
         if (isValid(option)) this.addClickEvent(option);
     },
     addMarker: function(obj, option) {
+        if (!isValid(option)) option = {};
         // 방향값을 설정합니다
         let content = `<div class="dir__image" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`;
         let direction = new kakao.maps.CustomOverlay({
@@ -44,28 +46,25 @@ let MapUtils = {
         obj.dir = direction;
 
         let markerImage = null;
-        if (isValid(option)) {
-            if (isValid(option.purpose)) {
-                const selCode = option.purpose[obj.purpose];
-                if (selCode) {
-                    const userFile = JSON.parse(selCode.userFile);
-                    // 이미지 생성
-                    let imageSrc = `http://${window.location.host}/attach/purpose/0/${userFile[0].store}/${userFile[0].real}`;
-                    let imageSize = new kakao.maps.Size(27, 34);
-                    markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
-                    //this.markerImage = markerImage;
-                }
-
+        if (isValid(option.purpose)) {
+            const selCode = option.purpose[obj.purpose];
+            if (selCode) {
+                const userFile = JSON.parse(selCode.userFile);
+                // 이미지 생성
+                let imageSrc = `http://${window.location.host}/attach/purpose/0/${userFile[0].store}/${userFile[0].real}`;
+                let imageSize = new kakao.maps.Size(27, 34);
+                markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                MapUtils.markerImage[obj.purpose] = markerImage;
+                //this.markerImage = markerImage;
             }
         }
-
 
         // 마커를 생성합니다
         let marker = new kakao.maps.Marker({
             map: MapUtils.map,
             position: new kakao.maps.LatLng(obj.lat, obj.lng),
             title: obj.name, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
-            image: markerImage == null ? this.markerImage : markerImage, // 마커 이미지
+            image: markerImage == null ? this.markerImage.d : this.markerImage[obj.purpose], // 마커 이미지
             id: obj.assetId,
             zIndex: 2,
         });
@@ -117,22 +116,25 @@ let MapUtils = {
         }
 
         // 47번 선택된마커 이미지 수정
-        let origin_obj = obj;
         let selectedMarker = MapUtils.getSelectedMarker();
         let selectedDir = MapUtils.getSelectedDir();
 
         if (isGrouped) {
             obj = grouped[grouped.length - 1];
         }
-        if (!selectedMarker || selectedMarker !== obj.marker) {
+        if (!selectedMarker || selectedMarker.marker !== obj.marker) {
             if (selectedMarker) {
-                !!selectedMarker && selectedMarker.setImage(MapUtils.markerImage);
+                if (isValid(MapUtils.markerImage[selectedMarker.purpose])) {
+                    !!selectedMarker.marker && selectedMarker.marker.setImage(MapUtils.markerImage[selectedMarker.purpose]);
+                } else {
+                    !!selectedMarker.marker && selectedMarker.marker.setImage(MapUtils.markerImage.d);
+                }
                 !!selectedDir && selectedDir.setContent(`<div class="dir__image" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`);
             }
-            obj.marker.setImage(MapUtils.selectedMarkerImage);
+            obj.marker.setImage(MapUtils.selectedMarkerImage.d);
             if (!isGrouped) obj.dir.setContent(`<div class="dir__image selected" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`);
         }
-        MapUtils.setSelectedMarker(obj.marker);
+        MapUtils.setSelectedMarker(obj);
         if (!isGrouped) MapUtils.setSelectedDir(obj.dir);
 
         // 48번 선택된 마커 그룹화
@@ -173,17 +175,37 @@ let MapUtils = {
     showAside: function (marker) {
         let name = (typeof(marker) == 'object') ? marker.name : marker;
         let obj = MapUtils.findByName(name);
+        //console.log(obj);
 
         $('#aside-panel').removeClass('d-none');
         $('#asset-name .asset-name').html(obj.name);
+        $('#asset-purpose .asset-purpose').html(obj.purpose);
 
         if(isValid(obj.vmsId)) {
-            let lastEvent = pagectx.errors.find(item => item.cctvId == obj.vmsId);
-            if(isValid(lastEvent)) {
-                $('#asset-event .asset-event').html(CodeManager.get('barrier_level',lastEvent.barrierLevel) + ' - '
-                    +CodeManager.get('work_jochi',lastEvent.actionCode));
-                $('#asset-report .asset-agent-name').html(lastEvent.userid);
-                $('#asset-report a').attr('href','/dailyreport/' + lastEvent.dailyreportId);
+            let errors = pagectx.errors.find(item => item.cctvId == obj.vmsId);
+            let situs = pagectx.situs.find(item => item.cctvId == obj.vmsId);
+
+            if (isValid(errors)) {
+                $("#asset__event").removeClass("d-none");
+                $('#asset-event .asset-event').html(CodeManager.get('barrier_level',errors.barrierLevel) + ' - ' + CodeManager.get('barrier_level',errors.barrierLevel));
+                $("#asset-event .asset-jochi").html(CodeManager.get('work_jochi',errors.actionCode));
+                $('#asset-report .asset-agent-name').html(errors.userid);
+                $("#report-anchor a").attr('href','/dailyreport/' + errors.dailyreportId);
+                $("#detail-anchor").click(() => {
+                    Page.go('/cctv/info/detail2', {item: {name:errors.cctvIndex}});
+                })
+            } else if (isValid(situs)) {
+                $("#asset__event").removeClass("d-none");
+                $('#asset-event .asset-event').html(CodeManager.get('work_dgubun', situs.workDgubun) + ' - ' + Monitoring.getBarrierLevel(situs).n);
+                $("#asset-event .asset-jochi").html(CodeManager.getCode((situs.workDgubun === 'D01') ? "work_jochi" : "situ_result", situs.actionCode, "미조치").n);
+                $('#asset-report .asset-agent-name').html(situs.userid);
+                $("#report-anchor a").attr('href','/dailyreport/' + situs.dailyreportId);
+                $("#detail-anchor").click(() => {
+                    Page.go('/cctv/info/detail2', {item: {name:situs.cctvIndex}});
+                })
+
+            } else {
+                $("#asset__event").addClass("d-none");
             }
         }
 
@@ -223,6 +245,23 @@ let MapUtils = {
                 $(`input[name=lng]`).val(latlng.getLng().toString().substring(0, 10));
                 marker.setPosition(latlng);
             })
+        } else if (isValid(option.coords)) {
+            kakao.maps.event.addListener(this.map, 'click', function (e) {
+                if (MapUtils.allowClick) {
+                    let latlng = e.latLng;
+                    $(`input[name=lat]`).val(latlng.getLat().toString().substring(0, 10));
+                    $(`input[name=lng]`).val(latlng.getLng().toString().substring(0, 10));
+                    MapUtils.allowClick=false;
+                }
+            })
         }
+    },
+    clear: function () {
+      this.markers.map(d => {
+          d.marker.setMap(null);
+          d.dir.setMap(null);
+      });
+      this.markers = [];
+      this.groups = {};
     },
 }

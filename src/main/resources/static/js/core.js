@@ -31,7 +31,7 @@ let menus = [[{n:'방문자대장 관리',f:'visit/list'}],
     [{n:'모니터링현황',f:'monitor/list2'}],
     [{n:'근무자정보',f:'attend/member/list'},{n:'월간근무통계',f:'attend/statistics'},{n:'휴가신청',f:'attend/leave/list'},{n:'출퇴근',f:'attend/time-sheet'}],
     [{n:'팀스케줄',f:'schedule/main'},{n:'월별 근무팀',f:'schedule/monthly'}],
-    [{n:'카메라별 장애관리',f:'cctv/error/list'},{n:'카메라 등록수정',f:'cctv/info/list2'},{n:'카메라지도',f:'cctv/map'}],
+    [{n:'카메라별 장애관리',f:'cctv/error/list'},{n:'카메라 등록수정',f:'cctv/info/list2'},{n:'카메라지도',f:'cctv/map2'}],
     [{n:'휴가신청',f:'leave/write'},{n:'휴가신청내역',f:'leave/list'}],
     [{n:'관리자관리',f:'common/admin/list'},{n:'코드관리',f:'common/code/list'},{n:'라이센스',f:'common/license/list2'}]]
 

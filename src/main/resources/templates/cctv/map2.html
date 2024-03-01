@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<th:block th:replace="~{layout/common :: metas}"></th:block>
+<th:block th:replace="~{layout/common :: styles}"></th:block>
+<title>카메라 맵</title>
+<link rel="stylesheet" href="/css/map.css">
+<style>
+html,body{height:100%;}
+#top{left:0;top:108px;height:70px;background-color:#F0F4FAAA;z-index:1001}
+#left{top:178px;left:0;width:200px;z-index:1001;background-color:#F0F4FA;}
+#left-sub{width:200px;top:178px;left:200px;z-index:1001;background-color:#F0F4FA;}
+#left-sub2{top:178px;left:200px;z-index:1001;background-color:#F0F4FA;}
+#left-sub3{top:178px;left:400px;z-index:1001;background-color:#F0F4FA; overflow-y: scroll;}
+#right-sub{width:375px;top:178px;right:280px;z-index:1001;background-color:#F0F4FA;}
+#right-sub2{bottom:0;right:0;z-index:1001;}
+#aside-panel .d-flex{align-items: center}
+.A2fas5aX i{font-size:20px;margin:6px;}
+</style>
+</head>
+<body data-page-scope="cctv/map2">
+<div id="header" class="pos-fixed" style="z-index:4000;"></div>
+
+<main style="height:100%">
+    <div id="top" class="d-flex pos-fixed w-100 justify-content-between align-items-center">
+        <div class="d-flex">
+            <div class="d-flex justify-content-end " style="background-color:#F0F4FA;width:200px;">
+                <div class="rounded-circle bg-white text-center" style="width:34px;line-height:34px;margin:18px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"></path></svg></div>
+            </div>
+            <div style="line-height:70px;font-size:28px; margin-left: 10px; font-weight: bold;">CCTV</div>
+            <div style="line-height:70px;font-size:24px; margin-left: 10px;">Status quo Check map</div>
+        </div>
+        <div class="map__list__group__top">
+            <div class="item" onclick="popup2('error')">
+                <div id="t__alarm__error" class="cnt">0</div>
+                <div class="desc">장애</div>
+            </div>
+            <div class="item" onclick="popup2('situ')">
+                <div id="t__alarm__situ" class="cnt r">0</div>
+                <div class="desc">상황</div>
+            </div>
+        </div>
+        <div class="d-flex d-none">
+            <button class="btn btn-primary" onclick="ExcelManager.download()">다운로드</button>
+            <input class="form-control form-control-sm" type="file" id="formFile" style="flex:0 0 226px;" accept=".xlsx, .xlsm, .xls">
+        </div>
+    </div>
+
+    <!-- alarm side nav -->
+    <aside id="right-sub" class="pos-fixed d-none">
+        <ul class="list-group list-group-flush">
+        </ul>
+    </aside>
+
+    <!-- 1단 사이드 nav -->
+    <aside id="left" class="pos-fixed" style="height: calc(100% - 178px)">
+        <ul class="map__list__group__left">
+            <li class="item d-none" onclick="popup('situ')">상황<div id="l__alarm__situ" class="alarm-circle">0</div></li>
+            <li class="item d-none" onclick="popup('error')">장애<div id="l__alarm__error" class="alarm-circle">0</div></li>
+            <li class="item" onclick="popup('search')">검색</li>
+            <li class="item" onclick="popup('new')">신규등록</li>
+            <li class="item" onclick="popup('type')">CCTV 구분</li>
+            <li class="item d-none" onclick="popup('what')">유지보수 구분</li>
+        </ul>
+    </aside>
+
+    <!-- 2단 사이드 nav -->
+    <aside id="left-sub" class="pos-fixed d-none" style="height:calc(100% - 108px);">
+        <ul class="list-group list-group-flush">
+        </ul>
+    </aside>
+
+    <!-- 3단 사이드 nav -->
+    <aside id="left-sub2" class="pos-fixed d-none" style="height:calc(100% - 108px); overflow-y: scroll;">
+        <form id="form-cctv" method="post" onsubmit="return false;">
+            <div class="map__input">
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">목적</div>
+                                <div class="input_box"><input  required type="text" class="" name="purpose"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">구분</div>
+                                <div class="input_box"><input   type="text" class="" name="type"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">담당부서</div>
+                                <div class="input_box"><input   type="text" class="" name="dept"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">사업명</div>
+                                <div class="input_box"><input   type="text" class="" name="project_name"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">사업분류</div>
+                                <div class="input_box"><input   type="text" class="" name="project_type"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">관리번호</div>
+                                <div class="input_box"><input   type="text" class="" name="asset_id"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">VMS 연계</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">VMS ID</div>
+                                <div class="input_box"><input   type="text" class="" name="vms_id"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">제조사</div>
+                                <div class="input_box"><input   type="text" class="" name="manufacture"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">모델명</div>
+                                <div class="input_box"><input   type="text" class="" name="model"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">IP</div>
+                                <div class="input_box"><input   type="text" class="" name="ip"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">ID</div>
+                                <div class="input_box"><input   type="text" class="" name="id"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">PASS</div>
+                                <div class="input_box"><input   type="text" class="" name="pass"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">장비 이름</div>
+                                <div class="input_box"><input  required type="text" class="" name="name"></div>
+                            </div>
+                            <div class="d-flex"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">주소</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">00면</div>
+                                <div class="input_box"><input   type="text" class="" name="emd"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">00리</div>
+                                <div class="input_box"><input   type="text" class="" name="li"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">00마을</div>
+                                <div class="input_box"><input   type="text" class="" name="town"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">상세주소</div>
+                                <div class="input_box"><input   type="text" class="" name="address"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">GIS 연계</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">VMS ID</div>
+                                <div class="input_box"><input  required type="text" class="" name="ref_id"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">방향</div>
+                                <div class="input_box"><input   type="text" class="" name="direction"></div>
+                            </div>
+                        </div>
+                        <div style="width: 100%">
+                            <div class="d-flex">
+                                <div style="flex: 1">
+                                    <div class="d-flex align-items-center">
+                                        <div class="title">위도</div>
+                                        <div class="input_box"><input   type="text" class="" name="lat"></div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="title">경도</div>
+                                        <div class="input_box"><input   type="text" class="" name="lng"></div>
+                                    </div>
+                                </div>
+                                <div class="btn btn-primary d-flex align-items-center" style="margin: 8px 16px; width: 100%; justify-content: center;" onclick="allowClick()">지도에서 위치 선택</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">카메라</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">제조사</div>
+                                <div class="input_box"><input   type="text" class="" name="cctvmanufacture"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">모델명</div>
+                                <div class="input_box"><input   type="text" class="" name="cctvmodel"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">디지털구분</div>
+                                <div class="input_box"><input   type="text" class="" name="digital"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">회전구분</div>
+                                <div class="input_box"><input   type="text" class="" name="rotation"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">형태</div>
+                                <div class="input_box"><input   type="text" class="" name="form"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">화소</div>
+                                <div class="input_box"><input   type="text" class="" name="pixel"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">가격</div>
+                                <div class="input_box"><input   type="text" class="" name="price"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">선별관제</div>
+                                <div class="input_box"><input   type="text" class="" name="screen"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">투광기설치일</div>
+                                <div class="input_box"><input   type="text" class="" name="fdate"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap mt-3">
+                    <div style="width: 100%">
+                        <div class="d-flex align-items-center">
+                            <div class="title">폴설치형태</div>
+                            <div class="input_box"><input   type="text" class="" name="pole"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">유지보수</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">설치업체</div>
+                                <div class="input_box"><input   type="text" class="" name="company"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">담당자</div>
+                                <div class="input_box"><input   type="text" class="" name="manager"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">연락처</div>
+                                <div class="input_box"><input   type="text" class="" name="phone"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">설치년도<br />(00.0)</div>
+                                <div class="input_box"><input   type="text" class="" name="insdate"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">유지보수<br />종료일</div>
+                                <div class="input_box"><input   type="text" class="" name="mtnend"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">유지보수<br />용역대상</div>
+                                <div class="input_box"><input   type="text" class="" name="mtn"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">통신 회선</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">사업자</div>
+                                <div class="input_box"><input   type="text" class="" name="agency"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">구분</div>
+                                <div class="input_box"><input   type="text" class="" name="exten"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">회선번호<br />연장내용</div>
+                                <div class="input_box"><input   type="text" class="" name="agencynum"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">장비IP</div>
+                                <div class="input_box"><input   type="text" class="" name="agencyip"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">최초개통일</div>
+                                <div class="input_box"><input   type="text" class="" name="agencyins"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">재약정일</div>
+                                <div class="input_box"><input   type="text" class="" name="renew"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">만료일</div>
+                                <div class="input_box"><input   type="text" class="" name="agencyend"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">전기인입</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">고객번호</div>
+                                <div class="input_box"><input   type="text" class="" name="electnum"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">연장내용</div>
+                                <div class="input_box"><input   type="text" class="" name="electext"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub_title">기타기기</div>
+                <div class="d-flex flex-wrap">
+                    <div style="width: 100%">
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">제조사</div>
+                                <div class="input_box"><input   type="text" class="" name="vendor"></div>
+
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">모델명</div>
+                                <div class="input_box"><input   type="text" class="" name="etcmoel"></div>
+
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">CH</div>
+                                <div class="input_box"><input   type="text" class="" name="etcch"></div>
+
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">용량(TB)</div>
+                                <div class="input_box"><input   type="text" class="" name="etcvolume"></div>
+
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">IP</div>
+                                <div class="input_box"><input   type="text" class="" name="etcip"></div>
+
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="title">ID</div>
+                                <div class="input_box"><input   type="text" class="" name="etcid"></div>
+
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <div class="title">PASS</div>
+                                <div class="input_box"><input   type="text" class="" name="etcpass"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="d-flex justify-content-end" style="margin-top:15px">
+                <button type="submit" class="btn btn-primary btn-lg">확인</button>
+            </div>
+        </form>
+        <div style="height: 108px;"></div>
+
+    </aside>
+
+    <!-- 4단 사이드 nav -->
+    <aside id="right-sub2" class="pos-fixed map__dashboard" style="">
+        <div class="d-flex align-items-center p-2">
+            <img src="/images/dashboard/all.svg">
+            <div class="title">CCTV 정상 :</div>
+            <div id="r__alarm" class="desc"></div>
+        </div>
+        <div class="d-flex align-items-center p-2">
+            <img src="/images/dashboard/using.svg">
+            <div class="title">CCTV 장애 :</div>
+            <div id="r__alarm__error" class="desc"></div>
+        </div>
+        <div class="d-flex align-items-center p-2">
+            <img src="/images/dashboard/using.svg">
+            <div class="title">CCTV 상황 :</div>
+            <div id="r__alarm__situ" class="desc"></div>
+        </div>
+    </aside>
+
+    <!-- 5단 사이드 nav -->
+    <aside id="left-sub3" class="pos-fixed d-none" style="height:calc(100% - 108px);">
+        <ul class="list-group list-group-flush">
+        </ul>
+    </aside>
+
+    <div id="map" style="width:100%;height:100%;"></div>
+
+    <div class="container"></div>
+
+    <aside id="aside-panel" class="pos-fixed d-none" style="width:280px;right:0;top:178px;bottom:0;z-index:1001;">
+        <div style="background-color:#363636;line-height:38px;color:white;padding:8px 16px">CCTV 정보</div>
+        <div style="background-color:#F0F4FA;height:100%;padding:24px 16px;">
+            <div id="asset-name" class="asset_box">
+                <div class="asset-title">CCTV명</div>
+                <div class="asset-name asset-value"></div>
+            </div>
+            <div id="asset-purpose" class="asset_box">
+                <div class="asset-title">구분</div>
+                <div class="asset-purpose asset-value"></div>
+            </div>
+            <div id="asset-ping" class="asset_box">
+                <div class="asset-title">IP</div>
+                <div id="asset-ip" class="asset-value"></div>
+                <div onclick="pingURL()" class="asset-tag">ping</div>
+                <div id="ping-test-list" class="asset-list mt-2"></div>
+            </div>
+
+
+            <div id="asset__event" class="d-none mt-3">
+                <div id="asset-event" class="asset_box">
+                    <div class="asset-title">구분</div>
+                    <div class="asset-event asset-value"></div>
+                    <div class="asset-title">조치결과</div>
+                    <div class="asset-jochi asset-value"></div>
+                </div>
+
+                <div id="asset-report" class="asset_box">
+                    <div class="asset-title">담당자</div>
+                    <div class="asset-agent-name asset-value"></div>
+                    <div id="report-anchor" class="mt-3 asset-tag"><a>장애내역</a></div>
+                </div>
+            </div>
+            <div class="asset_box">
+                <div id="detail-anchor" class="mt-3 asset-tag"><a>상세내역</a></div>
+            </div>
+
+
+
+        </div>
+    </aside>
+</main>
+
+<!-- SCRIPT -->
+<th:block th:replace="layout/common :: script"></th:block>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=97d7494e46d2ee1462301f24e6fd7333"></script>
+<script src="/js/module/map.js"></script>
+<script src="/js/proj4.js"></script>
+<script src="/js/module/reports.js"></script>
+<script>
+pagectx = { ...pagectx,
+    markers : [],
+    allowClick : false,
+}
+async function init() {
+    /* 엑셀 업로드 */
+    $('#formFile').on('change', ExcelManager.upload);
+    AJAX2.get('/api/daily-reports/events/errors').then(cameraErrors);
+    AJAX2.get('/api/daily-reports/events/situs').then(cameraSitus);
+    AJAX2.get('/api/kind-codes/purpose/sel-codes').then(purposeImgs);
+    let cameraList = await AJAX2.get('/api/asset2').then(AJAX2.save);
+
+    // 임시코드
+    for (let camera of cameraList) {
+        if(!isValid(camera.annox) || !isValid(camera.annoy)) continue;
+        camera.jsonobj = {};
+        let coord = convertCoordinates(Number(camera.annox), Number(camera.annoy));
+        camera.lat = coord[1];
+        camera.lng = coord[0];
+        camera.name = camera.cctvIndex;
+        camera.vmsId = camera.id;
+        camera.assetId = camera.id;
+        camera.jsonobj.ip = camera.connectIp;
+    }
+    console.log(cameraList);
+    MapUtils.renderMaps({coords:true});
+    //renderAsset(cameraList);
+    AJAX2.get('/api/asset2').then(renderAsset);
+
+
+    $('#form-cctv').on('submit', function() {
+        let rawFormData = new FormData($('form')[0]);
+        let formData = new FormData();
+        let data = {};
+
+        for(let pair of rawFormData.entries()){
+            if(!isValid(pair[1]) && $(`input[name=${pair[0]}].required`).length != 0) {
+                Dialog.alert($(`input[name=${pair[0]}]`).parent().parent().children('div').text() + " 을(를) 입력해 주세요.", function() {
+                    $(`input[name=${pair[0]}].required`).trigger('focus');
+                });
+                return;
+            }
+            data[StringUtils.snakeToCamel(pair[0])] = pair[1];
+        }
+
+        const jsonobj = {};
+        let label = ['manufacture','model','ip','id','pass','direction',
+            'cctvmanufacture','cctvmodel','digital','rotation','form','pixel','price','screen','fdate',
+            'pole',
+            'company','manager','phone','insdate','mtnend','mtn',
+            'agency','exten','agencynum','agencyip','agencyins','renew','agencyend',
+            'electnum','electext',
+            'vendor','etcmoel','etcch','etcvolume','etcip','etcid','etcpass'];
+        label.map(d => jsonobj[d] = $(`input[name=${d}]`).val());
+        data.jsonobj = JSON.stringify(jsonobj);
+
+        AJAX.put("/asset2/write", null, data ,function(res) {
+            console.log(res);
+            Dialog.alert(res.message, function() {
+                Page.back();
+            });
+        });
+
+    });
+}
+
+function convertCoordinates(x, y) {
+    const sourceCRS = '+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs';
+    const targetCRS = '+proj=longlat +datum=WGS84 +no_defs';
+
+    const transformedCoordinates = proj4(sourceCRS, targetCRS, [x, y]);
+    return transformedCoordinates;
+}
+/**
+ * 아직 수정 안된 카메라만 가져오기
+ * @param errors
+ */
+function cameraErrors(errors) {
+    console.log("errors: ", errors);
+    pagectx.errors = errors;
+
+    $("#l__alarm__error").html(errors.length);
+    $("#t__alarm__error").html(errors.length);
+    $("#r__alarm__error").html(errors.length+"건");
+}
+function cameraSitus(situs) {
+    console.log("situs: ", situs);
+    pagectx.situs = situs;
+
+    $("#l__alarm__situ").html(situs.length);
+    $("#t__alarm__situ").html(situs.length);
+    $("#r__alarm__situ").html(situs.length+"건");
+}
+function purposeImgs(imgs) {
+    pagectx.purpose = {};
+    imgs.map(d => pagectx.purpose[d.code] = d);
+}
+function renderAsset(list) {
+    for(const item of list) {
+        if(typeof(item.jsonobj) == 'string') item.jsonobj = JSON.parse(item.jsonobj);
+    }
+    pagectx.assets = JSON.parse(JSON.stringify(list));
+
+    const merge = {};
+    pagectx.assets.map(d => {
+        if (isValid(merge[d.purpose])) {
+            merge[d.purpose].push(d);
+        } else {
+            merge[d.purpose] = [d]
+        }
+    })
+    pagectx.merge = merge;
+
+    pagectx.errors.map((d, i) => {
+        const find = list.find(p => p.name == d.cctvIndex);
+        if (isValid(find)) {
+            find.purpose = "장애";
+        }
+    })
+
+    $("#r__alarm").html((list.length - pagectx.errors.length -  pagectx.situs.length)+"건");
+
+    pagectx.situs.map((d, i) => {
+        const find = list.find(p => p.name == d.cctvIndex);
+        if (isValid(find)) {
+            find.purpose = "상황";
+        }
+    })
+
+    for(const item of list) {
+        if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item, {purpose: pagectx.purpose});
+    }
+
+    kakao.maps.event.addListener(MapUtils.map, 'click', function(mouseEvent) {
+        $('#aside-panel').addClass('d-none');
+        $('#left-sub').addClass('d-none');
+        if (pagectx.allowClick) {
+            pagectx.allowClick = false;
+        } else {
+            $('#left-sub2').addClass('d-none');
+        }
+
+        $('#left-sub3').addClass('d-none');
+        $('#right-sub').addClass('d-none');
+    });
+}
+function _renderAsset(list) {
+    pagectx.errors.map((d, i) => {
+        const find = list.find(p => p.name == d.cctvIndex);
+        if (isValid(find)) {
+            find.purpose = "장애";
+        }
+    })
+    $("#r__alarm").html((list.length - pagectx.errors.length -  pagectx.situs.length)+"건");
+
+    pagectx.situs.map((d, i) => {
+        const find = list.find(p => p.name == d.cctvIndex);
+        if (isValid(find)) {
+            find.purpose = "상황";
+        }
+    })
+
+    for(const item of list) {
+        if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item, {purpose: pagectx.purpose});
+    }
+
+    kakao.maps.event.addListener(MapUtils.map, 'click', function(mouseEvent) {
+        $('#aside-panel').addClass('d-none');
+        $('#left-sub').addClass('d-none');
+        $('#right-sub').addClass('d-none');
+    });
+}
+
+function pingURL() {
+    let obj = pagectx.selectedAsset;
+    let ip = (Utils.isValid(obj.jsonobj.ip)) ? obj.jsonobj.ip : obj.jsonobj.p;
+    AJAX2.get('/api/assets/ping?ip='+ip).then(function (data) {
+        for (const d of data) {
+            $('#ping-test-list').append(`<div class="item">${d}ms</div>`);
+        }
+    });
+}
+
+function popup(type) {
+    $('#left-sub').addClass('d-none');
+    $('#left-sub2').addClass('d-none');
+    $('#left-sub3').addClass('d-none');
+    if (type == "situ") {
+        $('#left-sub').removeClass('d-none');
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(``);
+        for (const situ of pagectx.situs) {
+            $('#left-sub .list-group').append(`
+            <div class="item" data-id="${situ.cctvId}">
+                <div class="bg-dark text-white p-1">${situ.cctvIndex}</div>
+                <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${situ.cctvIndex}')"; role="button">${situ.workContent}</div>
+            </div>`);
+        }
+    } else if (type == 'error') {
+        $('#left-sub').removeClass('d-none');
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(``);
+        for (const error of pagectx.errors) {
+            $('#left-sub .list-group').append(`
+            <div class="item" data-id="${error.cctvId}">
+                <div class="bg-dark text-white p-1">${error.cctvIndex}</div>
+                <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${error.cctvIndex}')"; role="button">${error.workContent}</div>
+            </div>`);
+        }
+    } else if (type == 'search') {
+        $('#left-sub').removeClass('d-none');
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(`
+        <input id="input-search" class="form-control" tyle="text" placeholder="검색어를 입력해주세요.">
+        <div class="camera-list" style="overflow-y:scroll; margin-top: 10px;"></div>`);
+
+        $('#input-search').on('change', function (e) {
+            let val = $('#input-search').val();
+            if(val.length > 1) {
+                $("#left-sub .list-group .camera-list").html(``);
+
+                for (const marker of MapUtils.markers) {
+                    if(marker.name.includes(val)) {
+                        $('#left-sub .list-group .camera-list').append(`
+                        <div class="item">
+                            <div class="d-block fs-14 p-1" style="max-height:48px;" onclick="MapUtils.info('${marker.name}')"; role="button">${marker.name}</div>
+                        </div>
+                        `);
+                    }
+                }
+            }
+        });
+    } else if (type == 'type') {
+        $('#left-sub').removeClass('d-none');
+        $('#left-sub .list-group').removeClass('d-none')
+        $('#left-sub .list-group').html(``);
+        $('#left-sub .list-group').append(`
+            <div class="item" data-id="전체">
+                <div class="" onclick="popup3('전체')">전체</div>
+            </div>`);
+        for (let d of Object.keys(pagectx.merge)) {
+            if (!isValid(d)) d = "공백";
+            $('#left-sub .list-group').append(`
+            <div class="item" data-id="${d}">
+                <div class="" onclick="popup3('${d}')">${d}</div>
+            </div>`);
+        }
+    } else {
+        if (type == 'new') {
+            $('#left-sub2').removeClass('d-none');
+        }
+    }
+}
+function popup2(type) {
+    $('#right-sub').removeClass('d-none');
+    if (type == "situ") {
+        $('#right-sub .list-group').removeClass('d-none')
+        $('#right-sub .list-group').html(``);
+        for (const situ of pagectx.situs) {
+            $('#right-sub .list-group').append(`
+            <div class="item" data-id="${situ.cctvId}">
+                <div class="bg-dark text-white p-1">${situ.cctvIndex}</div>
+                <div class="d-block p-2 mt-2" style="" onclick="MapUtils.info('${situ.cctvIndex}')"; role="button">${situ.workContent}</div>
+            </div>`);
+        }
+    } else if (type == 'error') {
+        $('#right-sub .list-group').removeClass('d-none')
+        $('#right-sub .list-group').html(``);
+        for (const error of pagectx.errors) {
+            $('#right-sub .list-group').append(`
+            <div class="item" data-id="${error.cctvId}">
+                <div class="bg-dark text-white p-1">${error.cctvIndex}</div>
+                <div class="d-block p-2 mt-2" style="" onclick="MapUtils.info('${error.cctvIndex}')"; role="button">${error.workContent}</div>
+            </div>`);
+        }
+    }
+}
+function popup3(purpose) {
+    $('#left-sub3').removeClass('d-none')
+    $('#left-sub3 .list-group').removeClass('d-none')
+    $('#left-sub3 .list-group').html(``);
+
+    MapUtils.clear();
+    if (purpose == "전체") {
+        _renderAsset(pagectx.assets);
+        for (let d of pagectx.assets) {
+            const marker = MapUtils.markers.find(s => s.name == d.name);
+            $('#left-sub3 .list-group').append(`
+            <div class="item" data-id="${d.name}">
+                <div class="" onclick="MapUtils.info('${marker.name}')"; role="button">${d.name}</div>
+            </div>`);
+        }
+    } else {
+        if (purpose=="공백") purpose = "";
+        _renderAsset(pagectx.merge[purpose]);
+        for (let d of pagectx.merge[purpose]) {
+            const marker = MapUtils.markers.find(s => s.name == d.name);
+            $('#left-sub3 .list-group').append(`
+            <div class="item" data-id="${d.name}">
+                <div class="" onclick="MapUtils.info('${marker.name}')"; role="button">${d.name}</div>
+            </div>`);
+        }
+    }
+
+
+
+
+
+}
+
+function allowClick() {
+    MapUtils.allowClick = true;
+    pagectx.allowClick = true;
+}
+
+
+/**
+ * 자산관리 엑셀 업로드 및 다운로드
+ * @type {{download: ExcelManager.download, upload: ExcelManager.upload}}
+ * 엑셀 통합으로 인해 deprecated
+ */
+let ExcelManager = {
+    header: ["assetId", "purpose", "type", "dept", "projectName", "projectType", "vmsId", "name", "emd", "li",
+        "town", "address", "refId", "lat", "lng"],
+    upload: function (e) {
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(e.target.files[0]);
+        reader.onload = function (e) {
+            //let data = new Uint8Array(reader.result);
+            let workBook = XLSX.read(reader.result, {type: 'binary'});
+            let obj = [];
+
+            const sheetName = workBook.SheetNames[0];
+            let rows = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName], {header:1, defval:''});
+
+            let header = rows[2];
+            rows = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName], {header:header, defval:''});
+            for(let i = 3; i < rows.length; i++) {
+                let jsonobj = {};
+                let temp = {};
+
+                for (const [key, value] of Object.entries(rows[i])) {
+                    if(ExcelManager.header.includes(key)) {
+                        temp[key] = value;
+                    }
+                    else {
+                        jsonobj[key] = value;
+                    }
+                }
+
+                temp.jsonobj = JSON.stringify(jsonobj);
+                console.log(temp);
+                obj.push(temp);
+            }
+
+
+            let formData = new FormData();
+            formData.set("jsonString", JSON.stringify(obj));
+
+            AJAX2.post('/api/assets/upload', formData).then(function (data) {
+                Dialog.alert(data.message, function () {
+                    Page.reload();
+                });
+            });
+
+        };
+    },
+    download: function() {
+        let wb = XLSX.utils.book_new();
+        wb.SheetNames.push('목록');
+
+        let label = ['purpose','type','dept','projectName','projectType','assetId','vmsId','manufacture','model','ip','id',
+                'pass','name','emd','li','town','address','refId','direction','lat','lng','cctvmanufacture',
+                'cctvmodel','digital','rotation','form','pixel','price','screen','fdate','pole','company','manager',
+                'phone','insdate','mtnend','mtn','agency','exten','agencynum','agencyip','agencyins','renew','agencyend',
+                'electnum','electext','vendor','etcmoel','etcch','etcvolume','etcip','etcid','etcpass'];
+
+        let data = [label];
+
+        let list = pagectx.assets;
+
+        for(let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let temp = [];
+
+            for(const key of label) {
+                if(Utils.isValid(item[key])) {
+                    temp.push(item[key]);
+                }
+                else {
+                    temp.push(item.jsonobj[key]);
+                }
+            }
+            data.push(temp);
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        wb.Sheets['목록'] = ws;
+
+        let wbOut = XLSX.write(wb, {bookType:'xlsx', type: 'binary'});
+
+        function s2ab(s) {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbOut)],{type:"application/octet-stream"}), dateFormat() + " 자산 목록.xlsx");
+    }
+}
+
+
+</script>
+</body>
+</html>

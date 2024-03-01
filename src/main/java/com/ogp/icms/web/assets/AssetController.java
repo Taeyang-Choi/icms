@@ -30,6 +30,9 @@ public class AssetController {
     @GetMapping("/map")
     public String cameraMap() {return "cctv/map";}
 
+    @GetMapping("/map2")
+    public String cameraMap2() {return "cctv/map2";}
+
     @GetMapping("/info/list2")
     public String asset2InfoList() {return "cctv/ver2/info/list";}
     @GetMapping("/info/detail2")
