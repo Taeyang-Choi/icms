@@ -12,7 +12,7 @@
     <title>코드관리</title>
     <style>
         #page-title:before{content:url("/images/before/manage.svg");margin-right:10px;vertical-align:middle}
-        #img{width: 84px; height: 84px;}
+        #img, #img__focus{width: 84px; height: 84px;}
     </style>
 </head>
 <body data-page-scope="common/code/list">
@@ -71,6 +71,16 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div id="purpose_input__focus"  class="col-12 d-flex" style="display: none;">
+                                    <div class="label">이미지</div>
+                                    <div class="content">
+                                        <div class="">
+                                            <input class="d-none" type="file" id="input__img__focus" multiple="multiple" name="image__focus">
+                                            <img id="img__focus" class="image"></img>
+                                            <a class="btn btn-primary ms-1" role="button" onclick="ImageManagerF.uploadImage()">등록</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="buttons d-flex justify-content-between">
@@ -100,6 +110,7 @@ function init(params) {
 
     $('#page-title').append(" - " + params.item.kindCode);
     ImageManager.init();
+    ImageManagerF.init();
 
     function createForm(params) {
         let selCode = params.item;
@@ -114,9 +125,20 @@ function init(params) {
 
         if (selCode.kindCode == "purpose") {
             $("#purpose_input").css('display','block');
-            if (isValid(selCode.userFile)) {
-                const userFile = JSON.parse(selCode.userFile);
-                $('#img').attr('src', `/attach/purpose/0/${userFile[0].store}/${userFile[0].real}`);
+            $("#purpose_input__focus").css('display','block');
+            const userFile = JSON.parse(selCode.userFile);
+
+            if (isValid(userFile)) {
+                if (isValid(userFile.default)) {
+                    const d = JSON.parse(userFile.default)
+                    $('#img').attr('src', `/attach/purpose/0/${d.store}/${d.real}`);
+                }
+
+                // focus
+                if (isValid(userFile.focus)) {
+                    const f = JSON.parse(userFile.focus)
+                    $('#img__focus').attr('src', `/attach/purpose/0/${f.store}/${f.real}`);
+                }
             }
         }
     }
@@ -154,6 +176,30 @@ let ImageManager = {
 
             reader.onload = function (e) {
                 $('#img').attr('src', e.target.result);
+            }
+
+            this.image = input;
+            reader.readAsDataURL(input.files[0]);
+        }
+    },
+}
+
+let ImageManagerF = {
+    image: null,
+    init: function () {
+        document.getElementById('input__img__focus').onchange = function() {
+            ImageManagerF.showImage(this)
+        };
+    },
+    uploadImage: function () {
+        document.getElementById('input__img__focus').click();
+    },
+    showImage: function (input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#img__focus').attr('src', e.target.result);
             }
 
             this.image = input;

@@ -50,12 +50,26 @@ let MapUtils = {
             const selCode = option.purpose[obj.purpose];
             if (selCode) {
                 const userFile = JSON.parse(selCode.userFile);
-                // 이미지 생성
-                let imageSrc = `http://${window.location.host}/attach/purpose/0/${userFile[0].store}/${userFile[0].real}`;
-                let imageSize = new kakao.maps.Size(27, 34);
-                markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
-                MapUtils.markerImage[obj.purpose] = markerImage;
-                //this.markerImage = markerImage;
+                if (isValid(userFile)) {
+                    const d = JSON.parse(userFile.default);
+
+                    if (isValid(d)) {
+                        // 이미지 생성
+                        let imageSrc = `http://${window.location.host}/attach/purpose/0/${d.store}/${d.real}`;
+                        let imageSize = new kakao.maps.Size(27, 34);
+                        markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                        MapUtils.markerImage[obj.purpose] = markerImage;
+                    }
+
+                    const f = JSON.parse(userFile.focus);
+                    if (isValid(f)) {
+                        // 이미지 생성
+                        let imageSrc = `http://${window.location.host}/attach/purpose/0/${f.store}/${f.real}`;
+                        let imageSize = new kakao.maps.Size(27, 34);
+                        markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                        MapUtils.selectedMarkerImage[obj.purpose] = markerImage;
+                    }
+                }
             }
         }
 
@@ -122,6 +136,7 @@ let MapUtils = {
         if (isGrouped) {
             obj = grouped[grouped.length - 1];
         }
+
         if (!selectedMarker || selectedMarker.marker !== obj.marker) {
             if (selectedMarker) {
                 if (isValid(MapUtils.markerImage[selectedMarker.purpose])) {
@@ -129,11 +144,16 @@ let MapUtils = {
                 } else {
                     !!selectedMarker.marker && selectedMarker.marker.setImage(MapUtils.markerImage.d);
                 }
-                !!selectedDir && selectedDir.setContent(`<div class="dir__image" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`);
+                !!selectedDir && selectedDir.setContent(`<div class="dir__image" style="transform-origin: top; transform: rotate(${selectedMarker.jsonobj.direction}deg);"></div>`);
             }
-            obj.marker.setImage(MapUtils.selectedMarkerImage.d);
+            if (isValid(MapUtils.selectedMarkerImage[obj.purpose])) {
+                !!obj.marker && obj.marker.setImage(MapUtils.selectedMarkerImage[obj.purpose]);
+            } else {
+                !!obj.marker && obj.marker.setImage(MapUtils.selectedMarkerImage.d);
+            }
             if (!isGrouped) obj.dir.setContent(`<div class="dir__image selected" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`);
         }
+
         MapUtils.setSelectedMarker(obj);
         if (!isGrouped) MapUtils.setSelectedDir(obj.dir);
 
@@ -175,7 +195,6 @@ let MapUtils = {
     showAside: function (marker) {
         let name = (typeof(marker) == 'object') ? marker.name : marker;
         let obj = MapUtils.findByName(name);
-        //console.log(obj);
 
         $('#aside-panel').removeClass('d-none');
         $('#asset-name .asset-name').html(obj.name);
@@ -191,27 +210,25 @@ let MapUtils = {
                 $("#asset-event .asset-jochi").html(CodeManager.get('work_jochi',errors.actionCode));
                 $('#asset-report .asset-agent-name').html(errors.userid);
                 $("#report-anchor a").attr('href','/dailyreport/' + errors.dailyreportId);
-                $("#detail-anchor").click(() => {
-                    Page.go('/cctv/info/detail2', {item: {name:errors.cctvIndex}});
-                })
             } else if (isValid(situs)) {
                 $("#asset__event").removeClass("d-none");
                 $('#asset-event .asset-event').html(CodeManager.get('work_dgubun', situs.workDgubun) + ' - ' + Monitoring.getBarrierLevel(situs).n);
                 $("#asset-event .asset-jochi").html(CodeManager.getCode((situs.workDgubun === 'D01') ? "work_jochi" : "situ_result", situs.actionCode, "미조치").n);
                 $('#asset-report .asset-agent-name').html(situs.userid);
                 $("#report-anchor a").attr('href','/dailyreport/' + situs.dailyreportId);
-                $("#detail-anchor").click(() => {
-                    Page.go('/cctv/info/detail2', {item: {name:situs.cctvIndex}});
-                })
-
             } else {
                 $("#asset__event").addClass("d-none");
             }
         }
 
+        $("#detail-anchor").click(() => {
+            Page.go('/cctv/info/detail2', {item: {name:obj.name}});
+        })
+
         // 50번 방향 보이기
-        let selectedDir = MapUtils.getSelectedDir();
-        !!selectedDir && selectedDir.setContent(`<div class="dir__image" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`);
+        const selectedDir = MapUtils.getSelectedDir();
+        const selectedMarker = MapUtils.getSelectedMarker();
+        !!selectedDir && selectedDir.setContent(`<div class="dir__image" style="transform-origin: top; transform: rotate(${selectedMarker.jsonobj.direction}deg);"></div>`);
         obj.dir.setContent(`<div class="dir__image selected" style="transform-origin: top; transform: rotate(${obj.jsonobj.direction}deg);"></div>`);
         MapUtils.setSelectedDir(obj.dir);
 

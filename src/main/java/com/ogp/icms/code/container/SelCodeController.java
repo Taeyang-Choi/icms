@@ -49,9 +49,9 @@ public class SelCodeController {
     }
 
     @PostMapping("/api/sel-codes/edit/{id}")
-    public ResultCode updateCode(@ModelAttribute SelCode selCode, List<MultipartFile> image) throws IOException {
+    public ResultCode updateCode(@ModelAttribute SelCode selCode, List<MultipartFile> image, List<MultipartFile> image__focus) throws IOException {
         //System.out.println(selCode);
-        return selCodeService.update(selCode, image);
+        return selCodeService.update(selCode, image, image__focus);
         //return null;//selCodeService.save(selCode);
     }
 }

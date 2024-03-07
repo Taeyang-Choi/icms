@@ -7,8 +7,8 @@
 <link rel="stylesheet" href="/css/map.css">
 <style>
 html,body{height:100%;}
-#top{left:0;top:108px;height:70px;background-color:#F0F4FAAA;z-index:1001}
-#left{top:178px;left:0;width:200px;z-index:1001;background-color:#F0F4FA;}
+#top{left:0;top:108px;height:70px;background-color:#F0F4FADD;z-index:1001}
+#left{top:178px;left:0;width:200px;z-index:1001;background-color:#F0F4FA; transition: 0.5s}
 #left-sub{width:200px;top:178px;left:200px;z-index:1001;background-color:#F0F4FA;}
 #left-sub2{top:178px;left:200px;z-index:1001;background-color:#F0F4FA;}
 #left-sub3{top:178px;left:400px;z-index:1001;background-color:#F0F4FA; overflow-y: scroll;}
@@ -24,11 +24,11 @@ html,body{height:100%;}
 <main style="height:100%">
     <div id="top" class="d-flex pos-fixed w-100 justify-content-between align-items-center">
         <div class="d-flex">
-            <div class="d-flex justify-content-end " style="background-color:#F0F4FA;width:200px;">
-                <div class="rounded-circle bg-white text-center" style="width:34px;line-height:34px;margin:18px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"></path></svg></div>
+            <div id="toggle_icon__box" class="d-flex justify-content-end " style="background-color:#F0F4FA;width:200px; transition: 0.5s">
+                <div class="rounded-circle bg-white text-center" style="width:34px;line-height:34px;margin:18px; cursor: pointer;" onclick="toggleNav()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="transition: 0.5s"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"></path></svg></div>
             </div>
-            <div style="line-height:70px;font-size:28px; margin-left: 10px; font-weight: bold;">CCTV</div>
-            <div style="line-height:70px;font-size:24px; margin-left: 10px;">Status quo Check map</div>
+            <div style="line-height:70px;font-size:18px; margin-left: 10px; font-weight: bold;">CCTV</div>
+            <div style="line-height:70px;font-size:16px; margin-left: 10px;">Status quo Check map</div>
         </div>
         <div class="map__list__group__top">
             <div class="item" onclick="popup2('error')">
@@ -54,13 +54,18 @@ html,body{height:100%;}
 
     <!-- 1단 사이드 nav -->
     <aside id="left" class="pos-fixed" style="height: calc(100% - 178px)">
-        <ul class="map__list__group__left">
+        <ul class="map__list__group__left__n">
             <li class="item d-none" onclick="popup('situ')">상황<div id="l__alarm__situ" class="alarm-circle">0</div></li>
             <li class="item d-none" onclick="popup('error')">장애<div id="l__alarm__error" class="alarm-circle">0</div></li>
             <li class="item" onclick="popup('search')">검색</li>
             <li class="item" onclick="popup('new')">신규등록</li>
             <li class="item" onclick="popup('type')">CCTV 구분</li>
             <li class="item d-none" onclick="popup('what')">유지보수 구분</li>
+        </ul>
+        <ul class="map__list__group__left__s d-none">
+            <li class="item search" onclick="popup('search')"><div class="icon"></div></li>
+            <li class="item new" onclick="popup('new')"><div class="icon"></div></li>
+            <li class="item type" onclick="popup('type')"><div class="icon"></div></li>
         </ul>
     </aside>
 
@@ -572,6 +577,8 @@ async function init() {
         });
 
     });
+
+    console.log(pagectx, MapUtils);
 }
 
 function convertCoordinates(x, y) {
@@ -821,6 +828,41 @@ function popup3(purpose) {
 function allowClick() {
     MapUtils.allowClick = true;
     pagectx.allowClick = true;
+}
+
+function toggleNav() {
+    $('#aside-panel').addClass('d-none');
+    $('#left-sub').addClass('d-none');
+    $('#left-sub2').addClass('d-none');
+    $('#left-sub3').addClass('d-none');
+    $('#right-sub').addClass('d-none');
+
+    const active = $("#toggle_icon__box div").hasClass("active");
+    if (active) {
+        $("#toggle_icon__box").css("width", "200px");
+        $("#toggle_icon__box div").removeClass("active");
+        $("#toggle_icon__box div svg").css("transform", "rotate(0deg)");
+
+        $("#left").css("width", "200px");
+        $(".map__list__group__left__n").removeClass("d-none");
+        $(".map__list__group__left__s").addClass("d-none");
+
+        $("#left-sub").css("left", "200px");
+        $("#left-sub2").css("left", "130px");
+        $("#left-sub3").css("left", "400px");
+    } else {
+        $("#toggle_icon__box").css("width", "70px");
+        $("#toggle_icon__box div").addClass("active");
+        $("#toggle_icon__box div svg").css("transform", "rotate(180deg)");
+
+        $("#left").css("width", "70px");
+        $(".map__list__group__left__n").addClass("d-none");
+        $(".map__list__group__left__s").removeClass("d-none");
+
+        $("#left-sub").css("left", "70px");
+        $("#left-sub2").css("left", "70px");
+        $("#left-sub3").css("left", "270px");
+    }
 }
 
 

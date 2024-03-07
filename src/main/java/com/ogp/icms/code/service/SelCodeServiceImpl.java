@@ -1,5 +1,6 @@
 package com.ogp.icms.code.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -78,7 +79,7 @@ public class SelCodeServiceImpl {
         return selCodeRepository.getByKindCode(kindCode);
     }
 
-    public ResultCode update(SelCode selCode, List<MultipartFile> image) throws IOException {
+    public ResultCode update(SelCode selCode, List<MultipartFile> image, List<MultipartFile> imageF) throws IOException {
         Optional<SelCode> selCodeOptional = selCodeRepository.findById(selCode.getId());
 
         if(!selCodeOptional.isPresent()) {
@@ -86,16 +87,37 @@ public class SelCodeServiceImpl {
         }
 
         SelCode old = selCodeOptional.get();
-
-        List<UploadFile> imgs = fileStore.storeFiles(image, "purpose/");
-
         ObjectMapper om = new ObjectMapper();
-        ArrayNode arrayNode = om.createArrayNode();
-        for(UploadFile img : imgs) {
+        ObjectNode imageNode = null;
+        if (old.getUserFile() == null) {
+            imageNode = om.createObjectNode();
+        } else {
+            JsonNode jn = om.readTree(old.getUserFile());
+            if (jn instanceof ObjectNode) imageNode = (ObjectNode) jn;
+        }
+
+        //image
+        if (!image.get(0).getOriginalFilename().equals("")) {
+            System.out.println(image.get(0).getOriginalFilename());
+            List<UploadFile> imgs = fileStore.storeFiles(image, "purpose/");
+            UploadFile img = imgs.get(0);
+
             ObjectNode objectNode = om.createObjectNode();
             objectNode.put("store", img.getStoreFileName());
             objectNode.put("real", img.getUploadFileName());
-            arrayNode.add(objectNode);
+            imageNode.put("default", objectNode.toString());
+        }
+
+        //imageF
+        if (!imageF.get(0).getOriginalFilename().equals("")) {
+            System.out.println(imageF.get(0).getOriginalFilename());
+            List<UploadFile> imgs = fileStore.storeFiles(imageF, "purpose/");
+            UploadFile img = imgs.get(0);
+
+            ObjectNode objectNode = om.createObjectNode();
+            objectNode.put("store", img.getStoreFileName());
+            objectNode.put("real", img.getUploadFileName());
+            imageNode.put("focus", objectNode.toString());
         }
 
         old.setCode(selCode.getCode());
@@ -103,7 +125,7 @@ public class SelCodeServiceImpl {
         old.setActive(selCode.getActive());
         old.setSeq(selCode.getSeq());
         old.setRemarks(selCode.getRemarks());
-        old.setUserFile(arrayNode.toString());
+        old.setUserFile(imageNode.toString());
 
         return new ResultCode(0, "코드를 수정였습니다.");
     }

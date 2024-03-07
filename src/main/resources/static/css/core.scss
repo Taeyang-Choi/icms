@@ -221,36 +221,74 @@ p{margin:0}
 
 .map__list__group {
   &__left {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    .item {
-      position: relative;
-      padding: 12px 20px;
-      background: #FFFFFF;
-      border-bottom: 1px solid #ddd;
-      cursor: pointer;
-      &:last-child {
-        border-bottom: none;
-      }
+    &__n {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      .item {
+        position: relative;
+        padding: 12px 20px;
+        background: #FFFFFF;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+        &:last-child {
+          border-bottom: none;
+        }
 
-      .alarm-circle {
-        width: 36px;
-        height: 36px;
-        background-color: #0091ff;
-        border-radius: 50%;
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
+        .alarm-circle {
+          width: 36px;
+          height: 36px;
+          background-color: #0091ff;
+          border-radius: 50%;
+          position: absolute;
+          right: 6px;
+          top: 50%;
+          transform: translateY(-50%);
 
-        color: #FFFFFF;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+          color: #FFFFFF;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
       }
     }
+    &__s {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+
+      .item {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        .icon {
+          width: 34px;
+          height: 34px;
+          background-position: center;
+          background-size: contain;
+          background-repeat: no-repeat;
+        }
+
+        &.new {
+          .icon {background-image: url("/images/map__new.svg")}
+        }
+        &.search {
+          .icon {background-image: url("/images/map__search.svg")}
+        }
+        &.type {
+          .icon {background-image: url("/images/map__type.svg")}
+        }
+
+      }
+    }
+
   }
+
+
   &__top {
     margin-right: 280px;
     display: flex;
@@ -281,7 +319,7 @@ p{margin:0}
       .desc {
         margin-left: 12px;
         font-weight: 700;
-        font-size: 22px;
+        font-size: 18px;
       }
     }
   }
@@ -324,7 +362,7 @@ p{margin:0}
     background-color: #ffffff;
     padding: 9px 20px;
     line-height: 24px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
   }
   .asset-value {
@@ -358,18 +396,18 @@ p{margin:0}
 }
 .map__dashboard {
   background-color: #ffffff;
-  padding: 1rem;
+  padding: 1rem 2rem;
   border-radius: 4px;
   border: 1px solid #EBEBEB;
   .title {
-    margin-left: 6px;
-    font-size: 1.625rem;
+    margin-left: 10px;
+    font-size: 18px;
     font-weight: 700;
   }
 
   .desc {
     margin-left: 6px;
-    font-size: 1.5rem;
+    font-size: 18px;
   }
 }
 
