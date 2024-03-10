@@ -266,8 +266,8 @@ p{margin:0}
         cursor: pointer;
 
         .icon {
-          width: 34px;
-          height: 34px;
+          width: 24px;
+          height: 24px;
           background-position: center;
           background-size: contain;
           background-repeat: no-repeat;
@@ -330,6 +330,7 @@ p{margin:0}
   padding: 6px 12px;
   .sub_title {
     margin: 6px;
+    font-size: 14px;
     font-weight: bold;
   }
   .title {
@@ -338,7 +339,6 @@ p{margin:0}
     padding: 9px 20px;
     line-height: 24px;
     font-size: 14px;
-    font-weight: bold;
   }
   .input_box {
     background-color: white;

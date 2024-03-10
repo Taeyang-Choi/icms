@@ -877,8 +877,8 @@ p {
   cursor: pointer;
 }
 .map__list__group__left__s .item .icon {
-  width: 34px;
-  height: 34px;
+  width: 24px;
+  height: 24px;
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -929,6 +929,7 @@ p {
 }
 .map__input .sub_title {
   margin: 6px;
+  font-size: 14px;
   font-weight: bold;
 }
 .map__input .title {
@@ -937,7 +938,6 @@ p {
   padding: 9px 20px;
   line-height: 24px;
   font-size: 14px;
-  font-weight: bold;
 }
 .map__input .input_box {
   background-color: white;
