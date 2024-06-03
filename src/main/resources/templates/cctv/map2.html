@@ -426,7 +426,7 @@ html,body{height:100%;}
                 </div>
 
             </div>
-            <div class="d-flex justify-content-end" style="margin-top:15px">
+            <div class="d-flex justify-content-end" style="margin-top:15px; padding: 0 12px;">
                 <button type="submit" class="btn btn-primary btn-lg">확인</button>
             </div>
         </form>
@@ -523,23 +523,7 @@ async function init() {
     AJAX2.get('/api/daily-reports/events/errors').then(cameraErrors);
     AJAX2.get('/api/daily-reports/events/situs').then(cameraSitus);
     AJAX2.get('/api/kind-codes/purpose/sel-codes').then(purposeImgs);
-    let cameraList = await AJAX2.get('/api/asset2').then(AJAX2.save);
-
-    // 임시코드
-    for (let camera of cameraList) {
-        if(!isValid(camera.annox) || !isValid(camera.annoy)) continue;
-        camera.jsonobj = {};
-        let coord = convertCoordinates(Number(camera.annox), Number(camera.annoy));
-        camera.lat = coord[1];
-        camera.lng = coord[0];
-        camera.name = camera.cctvIndex;
-        camera.vmsId = camera.id;
-        camera.assetId = camera.id;
-        camera.jsonobj.ip = camera.connectIp;
-    }
-    console.log(cameraList);
     MapUtils.renderMaps({coords:true});
-    //renderAsset(cameraList);
     AJAX2.get('/api/asset2').then(renderAsset);
 
 
@@ -572,13 +556,11 @@ async function init() {
         AJAX.put("/asset2/write", null, data ,function(res) {
             console.log(res);
             Dialog.alert(res.message, function() {
-                Page.back();
+                Page.reload();
             });
         });
 
     });
-
-    console.log(pagectx, MapUtils);
 }
 
 function convertCoordinates(x, y) {
@@ -593,20 +575,20 @@ function convertCoordinates(x, y) {
  * @param errors
  */
 function cameraErrors(errors) {
-    console.log("errors: ", errors);
     pagectx.errors = errors;
-
-    $("#l__alarm__error").html(errors.length);
-    $("#t__alarm__error").html(errors.length);
-    $("#r__alarm__error").html(errors.length+"건");
+    _cameraErrors(errors.length);
+}
+function _cameraErrors(cnt) {
+    $("#t__alarm__error").html(cnt);
+    $("#r__alarm__error").html(cnt+"건");
 }
 function cameraSitus(situs) {
-    console.log("situs: ", situs);
     pagectx.situs = situs;
-
-    $("#l__alarm__situ").html(situs.length);
-    $("#t__alarm__situ").html(situs.length);
-    $("#r__alarm__situ").html(situs.length+"건");
+    _cameraSitus(situs.length);
+}
+function _cameraSitus(cnt) {
+    $("#t__alarm__situ").html(cnt);
+    $("#r__alarm__situ").html(cnt+"건");
 }
 function purposeImgs(imgs) {
     pagectx.purpose = {};
@@ -617,38 +599,42 @@ function renderAsset(list) {
         if(typeof(item.jsonobj) == 'string') item.jsonobj = JSON.parse(item.jsonobj);
     }
     pagectx.assets = JSON.parse(JSON.stringify(list));
+    pagectx.pp = "전체";
 
     const merge = {};
     pagectx.assets.map(d => {
+        d.pp = d.purpose;
         if (isValid(merge[d.purpose])) {
             merge[d.purpose].push(d);
         } else {
             merge[d.purpose] = [d]
         }
-    })
+    });
     pagectx.merge = merge;
 
-    pagectx.errors.map((d, i) => {
-        const find = list.find(p => p.name == d.cctvIndex);
+    pagectx.errors.map((d) => {
+        const find = pagectx.assets.find(p => p.name == d.cctvIndex);
         if (isValid(find)) {
             find.purpose = "장애";
+            d.pp = find.pp;
         }
     })
+
+    pagectx.situs.map((d) => {
+        const find = pagectx.assets.find(p => p.name == d.cctvIndex);
+        if (isValid(find)) {
+            find.purpose = "상황";
+            d.pp = find.pp;
+        }
+    });
 
     $("#r__alarm").html((list.length - pagectx.errors.length -  pagectx.situs.length)+"건");
 
-    pagectx.situs.map((d, i) => {
-        const find = list.find(p => p.name == d.cctvIndex);
-        if (isValid(find)) {
-            find.purpose = "상황";
-        }
-    })
-
-    for(const item of list) {
+    for(const item of pagectx.assets) {
         if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item, {purpose: pagectx.purpose});
     }
 
-    kakao.maps.event.addListener(MapUtils.map, 'click', function(mouseEvent) {
+    kakao.maps.event.addListener(MapUtils.map, 'click', function() {
         $('#aside-panel').addClass('d-none');
         $('#left-sub').addClass('d-none');
         if (pagectx.allowClick) {
@@ -662,26 +648,35 @@ function renderAsset(list) {
     });
 }
 function _renderAsset(list) {
-    pagectx.errors.map((d, i) => {
+    $('#right-sub').addClass('d-none');
+    $('#aside-panel').addClass('d-none');
+    let errors = 0;
+    pagectx.errors.map((d) => {
         const find = list.find(p => p.name == d.cctvIndex);
         if (isValid(find)) {
             find.purpose = "장애";
+            errors++;
         }
-    })
-    $("#r__alarm").html((list.length - pagectx.errors.length -  pagectx.situs.length)+"건");
+    });
 
-    pagectx.situs.map((d, i) => {
+    let situs = 0;
+    pagectx.situs.map((d) => {
         const find = list.find(p => p.name == d.cctvIndex);
         if (isValid(find)) {
             find.purpose = "상황";
+            situs++;
         }
-    })
+    });
+
+    $("#r__alarm").html((list.length - errors - situs)+"건");
+    _cameraSitus(situs);
+    _cameraErrors(errors);
 
     for(const item of list) {
         if(Utils.isNull(MapUtils.findByName(item.name))) MapUtils.addMarker(item, {purpose: pagectx.purpose});
     }
 
-    kakao.maps.event.addListener(MapUtils.map, 'click', function(mouseEvent) {
+    kakao.maps.event.addListener(MapUtils.map, 'click', function() {
         $('#aside-panel').addClass('d-none');
         $('#left-sub').addClass('d-none');
         $('#right-sub').addClass('d-none');
@@ -773,7 +768,8 @@ function popup2(type) {
     if (type == "situ") {
         $('#right-sub .list-group').removeClass('d-none')
         $('#right-sub .list-group').html(``);
-        for (const situ of pagectx.situs) {
+        const situs = pagectx.pp == "전체" ? pagectx.situs : pagectx.situs.filter(s => pagectx.pp == s.pp);
+        for (const situ of situs) {
             $('#right-sub .list-group').append(`
             <div class="item" data-id="${situ.cctvId}">
                 <div class="bg-dark text-white p-1">${situ.cctvIndex}</div>
@@ -783,7 +779,8 @@ function popup2(type) {
     } else if (type == 'error') {
         $('#right-sub .list-group').removeClass('d-none')
         $('#right-sub .list-group').html(``);
-        for (const error of pagectx.errors) {
+        const errors = pagectx.pp == "전체" ? pagectx.errors : pagectx.errors.filter(e => pagectx.pp == e.pp);
+        for (const error of errors) {
             $('#right-sub .list-group').append(`
             <div class="item" data-id="${error.cctvId}">
                 <div class="bg-dark text-white p-1">${error.cctvIndex}</div>
@@ -798,6 +795,7 @@ function popup3(purpose) {
     $('#left-sub3 .list-group').html(``);
 
     MapUtils.clear();
+    pagectx.pp = purpose;
     if (purpose == "전체") {
         _renderAsset(pagectx.assets);
         for (let d of pagectx.assets) {

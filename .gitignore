@@ -41,7 +41,6 @@ src/main/resources/application-hd.properties
 src/main/resources/application-prod.properties
 
 ### db ###
-/sql/*
 
 ### logs ###
 spring.log.*

@@ -142,99 +142,114 @@ tbody td{border:1px solid #EFEFEF!important;}
         </div>
 
         <!--자산관리-->
-        <div class="d-flex" style="gap:20px;flex-direction:column;flex:1 1 400px;">
-            <div class="d-flex using-cctv" style="gap:30px;justify-content:space-between">
-                <div class="management" style="width:33%;height:134px">
-                    <div class="manage-cctv">
-                        <div class="cctv-state-all justify-content-center"></div>
+        <a href="common/license/list2" style="flex:1 1 400px;">
+            <div class="d-flex" style="width: 100%; height: 100%; gap:20px;flex-direction:column;">
+                <div class="d-flex using-cctv" style="gap:30px;justify-content:space-between">
+                    <div class="management" style="width:33%;height:134px">
+                        <div class="manage-cctv">
+                            <div class="cctv-state-all justify-content-center"></div>
+                        </div>
+                    </div>
+                    <div class="management" style="width:33%;height:134px">
+                        <div class="manage-cctv">
+                            <div class="cctv-state-using justify-content-center"></div>
+                        </div>
+                    </div>
+                    <div class="management" style="width:33%;height:134px">
+                        <div class="manage-cctv" style="align-items:center;cursor:pointer">
+                            <div class="using fs-30 fw-bold">23%</div>
+                            <p class="fs-18" style="color:#939393">사용률</p>
+                        </div>
                     </div>
                 </div>
-                <div class="management" style="width:33%;height:134px">
-                    <div class="manage-cctv">
-                        <div class="cctv-state-using justify-content-center"></div>
+                <div class="management" style="height:100%;width:100%;padding:30px 40px">
+                    <div class="manage-cctv" style="padding-bottom:15px">
+                        <div class="fw-bold fs-20 title">자산관리</div>
                     </div>
-                </div>
-                <div class="management" style="width:33%;height:134px">
-                    <div class="manage-cctv" style="align-items:center;cursor:pointer">
-                        <div class="using fs-30 fw-bold">23%</div>
-                        <p class="fs-18" style="color:#939393">사용률</p>
-                    </div>
-                </div>
-            </div>
-            <div class="management" style="height:100%;width:100%;padding:30px 40px">
-                <div class="manage-cctv" style="padding-bottom:15px">
-                    <div class="fw-bold fs-20 title">자산관리</div>
-                </div>
-                <div class="manage-cctv justify-content-center mx-auto" style="padding:0">
-                    <div style="display:flex;justify-content:center;">
-                        <div class="d-flex justify-content-center" style="margin-top:10px;gap:10px">
-                            <div style="width:211px;height:211px">
-                                <canvas id="doughnut-chart"></canvas>
+                    <div class="manage-cctv justify-content-center mx-auto" style="padding:0">
+                        <div style="display:flex;justify-content:center;">
+                            <div class="d-flex justify-content-center" style="margin-top:10px;gap:10px">
+                                <div style="width:211px;height:211px">
+                                    <canvas id="doughnut-chart"></canvas>
+                                </div>
+                                <div id="canvas-write" style="align-self:center"></div>
                             </div>
-                            <div id="canvas-write" style="align-self:center"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
+
 
         <!--방문자현황관리-->
-        <div class="management" style="flex:0 1 400px">
-            <div class="manage-visit">
-                <div style="display:flex;justify-content:space-between;">
-                    <div class="fw-bold fs-20 title" style="padding:4px;">방문자현황</div>
-                    <div style="display:flex;align-items:center">
-                        <div style="margin:0 2px;width:8px;height:8px;border-radius:100%;background-color:red"></div>
-                        <div class="fs-12" style="margin:0 6px;color:#CBCBCB">월 방문객수</div>
+        <a href="visit/list" style="flex:0 1 400px">
+            <div class="management" style="width: 100%; height: 100%;">
+                <div class="manage-visit">
+                    <div style="display:flex;justify-content:space-between;">
+                        <div class="fw-bold fs-20 title" style="padding:4px;">방문자현황</div>
+                        <div style="display:flex;align-items:center">
+                            <div style="margin:0 2px;width:8px;height:8px;border-radius:100%;background-color:red"></div>
+                            <div class="fs-12" style="margin:0 6px;color:#CBCBCB">월 방문객수</div>
+                        </div>
+                    </div>
+                    <div style="margin:auto 0">
+                        <canvas id="line-chart" width="100%" height="200" style="max-width:408px"></canvas>
                     </div>
                 </div>
-                <div style="margin:auto 0">
-                    <canvas id="line-chart" width="100%" height="200" style="max-width:408px"></canvas>
-                </div>
             </div>
-        </div>
+        </a>
+
 
         <!--장애관리-->
-        <div class="management" style="flex:1 1 600px;">
-            <div class="manage-error">
-                <div class="fw-bold fs-20 title" style="padding:4px;">장애관리</div>
-                <div class="d-flex justify-content-between">
-                    <div class="d-flex" style="width:90%;height:302px">
-                        <canvas width="400" height="302" id="bar" style="margin-top:20px;"></canvas>
+        <a href="cctv/error/list" style="flex:1 1 600px;">
+            <div class="management" style="width: 100%; height: 100%;">
+                <div class="manage-error">
+                    <div class="fw-bold fs-20 title" style="padding:4px;">장애관리</div>
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex" style="width:90%;height:302px">
+                            <canvas width="400" height="302" id="bar" style="margin-top:20px;"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
+
 
         <!--일일근무일지-->
-        <div class="management" style="flex:1 1 300px">
-            <div class="manage-day-work">
-                <div class="fw-bold fs-20 title" style="padding:4px">일일 근무일지</div>
-                <div class="work-table" style="display:flex;flex-direction:column;height:280px;overflow:scroll;margin:auto 0">
-                    <table id="day_work" class="table" style="margin-top:19px;background-color:#122037">
-                        <thead class="fs-12" style="background-color:transparent">
-                        <tr><th style="color:#989898">근무자</th><th style="color:#989898">모니터링</th><th style="color:#989898">제목</th></tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!--근무자관리-->
-        <div class="d-flex" style="gap:20px;flex:1 1 900px">
-            <div class="management" style="width:100%">
-                <div class="manage-member">
-                    <div class="fw-bold fs-20 title" style="padding:4px;">근무자관리</div>
-                    <div style="display:flex;justify-content:space-around;margin-top:30px;height:231px;overflow:scroll">
-                        <table id="tableMember" class="table">
-                            <thead><tr><th>근무자명</th><th>근무팀</th><th>월별근무시간</th><th>출근시간</th><th>퇴근시간</th></tr></thead>
+        <a href="dailyreport/list" style="flex:1 1 300px">
+            <div class="management" style="width: 100%; height: 100%;">
+                <div class="manage-day-work">
+                    <div class="fw-bold fs-20 title" style="padding:4px">일일 근무일지</div>
+                    <div class="work-table" style="display:flex;flex-direction:column;height:280px;overflow:scroll;margin:auto 0">
+                        <table id="day_work" class="table" style="margin-top:19px;background-color:#122037">
+                            <thead class="fs-12" style="background-color:transparent">
+                            <tr><th style="color:#989898">근무자</th><th style="color:#989898">모니터링</th><th style="color:#989898">제목</th></tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
+
+
+        <!--근무자관리-->
+        <a href="attend/time-sheet" style="flex:1 1 900px;">
+            <div class="d-flex" style="width: 100%; height: 100%; gap:20px;">
+                <div class="management" style="width:100%">
+                    <div class="manage-member">
+                        <div class="fw-bold fs-20 title" style="padding:4px;">근무자관리</div>
+                        <div style="display:flex;justify-content:space-around;margin-top:30px;height:231px;overflow:scroll">
+                            <table id="tableMember" class="table">
+                                <thead><tr><th>근무자명</th><th>근무팀</th><th>월별근무시간</th><th>출근시간</th><th>퇴근시간</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+
 
         <!--업무별 바로가기-->
         <div class="management" style="flex:1 1 900px">

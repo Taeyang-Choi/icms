@@ -198,7 +198,7 @@ let MapUtils = {
 
         $('#aside-panel').removeClass('d-none');
         $('#asset-name .asset-name').html(obj.name);
-        $('#asset-purpose .asset-purpose').html(obj.purpose);
+        $('#asset-purpose .asset-purpose').html(obj.pp);
 
         if(isValid(obj.vmsId)) {
             let errors = pagectx.errors.find(item => item.cctvId == obj.vmsId);
