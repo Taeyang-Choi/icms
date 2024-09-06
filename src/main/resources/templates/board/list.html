@@ -79,21 +79,22 @@ function init(params) {
     $('#btn-write').attr('href','write?n='+request.getParameter('n', 'notice'));
 
     setTable(params);
-    SearchManager.setSearch({callBack:renderTable, src: '/board/notice', table:'#mainTable'});
+    SearchManager.setSearch({callBack:setComments, src: '/board/notice', table:'#mainTable'});
 
     function setTable() {
         AJAX.get('/board/notice', location.search.substr(1), function(list) {
-
-            const ids = [];
-            list.content.map(d => ids.push(d.id));
-            AJAX.get(`/comment/lists/${ids.join("_")}`, '', _comments => {
-                const comments = {};
-                _comments.map(c => comments[c.id] = c);
-                renderTable(list, comments);
-            })
-
-
+            setComments(list);
         });
+    }
+
+    function setComments(list) {
+        const ids = [];
+        list.content.map(d => ids.push(d.id));
+        AJAX.get(`/comment/lists/${ids.join("_")}`, '', _comments => {
+            const comments = {};
+            _comments.map(c => comments[c.id] = c);
+            renderTable(list, comments);
+        })
     }
 
     function renderTable(page, comments) {

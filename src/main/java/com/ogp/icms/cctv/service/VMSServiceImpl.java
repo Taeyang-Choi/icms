@@ -51,6 +51,9 @@ public class VMSServiceImpl {
         int counter = 0;
 
         profile = System.getProperty("spring.profiles.active");
+        log.info("{}", "vms.url : "+IP);
+        log.info("{}", "vms.id : "+id);
+        log.info("{}", "vms.pw : "+pw);
 
         //1. 로그인
         logout();
@@ -263,6 +266,52 @@ public class VMSServiceImpl {
                     oldCamera.setConnectIp(camera.getConnectIp());
                     oldCamera.setConnectId(camera.getConnectId());
                     oldCamera.setConnectPw(camera.getConnectPw());
+
+                    // 240904 new start
+                    oldCamera.setCctvIndex(camera.getCctvIndex());
+                    oldCamera.setCctvGubun(camera.getCctvGubun());
+                    oldCamera.setJuso(camera.getJuso());
+                    oldCamera.setLat(camera.getLat());
+                    oldCamera.setLng(camera.getLng());
+                    oldCamera.setDirection(camera.getDirection());
+
+                    /*
+                    oldCamera.setDept(camera.getDept());
+
+
+                    oldCamera.setLocation(camera.getLocation());
+                    oldCamera.setCameraCategory(camera.getCameraCategory());
+                    oldCamera.setMovement(camera.getMovement());
+                    oldCamera.setNightvision(camera.getNightvision());
+                    oldCamera.setShage(camera.getShage());
+                    oldCamera.setInstallymd(camera.getInstallymd());
+                    oldCamera.setPixel(camera.getPixel());
+                    oldCamera.setConnectCnt(camera.getConnectCnt());
+                    oldCamera.setCameraCnt(camera.getCameraCnt());
+                    oldCamera.setIntegrationCnt(camera.getIntegrationCnt());
+                    oldCamera.setConnectType(camera.getConnectType());
+                    oldCamera.setConnectPort(camera.getConnectPort());
+                    oldCamera.setConnectModel(camera.getConnectModel());
+                    oldCamera.setConnectServerType(camera.getConnectServerType());
+                    oldCamera.setSmCompany(camera.getSmCompany());
+                    oldCamera.setSmPerson(camera.getSmPerson());
+                    oldCamera.setSmTel(camera.getSmTel());
+                    oldCamera.setPtzUseyn(camera.getPtzUseyn());
+                    oldCamera.setPresetUseyn(camera.getPresetUseyn());
+                    oldCamera.setFallCamera(camera.getFallCamera());
+                    oldCamera.setFallDefinition(camera.getFallDefinition());
+                    oldCamera.setFallEquipment(camera.getFallEquipment());
+                    oldCamera.setFallNetwork(camera.getFallNetwork());
+                    oldCamera.setAnnox(camera.getAnnox());
+                    oldCamera.setAnnoy(camera.getAnnoy());
+                    */
+
+
+
+                    // new end
+
+
+
                 } else {
                     log.info("vms camera is new {}, {}", i , camera);
                     //if(i % 50 == 0) log.info("vms camera is new {}, {}", i , camera);

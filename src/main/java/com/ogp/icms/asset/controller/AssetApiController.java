@@ -87,7 +87,7 @@ public class AssetApiController {
     }
 
     @GetMapping("/api/asset2/{id}")
-    public Asset2 getCamera(@PathVariable String id) {
+    public Asset2 getCamera(@PathVariable Long id) {
         return assetService.findOne(id);
     }
 
@@ -111,7 +111,7 @@ public class AssetApiController {
      * @param id
      */
     @DeleteMapping("/api/asset2/delete/{id}")
-    public ResultCode deleteCamera(@PathVariable String id) {
+    public ResultCode deleteCamera(@PathVariable Long id) {
         return assetService.deleteCamera(id);
     }
 

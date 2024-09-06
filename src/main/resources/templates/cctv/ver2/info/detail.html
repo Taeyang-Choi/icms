@@ -397,7 +397,7 @@ function init(params) {
     function createForm(params) {
         pagectx = params;
         let item = params.item;
-        AJAX.get("/asset2/" + item.name, '', function(data) {
+        AJAX.get("/asset2/" + item.assetId, '', function(data) {
             console.log(data);
             for(let pair of Object.entries(data)){
                 $(`input[name=${StringUtils.camelToSnake(pair[0])}]`).val(pair[1]);
@@ -426,7 +426,7 @@ function setPage(item) {
     $('#btn-delete').on('click', {item:item}, function(e) {
         Dialog.confirm('정말 삭제하시겠습니까?', function (item) {
             console.log(item);
-            AJAX.remove("/asset2/delete/" + item.name, '', function (data) {
+            AJAX.remove("/asset2/delete/" + item.assetId, '', function (data) {
                 Dialog.alert(data.message, function() {
                     Page.back();
                 });

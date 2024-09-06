@@ -49,7 +49,7 @@ public class Asset2JpaRepository extends Querydsl4RepositorySupport {
      * 카메라 수정
      */
     public void updateCamera(Asset2 asset2) {
-        Asset2 savedCamera = getEntityManager().find(Asset2.class, asset2.getName());
+        Asset2 savedCamera = getEntityManager().find(Asset2.class, asset2.getAssetId());
         if(savedCamera == null) return;
 
         JSONObject savedJsonobj = null, jsonobj = null;

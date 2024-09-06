@@ -78,7 +78,8 @@ public class AssetService {
         try {
             for (int i=0; i<cameraList.size(); i++) {
                 Camera camera = cameraList.get(i);
-                Optional<Asset2> asset2ByIdOptional = asset2Repository.findById(camera.getCctvIndex());
+                //Optional<Asset2> asset2ByIdOptional = asset2Repository.findById(camera.getCctvIndex());
+                Optional<Asset2> asset2ByIdOptional = asset2Repository.findByVmsId(camera.getId().toString());
                 Asset2 item;
                 if (asset2ByIdOptional.isPresent()) {
                     item = asset2ByIdOptional.get();
@@ -154,11 +155,11 @@ public class AssetService {
 
     /**
      * id로 카메라 반환
-     * @param name
+     * @param id
      * @return
      */
-    public Asset2 findOne(String name) {
-        Optional<Asset2> asset2Optional = asset2Repository.findById(name);
+    public Asset2 findOne(Long id) {
+        Optional<Asset2> asset2Optional = asset2Repository.findById(id);
 
         if(asset2Optional.isPresent()) {
             return asset2Optional.get();
@@ -193,9 +194,9 @@ public class AssetService {
         try {
             //ArrayList<Camera> newList = new ArrayList<>();
             for (int i = 0; i < list.size(); i++) {
-                Optional<Asset2> asset2Optional = asset2Repository.findById(list.get(i).getName());
+                Optional<Asset2> asset2Optional = asset2Repository.findById(list.get(i).getAssetId());
                 if (asset2Optional.isPresent()) {
-                    asset2Repository.deleteById(asset2Optional.get().getName());
+                    asset2Repository.deleteById(asset2Optional.get().getAssetId());
                     asset2Repository.flush();
                 }
                 //if(byCctvIndex == null) newList.add(list.get(i));
@@ -207,7 +208,7 @@ public class AssetService {
         }
     }
 
-    public ResultCode deleteCamera(String id) {
+    public ResultCode deleteCamera(Long id) {
         asset2Repository.deleteById(id);
         return new ResultCode(0, "카메라를 삭제했습니다.");
     }

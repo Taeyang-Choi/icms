@@ -6,10 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Columns;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @AllArgsConstructor
@@ -18,7 +15,9 @@ import javax.persistence.Table;
 @Data
 public class Asset2 {
 
-    private String assetId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long assetId;
     private String purpose;
     private String dept;
 
@@ -30,7 +29,6 @@ public class Asset2 {
 
     private String vmsId;
 
-    @Id
     private String name;
 
     private String emd;

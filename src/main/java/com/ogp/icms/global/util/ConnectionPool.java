@@ -30,7 +30,7 @@ public class ConnectionPool {
             dataSource.setJdbcUrl("jdbc:mariadb://localhost:3306/icms2");
             dataSource.setUsername("root");
             dataSource.setMaximumPoolSize(10);
-            dataSource.setPassword("Elma0729@");
+            dataSource.setPassword("[db 비밀번호 변경후 반드시 비밀번호 적어주세요]");
 
             Connection connection = dataSource.getConnection();
             //log.info("get connection={}, class={}", connection, connection.getClass());

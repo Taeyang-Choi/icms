@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface Asset2Repository extends JpaRepository<Asset2, String> {
+public interface Asset2Repository extends JpaRepository<Asset2, Long> {
+    Optional<Asset2> findById(Long id);
     Optional<Asset2> findByRefId(String refId);
+    Optional<Asset2> findByName(String name);
+    Optional<Asset2> findByVmsId(String vmsId);
 }
